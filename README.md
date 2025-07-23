@@ -42,7 +42,7 @@ git clone https://github.com/NocteDefensor/LudusMCP.git
 cd LudusMCP
 From within LudusMCP directory
 npm install    # Installs dependencies and builds automatically
-npx ludus-mcp --setup-keyring  # Use npx for local installations
+npx ludus-mcp --setup-keyring  # Use npx for local from source installations by running it from within clone/install directory
 ```
 
 ### Installation Requirements
