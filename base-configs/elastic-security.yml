@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://docs.ludus.cloud/schemas/range-config.json
+# Elastic Security Lab
+# Elastic server with agents on Windows and Linux endpoints
+
+ludus:
+  - vm_name: "{{ range_id }}-elastic"
+    hostname: "{{ range_id }}-elastic"
+    template: debian-12-x64-server-template
+    vlan: 20
+    ip_last_octet: 1
+    ram_gb: 8
+    cpus: 4
+    linux: true
+    testing:
+      snapshot: false
+      block_internet: false
+    roles:
+      - badsectorlabs.ludus_elastic_container
+    role_vars:
+      ludus_elastic_password: "thisisapassword"
+
+  - vm_name: "{{ range_id }}-debian"
+    hostname: "{{ range_id }}-debian"
+    template: debian-12-x64-server-template
+    vlan: 20
+    ip_last_octet: 20
+    ram_gb: 4
+    cpus: 2
+    linux: true
+    testing:
+      snapshot: false
+      block_internet: false
+    roles:
+      - badsectorlabs.ludus_elastic_agent
+
+  - vm_name: "{{ range_id }}-win11-22h2-enterprise-x64-1"
+    hostname: "{{ range_id }}-WIN11-22H2-1"
+    template: win11-22h2-x64-enterprise-template
+    vlan: 10
+    ip_last_octet: 21
+    ram_gb: 8
+    cpus: 4
+    windows:
+      install_additional_tools: false
+    roles:
+      - badsectorlabs.ludus_elastic_agent
