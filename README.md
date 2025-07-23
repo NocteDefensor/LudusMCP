@@ -300,5 +300,4 @@ For additional help:
 ## References:
 - Ludus Documentation - https://docs.ludus.cloud/docs/intro
 ## License
-
-MIT License 
+Creative Commons Attribution ShareAlike 4.0
