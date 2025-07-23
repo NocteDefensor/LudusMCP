@@ -114,19 +114,6 @@ Add to your `~/.claude_desktop_config.json`:
 }
 ```
 
-**For Local Installation:**
-```json
-{
-  "mcpServers": {
-    "ludus": {
-      "command": "npx",
-      "args": ["ludus-mcp"]
-    }
-  },
-  "isUsingBuiltInNodeForMcp": false
-}
-```
-
 ### Development/Source Installation
 If running from source:
 
