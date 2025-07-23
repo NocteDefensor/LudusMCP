@@ -7,7 +7,7 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 ### System Requirements
 - Node.js 18.0.0 or higher
 - npm package manager
-- Ludus CLI binary installed and in PATH
+- Ludus CLI binary [installed](https://docs.ludus.cloud/docs/quick-start/using-cli-locally) and in PATH
 - Active Ludus server environment
 - Network connectivity to Ludus server via WireGuard VPN or SSH
 
@@ -15,7 +15,7 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 Ensure you have:
 - Ludus server SSH access credentials
 - Ludus API key (obtain via `ludus apikey` command)
-- WireGuard configuration file OR SSH tunnel capabilities
+- WireGuard configuration file OR SSH tunnel capabilities (obtain wireguard conf from Ludus CLI)
 - Admin or user account on Ludus server. Non admin will be limited in same ways as using ludus cli with non admin account.
 
 ## Installation
@@ -297,7 +297,8 @@ For additional help:
 - Use `ludus_docs_search` for comprehensive guides  
 - Review generated configurations with `read_range_config`
 - Check [GitHub repository](https://github.com/NocteDefensor/LudusMCP) for issues and updates
-
+## References:
+- Ludus Documentation - https://docs.ludus.cloud/docs/intro
 ## License
 
 MIT License 
