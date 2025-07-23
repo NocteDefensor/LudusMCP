@@ -90,18 +90,28 @@ export class LudusCliWrapper {
    * Initialize the SSH tunnel manager using ssh2 library
    */
   private async initializeTunnelManager(): Promise<void> {
-    if (!this.config.sshHost || !this.config.sshKeyPath) {
-      throw new Error('SSH configuration is incomplete');
+    if (!this.config.sshHost || !this.config.sshUser) {
+      throw new Error('SSH configuration is incomplete - missing host or user');
+    }
+
+    if (this.config.sshAuthMethod === 'key' && !this.config.sshKeyPath) {
+      throw new Error('SSH key path is required for key authentication');
+    }
+
+    if (this.config.sshAuthMethod === 'password' && !this.config.sshPassword) {
+      throw new Error('SSH password is required for password authentication');
     }
 
     const tunnelConfig: SSHTunnelConfig = {
       host: this.config.sshHost,
       port: 22, // Default SSH port
-      username: this.config.sshUser || 'root',
-      privateKeyPath: this.config.sshKeyPath || '',
+      username: this.config.sshUser,
+      authMethod: this.config.sshAuthMethod,
       regularPort: 8080,
       primaryPort: 8081,
-      ...(this.config.sshKeyPassphrase && { privateKeyPassphrase: this.config.sshKeyPassphrase })
+      privateKeyPath: this.config.sshAuthMethod === 'key' ? this.config.sshKeyPath! : undefined,
+      privateKeyPassphrase: this.config.sshAuthMethod === 'key' ? this.config.sshKeyPassphrase : undefined,
+      password: this.config.sshAuthMethod === 'password' ? this.config.sshPassword! : undefined
     };
 
     this.tunnelManager = new LudusSSHTunnelManager(tunnelConfig, this.logger);
@@ -188,502 +198,56 @@ export class LudusCliWrapper {
   }
 
   /**
-   * Create SSH tunnel for admin operations
+   * Create SSH tunnel for admin operations using tunnel manager
    */
   private async createSSHTunnel(): Promise<boolean> {
     try {
-      if (this.sshTunnelPid) {
-        this.logger.debug('SSH tunnel already exists');
-        return true;
+      this.logger.info('Creating SSH tunnel for admin operations using tunnel manager');
+      
+      // Initialize tunnel manager if not already done
+      if (!this.tunnelManager) {
+        await this.initializeTunnelManager();
       }
 
-      this.logger.info('Creating SSH tunnel for admin operations', {
-        sshHost: this.config.sshHost,
-        sshUser: this.config.sshUser,
-        localPort: this.sshTunnelPort
-      });
-
-      // Create SSH tunnel using configured authentication method
-      let sshCommand: string[];
-      
-      if (this.config.sshAuthMethod === 'key') {
-        // Key-based authentication
-        sshCommand = [
-          'ssh',
-          '-i', this.config.sshKeyPath!,
-          '-L', `${this.sshTunnelPort}:127.0.0.1:8081`,
-          '-N', '-T',
-          '-o', 'ConnectTimeout=10',
-          '-o', 'StrictHostKeyChecking=no',
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
-      } else if (this.config.sshAuthMethod === 'plink') {
-        // Windows plink with password
-        sshCommand = [
-          'plink',
-          '-batch',
-          '-ssh',
-          '-pw', this.config.sshPassword!,
-          '-L', `${this.sshTunnelPort}:127.0.0.1:8081`,
-          '-N',
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
+      // Ensure tunnels are healthy
+      if (this.tunnelManager) {
+        await this.tunnelManager.ensureTunnelsHealthy();
+        this.logger.info('SSH tunnel for admin operations established successfully');
+        return true;
       } else {
-        // Password authentication with sshpass (Linux)
-        sshCommand = [
-          'sshpass',
-          '-p', this.config.sshPassword!,
-          'ssh',
-          '-L', `${this.sshTunnelPort}:127.0.0.1:8081`,
-          '-N', '-T',
-          '-o', 'ConnectTimeout=10',
-          '-o', 'StrictHostKeyChecking=no',
-          '-o', 'PasswordAuthentication=yes',
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
-      }
-
-      this.logger.info('Creating SSH tunnel...', { 
-        authMethod: this.config.sshAuthMethod,
-        message: this.config.sshAuthMethod === 'key' ? 'Using SSH key' : 'Using password authentication',
-        fullCommand: sshCommand.join(' ')
-      });
-      
-      const tunnelProcess = spawn(sshCommand[0], sshCommand.slice(1), {
-        stdio: ['pipe', 'pipe', 'pipe'], // Always use pipe to avoid interfering with MCP protocol stdin
-        detached: false,
-        env: {
-          ...process.env,
-          PATH: process.env.PATH + ';C:\\Windows\\System32\\OpenSSH', // Ensure SSH is in PATH
-          HOME: process.env.USERPROFILE // Ensure HOME is set for SSH
-        },
-        cwd: process.env.USERPROFILE // Run from user's home directory for SSH key access
-      });
-
-      this.sshTunnelPid = tunnelProcess.pid || null;
-
-      // Wait for tunnel to establish
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Test tunnel connectivity with cross-platform approach
-      try {
-        // Use a Windows-compatible test method
-        const isWindows = process.platform === 'win32';
-        
-        if (isWindows) {
-          // On Windows, use PowerShell to test TCP connection
-          const testCommand = `powershell -Command "Test-NetConnection -ComputerName localhost -Port ${this.sshTunnelPort} -InformationLevel Quiet"`;
-          const result = execSync(testCommand, { timeout: 5000, stdio: 'pipe', encoding: 'utf8' });
-          
-          if (result.trim().toLowerCase() === 'true') {
-            this.logger.info('SSH tunnel established successfully (PowerShell test)', { pid: this.sshTunnelPid });
-            return true;
-          }
-        } else {
-          // On Linux/macOS, use nc if available
-          const testCommand = `nc -z localhost ${this.sshTunnelPort}`;
-          execSync(testCommand, { timeout: 5000, stdio: 'pipe' });
-          
-          this.logger.info('SSH tunnel established successfully (nc test)', { pid: this.sshTunnelPid });
-          return true;
-        }
-      } catch (error) {
-        this.logger.warn('Primary tunnel test failed, trying curl test', { 
-          error: error instanceof Error ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          } : String(error)
-        });
-      }
-      
-      // Fallback to curl test (cross-platform)
-      try {
-        execSync(`curl -k -s -o /dev/null -w "%{http_code}" https://127.0.0.1:${this.sshTunnelPort}/ --connect-timeout 5`, {
-          timeout: 8000,
-          stdio: 'pipe'
-        });
-        
-        this.logger.info('SSH tunnel established successfully (curl test)', { pid: this.sshTunnelPid });
-        return true;
-      } catch (curlError) {
-        this.logger.error('SSH tunnel establishment failed', { error: curlError });
-        this.closeSSHTunnel();
+        this.logger.error('Failed to initialize tunnel manager');
         return false;
       }
     } catch (error: any) {
-      this.logger.error('Failed to create SSH tunnel', error);
+      this.logger.error('Failed to create SSH tunnel for admin operations', { error });
       return false;
     }
   }
 
   /**
-   * Close SSH tunnel
-   */
-  private closeSSHTunnel(): void {
-    if (this.sshTunnelPid) {
-      try {
-        process.kill(this.sshTunnelPid);
-        this.sshTunnelPid = null;
-        this.logger.info('SSH tunnel closed');
-      } catch (error) {
-        this.logger.error('Failed to close SSH tunnel', { error });
-      }
-    }
-  }
-
-  /**
-   * Create SSH tunnel for regular operations (port 8080)
+   * Create SSH tunnel for regular operations using tunnel manager
    */
   private async createRegularOperationsTunnel(): Promise<boolean> {
-    if (this.regularTunnelPid) {
-      this.logger.debug('Regular operations SSH tunnel already exists');
-      return true;
-    }
-
-    this.logger.info('Creating SSH tunnel for regular operations (port 8080)');
-    this.setupSSHTunnelRegularEnvironment();
-
     try {
-      let sshCommand: string[];
-      if (this.config.sshAuthMethod === 'key') {
-        // Verify SSH key exists and log detailed info
-        if (!this.config.sshKeyPath) {
-          throw new Error('SSH key path is not configured but key authentication is selected');
-        }
-        
-        let keyPath = this.config.sshKeyPath;
-        
-        try {
-          // Convert to absolute path if needed
-          if (!path.isAbsolute(keyPath)) {
-            keyPath = path.resolve(keyPath);
-          }
-          
-          this.logger.info('SSH key verification', {
-            originalPath: this.config.sshKeyPath,
-            absolutePath: keyPath,
-            exists: fs.existsSync(keyPath),
-            workingDir: process.cwd(),
-            userHome: process.env.USERPROFILE || process.env.HOME
-          });
-          
-          if (!fs.existsSync(keyPath)) {
-            throw new Error(`SSH key file not found: ${keyPath}`);
-          }
-        } catch (pathError: any) {
-          this.logger.error('SSH key path validation failed', {
-            originalPath: this.config.sshKeyPath,
-            error: pathError.message,
-            workingDir: process.cwd()
-          });
-          throw new Error(`Invalid SSH key path: ${pathError.message}`);
-        }
-        
-        sshCommand = [
-          'ssh',
-          '-i', keyPath, // Use absolute path
-          '-L', '8080:127.0.0.1:8080', // Map local port 8080 to Ludus server port 8080
-          '-N', '-T',
-          '-o', 'ConnectTimeout=10',
-          '-o', 'StrictHostKeyChecking=no',
-          '-v', // Add verbose mode to see SSH debug info
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
-      } else if (this.config.sshAuthMethod === 'plink') {
-        sshCommand = [
-          'plink',
-          '-batch',
-          '-ssh',
-          '-pw', this.config.sshPassword!,
-          '-L', '8080:127.0.0.1:8080', // Map local port 8080 to Ludus server port 8080
-          '-N',
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
-      } else {
-        sshCommand = [
-          'sshpass',
-          '-p', this.config.sshPassword!,
-          'ssh',
-          '-L', '8080:127.0.0.1:8080', // Map local port 8080 to Ludus server port 8080
-          '-N', '-T',
-          '-o', 'ConnectTimeout=10',
-          '-o', 'StrictHostKeyChecking=no',
-          '-o', 'PasswordAuthentication=yes',
-          `${this.config.sshUser}@${this.config.sshHost}`
-        ];
+      this.logger.info('Creating SSH tunnel for regular operations using tunnel manager');
+      
+      // Initialize tunnel manager if not already done
+      if (!this.tunnelManager) {
+        await this.initializeTunnelManager();
       }
 
-      this.logger.info('Creating regular operations SSH tunnel...', { 
-        authMethod: this.config.sshAuthMethod,
-        message: this.config.sshAuthMethod === 'key' ? 'Using SSH key' : 'Using password authentication',
-        command: sshCommand.join(' '),
-        env: {
-          PATH: process.env.PATH?.substring(0, 200) + '...',
-          PWD: process.cwd(),
-          SSH_AUTH_SOCK: process.env.SSH_AUTH_SOCK || 'not set'
-        }
-      });
-
-      // Check if SSH binary exists
-      const sshBinary = sshCommand[0];
-      this.logger.info('SSH binary check', { 
-        sshBinary, 
-        fullPath: 'C:\\Windows\\System32\\OpenSSH\\ssh.exe',
-        pathEnv: process.env.PATH?.includes('OpenSSH') ? 'SSH in PATH' : 'SSH not in PATH'
-      });
-      
-      // Test SSH execution directly
-      this.logger.info('Testing SSH execution directly');
-      try {
-        const sshTestProcess = spawn('ssh', ['-V'], {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env: {
-            ...process.env,
-            PATH: process.env.PATH + ';C:\\Windows\\System32\\OpenSSH', // Ensure SSH is in PATH
-            HOME: process.env.USERPROFILE // Ensure HOME is set for SSH
-          },
-          cwd: process.env.USERPROFILE // Run from user's home directory for SSH key access
-        });
-
-        let testOutput = '';
-        let testError = '';
-
-        sshTestProcess.stdout.on('data', (data) => {
-          testOutput += data.toString();
-        });
-
-        sshTestProcess.stderr.on('data', (data) => {
-          testError += data.toString();
-        });
-
-        await new Promise<void>((resolve) => {
-          sshTestProcess.on('exit', (code) => {
-            this.logger.info('SSH version test completed', {
-              exitCode: code,
-              stdout: testOutput.trim() || '[empty]',
-              stderr: testError.trim() || '[empty]',
-              stdoutLength: testOutput.length,
-              stderrLength: testError.length
-            });
-            
-            // If SSH completely failed, try with full path
-            if (code === 255 && testOutput.length === 0 && testError.length === 0) {
-              this.logger.info('SSH -V failed, trying full path to SSH');
-              try {
-                const fullPathTest = spawn('C:\\Windows\\System32\\OpenSSH\\ssh.exe', ['-V'], {
-                  stdio: ['pipe', 'pipe', 'pipe'],
-                  env: {
-                    ...process.env,
-                    HOME: process.env.USERPROFILE
-                  },
-                  cwd: process.env.USERPROFILE
-                });
-                
-                let fullPathOutput = '';
-                let fullPathError = '';
-                
-                fullPathTest.stdout.on('data', (data) => {
-                  fullPathOutput += data.toString();
-                });
-                
-                fullPathTest.stderr.on('data', (data) => {
-                  fullPathError += data.toString();
-                });
-                
-                fullPathTest.on('exit', (fullPathCode) => {
-                  this.logger.info('SSH full path test completed', {
-                    exitCode: fullPathCode,
-                    stdout: fullPathOutput.trim() || '[empty]',
-                    stderr: fullPathError.trim() || '[empty]',
-                    stdoutLength: fullPathOutput.length,
-                    stderrLength: fullPathError.length
-                  });
-                });
-              } catch (fullPathError) {
-                this.logger.error('SSH full path test failed', { 
-                  error: fullPathError instanceof Error ? {
-                    name: fullPathError.name,
-                    message: fullPathError.message
-                  } : String(fullPathError)
-                });
-              }
-            }
-            
-            resolve();
-          });
-
-          // Timeout after 5 seconds
-          setTimeout(() => {
-            sshTestProcess.kill();
-            this.logger.warn('SSH version test timed out');
-            resolve();
-          }, 5000);
-        });
-      } catch (testError) {
-        this.logger.error('SSH version test failed', { error: testError });
-      }
-
-      this.logger.info('Attempting to spawn SSH tunnel process directly', { 
-        binary: sshCommand[0],
-        fullCommand: sshCommand.join(' ')
-      });
-
-      const tunnelProcess = spawn(sshCommand[0], sshCommand.slice(1), {
-        stdio: ['pipe', 'pipe', 'pipe'], // Always use pipe to avoid interfering with MCP protocol stdin
-        detached: false,
-        env: {
-          ...process.env,
-          PATH: process.env.PATH + ';C:\\Windows\\System32\\OpenSSH', // Ensure SSH is in PATH
-          HOME: process.env.USERPROFILE // Ensure HOME is set for SSH
-        },
-        cwd: process.env.USERPROFILE // Run from user's home directory for SSH key access
-      });
-
-      this.regularTunnelPid = tunnelProcess.pid || null;
-      
-      this.logger.info('SSH process spawned', { 
-        pid: this.regularTunnelPid,
-        spawned: !!tunnelProcess.pid
-      });
-
-      // Log SSH process events
-      tunnelProcess.on('error', (error) => {
-        this.logger.error('SSH tunnel process error', { 
-          error: error.message,
-          code: (error as any).code,
-          syscall: (error as any).syscall,
-          path: (error as any).path
-        });
-      });
-
-      tunnelProcess.on('exit', (code, signal) => {
-        this.logger.info('SSH tunnel process exited', { 
-          code, 
-          signal,
-          pid: this.regularTunnelPid
-        });
-        this.regularTunnelPid = null;
-      });
-
-      // Enhanced SSH output capture debugging
-      let sshErrors = '';
-      let sshOutput = '';
-      
-      this.logger.info('Setting up SSH output capture handlers');
-
-      tunnelProcess.stderr.on('data', (data) => {
-        const output = data.toString();
-        const trimmed = output.trim();
-        sshErrors += output;
-        this.logger.warn('SSH tunnel stderr received', { 
-          rawLength: output.length,
-          trimmedLength: trimmed.length,
-          output: trimmed || '[empty after trim]',
-          raw: output.length < 100 ? JSON.stringify(output) : '[too long to show]'
-        });
-      });
-
-      tunnelProcess.stdout.on('data', (data) => {
-        const output = data.toString();
-        const trimmed = output.trim();
-        sshOutput += output;
-        this.logger.info('SSH tunnel stdout received', { 
-          rawLength: output.length,
-          trimmedLength: trimmed.length,
-          output: trimmed || '[empty after trim]',
-          raw: output.length < 100 ? JSON.stringify(output) : '[too long to show]'
-        });
-      });
-
-      // Enhanced exit logging to see all output
-      tunnelProcess.on('exit', (code, signal) => {
-        this.logger.error('SSH tunnel process exited', {
-          exitCode: code,
-          signal: signal,
-          pid: this.regularTunnelPid,
-          hasStderr: sshErrors.length > 0,
-          hasStdout: sshOutput.length > 0,
-          stderrLength: sshErrors.length,
-          stdoutLength: sshOutput.length,
-          command: sshCommand.join(' ')
-        });
-        
-        if (sshErrors.length > 0) {
-          this.logger.error('SSH stderr content', {
-            content: sshErrors.trim()
-          });
-        } else {
-          this.logger.warn('SSH produced NO stderr output (this is unusual with -v flag)');
-        }
-        
-        if (sshOutput.length > 0) {
-          this.logger.info('SSH stdout content', {
-            content: sshOutput.trim()
-          });
-        }
-      });
-
-       // Wait longer for tunnel to establish - regular ops tunnel needs more time
-       await new Promise(resolve => setTimeout(resolve, 6000));
-
-      // Test tunnel connectivity with cross-platform approach
-      try {
-        const isWindows = process.platform === 'win32';
-        if (isWindows) {
-          const testCommand = `powershell -Command "Test-NetConnection -ComputerName localhost -Port 8080 -InformationLevel Quiet"`;
-          const result = execSync(testCommand, { timeout: 5000, stdio: 'pipe', encoding: 'utf8' });
-          if (result.trim().toLowerCase() === 'true') {
-            this.logger.info('Regular operations SSH tunnel established successfully (PowerShell test)', { pid: this.regularTunnelPid });
-            return true;
-          }
-        } else {
-          const testCommand = `nc -z localhost 8080`;
-          execSync(testCommand, { timeout: 5000, stdio: 'pipe' });
-          this.logger.info('Regular operations SSH tunnel established successfully (nc test)', { pid: this.regularTunnelPid });
-          return true;
-        }
-      } catch (error) {
-        this.logger.warn('Regular operations SSH tunnel test failed, trying curl test', { 
-          error: error instanceof Error ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          } : String(error)
-        });
-      }
-
-      // Fallback to curl test (cross-platform)
-      try {
-        execSync(`curl -k -s -o /dev/null -w "%{http_code}" https://127.0.0.1:8080/ --connect-timeout 5`, {
-          timeout: 8000,
-          stdio: 'pipe'
-        });
-        this.logger.info('Regular operations SSH tunnel established successfully (curl test)', { pid: this.regularTunnelPid });
+      // Ensure tunnels are healthy
+      if (this.tunnelManager) {
+        await this.tunnelManager.ensureTunnelsHealthy();
+        this.logger.info('SSH tunnel for regular operations established successfully');
         return true;
-      } catch (curlError) {
-        this.logger.error('Regular operations SSH tunnel establishment failed', { error: curlError });
-        this.closeRegularOperationsTunnel();
+      } else {
+        this.logger.error('Failed to initialize tunnel manager');
         return false;
       }
     } catch (error: any) {
-      this.logger.error('Failed to create regular operations SSH tunnel', error);
+      this.logger.error('Failed to create SSH tunnel for regular operations', { error });
       return false;
-    }
-  }
-
-  /**
-   * Close regular operations SSH tunnel
-   */
-  private closeRegularOperationsTunnel(): void {
-    if (this.regularTunnelPid) {
-      try {
-        process.kill(this.regularTunnelPid);
-        this.regularTunnelPid = null;
-        this.logger.info('Regular operations SSH tunnel closed');
-      } catch (error) {
-        this.logger.error('Failed to close regular operations SSH tunnel', { error });
-      }
     }
   }
 
@@ -692,16 +256,17 @@ export class LudusCliWrapper {
    */
   async executeCommand(command: string, args: string[] = [], workingDirectory?: string): Promise<CommandResult> {
     const originalCwd = process.cwd();
+    let usingSSHFallback = false;
     
+    // Build command string for admin check and logging (not execution)
+    const fullCommand = `${command} ${args.join(' ')}`.trim();
+    const isAdmin = this.isAdminCommand(fullCommand);
+
     try {
       // Use specified working directory or default to ~/.ludus-mcp/
       const targetCwd = workingDirectory || this.baseCwd;
       process.chdir(targetCwd);
       
-      // Build command string for admin check and logging only (not execution)
-      const fullCommand = `${command} ${args.join(' ')}`.trim();
-      const isAdmin = this.isAdminCommand(fullCommand);
-
       const actualRoute = isAdmin ? 'SSH tunnel' : 
         (this.config.connectionMethod === 'ssh-tunnel' ? 'SSH tunnel' : 'WireGuard VPN');
       
@@ -713,7 +278,6 @@ export class LudusCliWrapper {
       });
 
       // Ensure connections are healthy before executing commands
-      let usingSSHFallback = false;
       
       if (isAdmin) {
         // Admin commands always use SSH tunnel
@@ -823,20 +387,22 @@ export class LudusCliWrapper {
         }
       }
 
-      // Parse JSON output if available
-      let parsedData = null;
-      try {
-        parsedData = JSON.parse(output);
-      } catch (error) {
+      // Parse JSON output if possible
+      let parsedData: any;
+      
+      if (output.trim().startsWith('{') || output.trim().startsWith('[')) {
+        try {
+          parsedData = JSON.parse(output);
+        } catch (parseError) {
+          // If parsing fails, use raw output
+          parsedData = output;
+        }
+      } else {
         // Not JSON, use raw output
         parsedData = output;
       }
 
-      // Close SSH tunnel if it was created for this command
-      if (isAdmin) {
-        this.closeSSHTunnel();
-      }
-
+      // Tunnel cleanup is handled automatically by tunnel manager
       // Clear environment variables
       delete process.env.LUDUS_API_KEY;
       delete process.env.LUDUS_URL;
@@ -846,21 +412,19 @@ export class LudusCliWrapper {
       return {
         success: true,
         data: parsedData,
-        message: `Command executed successfully via ${isAdmin ? 'SSH tunnel' : 'WireGuard VPN'}`,
+        message: output,
         rawOutput: output
       };
     } catch (error: any) {
-      this.logger.error('Command execution failed', { 
-        command, 
+      this.logger.error('Command execution failed', {
+        command: fullCommand,
         error: error.message,
+        workingDirectory,
+        stdout: error.stdout?.toString(),
         stderr: error.stderr?.toString()
       });
 
-      // Clean up on error
-      if (this.isAdminCommand(`${command} ${args.join(' ')}`)) {
-        this.closeSSHTunnel();
-      }
-
+      // Tunnel cleanup is handled automatically by tunnel manager
       // Clear environment variables
       delete process.env.LUDUS_API_KEY;
       delete process.env.LUDUS_URL;
@@ -1492,8 +1056,8 @@ export class LudusCliWrapper {
       }
     } else {
       // Fallback to old cleanup methods
-      this.closeSSHTunnel();
-      this.closeRegularOperationsTunnel();
+      // this.closeSSHTunnel(); // Removed
+      // this.closeRegularOperationsTunnel(); // Removed
     }
     
     // Clear any remaining environment variables
