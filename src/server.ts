@@ -1772,7 +1772,7 @@ class LudusMCPServer {
         ]);
 
         const connectionMethod = (credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel') || 'wireguard';
-        const sshAuthMethod = (credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key' | 'plink') || 'password';
+        const sshAuthMethod = (credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key') || 'password';
         const baseUrl = connectionMethod === 'ssh-tunnel' ? 'https://localhost:8080' : 'https://198.51.100.1:8080';
 
         // Check if we have all required credentials from keyring
@@ -1826,7 +1826,7 @@ class LudusMCPServer {
     };
 
     const connectionMethod = (envVars.connectionMethod as 'wireguard' | 'ssh-tunnel') || 'wireguard';
-    const sshAuthMethod = (envVars.sshAuthMethod as 'password' | 'key' | 'plink') || 'password';
+    const sshAuthMethod = (envVars.sshAuthMethod as 'password' | 'key') || 'password';
     const hasBaseEnvVars = envVars.adminUser && envVars.apiKey && envVars.sshHost && envVars.sshUser && envVars.sshAuthMethod;
     const hasWireguardConfig = connectionMethod === 'ssh-tunnel' || envVars.wireguardConfig;
     const hasSshAuth = (sshAuthMethod === 'password' && envVars.sshPassword) || 

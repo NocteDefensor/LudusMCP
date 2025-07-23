@@ -27,8 +27,10 @@ export interface SSHTunnelConfig {
     host: string;
     port: number;
     username: string;
-    privateKeyPath: string;
-    privateKeyPassphrase?: string;  // Optional passphrase for password-protected keys
+    authMethod: 'key' | 'password';
+    privateKeyPath?: string | undefined;     // Required for key auth
+    privateKeyPassphrase?: string | undefined;   // Optional passphrase for password-protected keys
+    password?: string | undefined;           // Required for password auth
     regularPort: number;  // 8080
     primaryPort: number;  // 8081
 }
@@ -374,37 +376,67 @@ export class LudusSSHTunnelManager {
             });
 
             // Load private key and connect
-            fs.readFile(this.sshConfig.privateKeyPath)
-                .then(keyBuffer => {
-                    const connectConfig = {
-                        host: this.sshConfig.host,
-                        port: this.sshConfig.port,
-                        username: this.sshConfig.username,
-                        privateKey: keyBuffer,
-                        ...(this.sshConfig.privateKeyPassphrase && { 
-                            passphrase: this.sshConfig.privateKeyPassphrase 
-                        }),
-                        // Add connection resilience settings
-                        readyTimeout: 20000, // 20 seconds to connect
-                        keepaliveInterval: 60000, // Send keepalive every 60 seconds
-                        keepaliveCountMax: 3 // Drop after 3 failed keepalives
-                    };
-                    
-                    this.logger.info('Connecting to SSH host', {
-                        host: this.sshConfig.host,
-                        port: this.sshConfig.port,
-                        username: this.sshConfig.username,
-                        hasPassphrase: !!this.sshConfig.privateKeyPassphrase
+            if (this.sshConfig.authMethod === 'key') {
+                if (!this.sshConfig.privateKeyPath) {
+                    reject(new Error('Private key path is required for key authentication.'));
+                    return;
+                }
+                fs.readFile(this.sshConfig.privateKeyPath)
+                    .then(keyBuffer => {
+                        const connectConfig = {
+                            host: this.sshConfig.host,
+                            port: this.sshConfig.port,
+                            username: this.sshConfig.username,
+                            privateKey: keyBuffer,
+                            ...(this.sshConfig.privateKeyPassphrase && { 
+                                passphrase: this.sshConfig.privateKeyPassphrase 
+                            }),
+                            // Add connection resilience settings
+                            readyTimeout: 20000, // 20 seconds to connect
+                            keepaliveInterval: 60000, // Send keepalive every 60 seconds
+                            keepaliveCountMax: 3 // Drop after 3 failed keepalives
+                        };
+                        
+                        this.logger.info('Connecting to SSH host with private key', {
+                            host: this.sshConfig.host,
+                            port: this.sshConfig.port,
+                            username: this.sshConfig.username,
+                            hasPassphrase: !!this.sshConfig.privateKeyPassphrase
+                        });
+                        ssh.connect(connectConfig);
+                    })
+                    .catch((err: Error) => {
+                        this.logger.error('Failed to read private key', { 
+                            path: this.sshConfig.privateKeyPath, 
+                            error: err 
+                        });
+                        reject(err);
                     });
-                    ssh.connect(connectConfig);
-                })
-                .catch((err: Error) => {
-                    this.logger.error('Failed to read private key', { 
-                        path: this.sshConfig.privateKeyPath, 
-                        error: err 
-                    });
-                    reject(err);
+            } else if (this.sshConfig.authMethod === 'password') {
+                if (!this.sshConfig.password) {
+                    reject(new Error('Password is required for password authentication.'));
+                    return;
+                }
+                const connectConfig = {
+                    host: this.sshConfig.host,
+                    port: this.sshConfig.port,
+                    username: this.sshConfig.username,
+                    password: this.sshConfig.password,
+                    // Add connection resilience settings
+                    readyTimeout: 20000, // 20 seconds to connect
+                    keepaliveInterval: 60000, // Send keepalive every 60 seconds
+                    keepaliveCountMax: 3 // Drop after 3 failed keepalives
+                };
+                
+                this.logger.info('Connecting to SSH host with password', {
+                    host: this.sshConfig.host,
+                    port: this.sshConfig.port,
+                    username: this.sshConfig.username
                 });
+                ssh.connect(connectConfig);
+            } else {
+                reject(new Error('Unsupported authentication method.'));
+            }
         });
     }
 

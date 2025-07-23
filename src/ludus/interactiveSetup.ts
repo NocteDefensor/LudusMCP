@@ -3,6 +3,7 @@ import { existsSync } from 'fs';
 import { join, basename } from 'path';
 import { homedir } from 'os';
 import { createInterface } from 'readline';
+import * as net from 'net';
 import { Logger } from '../utils/logger.js';
 import { 
   storeCredentials, 
@@ -19,7 +20,7 @@ export interface LudusConfig {
   apiKey: string;
   sshHost: string;
   sshUser: string;
-  sshAuthMethod: 'password' | 'key' | 'plink';
+  sshAuthMethod: 'password' | 'key';
   sshPassword?: string | undefined;  // Optional for key-based auth
   sshKeyPath?: string | undefined;   // Optional for password auth
   sshKeyPassphrase?: string | undefined;  // Optional passphrase for password-protected keys
@@ -327,83 +328,48 @@ export class InteractiveSetup {
 
   private async testSshConnectivity(config: LudusConfig): Promise<boolean> {
     try {
-      const isWindows = process.platform === 'win32';
-      let command: string;
-      let args: string[];
+      // Use native Node.js SSH library instead of external binaries
+      const { NodeSSH } = await import('node-ssh');
+      const ssh = new NodeSSH();
+
+      const sshConfig: any = {
+        host: config.sshHost,
+        username: config.sshUser,
+        readyTimeout: 10000, // 10 second timeout
+        sock: undefined, // Ensure clean connection
+      };
 
       if (config.sshAuthMethod === 'key') {
         // Key-based authentication
-        command = 'ssh';
-        args = [
-          '-i', config.sshKeyPath!,
-          '-o', 'StrictHostKeyChecking=no',
-          '-o', 'ConnectTimeout=10',
-          `${config.sshUser}@${config.sshHost}`,
-          'echo "SSH test successful"'
-        ];
-      } else if (config.sshAuthMethod === 'plink') {
-        // Windows plink with password
-        command = 'plink';
-        args = [
-          '-batch',
-          '-ssh',
-          '-pw', config.sshPassword!,
-          `${config.sshUser}@${config.sshHost}`,
-          'echo "SSH test successful"'
-        ];
+        sshConfig.privateKeyPath = config.sshKeyPath;
+        if (config.sshKeyPassphrase) {
+          sshConfig.passphrase = config.sshKeyPassphrase;
+        }
       } else {
-        // Password authentication with sshpass (Linux)
-        command = 'sshpass';
-        args = [
-          '-p', config.sshPassword!,
-          'ssh',
-          '-o', 'StrictHostKeyChecking=no',
-          '-o', 'ConnectTimeout=10',
-          `${config.sshUser}@${config.sshHost}`,
-          'echo "SSH test successful"'
-        ];
+        // Password authentication
+        sshConfig.password = config.sshPassword;
       }
 
-      const result = spawn(command, args, { stdio: 'pipe' });
-
-      return new Promise((resolve) => {
-        let resolved = false;
+      try {
+        await ssh.connect(sshConfig);
         
-        // Add timeout to prevent hanging
-        const timeout = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            console.error('⏰ SSH connectivity test timeout');
-            result.kill();
-            resolve(false);
-          }
-        }, 15000); // 15 second timeout
+        // Test basic command execution
+        const result = await ssh.execCommand('echo "SSH test successful"');
+        ssh.dispose();
 
-        result.on('close', (code) => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timeout);
-            if (code === 0) {
-              console.error('SSH connectivity test successful');
-              resolve(true);
-            } else {
-              console.error(`SSH connectivity test failed with code: ${code}`);
-              resolve(false);
-            }
-          }
-        });
-
-        result.on('error', (error) => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timeout);
-            console.error(`SSH connectivity test error: ${error.message}`);
-            resolve(false);
-          }
-        });
-      });
+        if (result.code === 0) {
+          console.error('SSH connectivity test successful');
+          return true;
+        } else {
+          console.error(`SSH connectivity test failed with code: ${result.code}`);
+          return false;
+        }
+      } catch (connectionError: any) {
+        console.error(`SSH connectivity test failed: ${connectionError.message}`);
+        return false;
+      }
     } catch (error: any) {
-      console.error(`SSH connectivity test failed: ${error.message}`);
+      console.error(`SSH connectivity test error: ${error.message}`);
       return false;
     }
   }
@@ -412,141 +378,95 @@ export class InteractiveSetup {
     try {
       console.error('📡 Creating SSH tunnels for ports 8080 and 8081...');
       
-      const isWindows = process.platform === 'win32';
+      // Use the existing SSH tunnel manager instead of duplicating tunnel logic
+      const { LudusSSHTunnelManager } = await import('../ludus/sshTunnelManager.js');
       
-      let command: string;
-      let args: string[];
-      
-      if (config.sshAuthMethod === 'key') {
-        // Key-based authentication
-        command = 'ssh';
-        args = [
-          '-i', config.sshKeyPath!,
-          '-o', 'StrictHostKeyChecking=no',
-          '-f', '-N',
-          '-L', '8080:localhost:8080',
-          '-L', '8081:localhost:8081',
-          `${config.sshUser}@${config.sshHost}`
-        ];
-      } else if (config.sshAuthMethod === 'plink') {
-        // Windows plink with password
-        command = 'plink';
-        args = [
-          '-batch',
-          '-ssh',
-          '-pw', config.sshPassword!,
-          '-L', '8080:localhost:8080',
-          '-L', '8081:localhost:8081',
-          '-N',
-          `${config.sshUser}@${config.sshHost}`
-        ];
-      } else {
-        // Password authentication with sshpass (Linux)
-        command = 'sshpass';
-        args = [
-          '-p', config.sshPassword!,
-          'ssh',
-          '-o', 'StrictHostKeyChecking=no',
-          '-f', '-N',
-          '-L', '8080:localhost:8080',
-          '-L', '8081:localhost:8081',
-          `${config.sshUser}@${config.sshHost}`
-        ];
-      }
-      
-      const result = spawn(command, args, { stdio: 'pipe' });
+      const tunnelConfig = {
+        host: config.sshHost,
+        port: 22,
+        username: config.sshUser,
+        authMethod: config.sshAuthMethod,
+        regularPort: 8080,
+        primaryPort: 8081,
+        privateKeyPath: config.sshAuthMethod === 'key' ? config.sshKeyPath : undefined,
+        privateKeyPassphrase: config.sshAuthMethod === 'key' ? config.sshKeyPassphrase : undefined,
+        password: config.sshAuthMethod === 'password' ? config.sshPassword : undefined
+      };
 
-      return new Promise((resolve) => {
-        let resolved = false;
+      console.error(`Attempting SSH tunnel connection to ${config.sshHost}:22 as ${config.sshUser} using ${config.sshAuthMethod} auth...`);
+      
+      // Create a logger for the tunnel manager
+      const logger = new Logger('SSH-Setup');
+
+      const tunnelManager = new LudusSSHTunnelManager(tunnelConfig, logger);
+      
+      try {
+        await tunnelManager.connect();
+        console.error('SSH tunnels established successfully using tunnel manager');
         
-        // Set a timeout to prevent hanging on Windows
-        const timeout = setTimeout(async () => {
-          if (!resolved) {
-            resolved = true;
-            console.error('⏰ SSH tunnel process timeout - testing connectivity...');
-            
-            // Give the tunnel a moment to establish
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Test if tunnel is working
-            const tunnelWorks = await this.testTunnelConnectivity();
-            if (tunnelWorks) {
-              console.error('SSH tunnels established successfully');
-              resolve(true);
-            } else {
-              console.error('SSH tunnels created but connectivity test failed');
-              resolve(false);
-            }
-          }
-        }, 5000); // 5 second timeout
-
-        result.on('close', async (code) => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timeout);
-            
-            if (code === 0) {
-              // Give the tunnel a moment to establish
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              
-              // Test if tunnel is working
-              const tunnelWorks = await this.testTunnelConnectivity();
-              if (tunnelWorks) {
-                console.error('SSH tunnels established successfully');
-                resolve(true);
-              } else {
-                console.error('SSH tunnels created but connectivity test failed');
-                resolve(false);
-              }
-            } else {
-              console.error(`SSH tunnel creation failed with code: ${code}`);
-              resolve(false);
-            }
-          }
-        });
-
-        result.on('error', (error) => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timeout);
-            console.error(`SSH tunnel creation error: ${error.message}`);
-            resolve(false);
-          }
-        });
-      });
+        // Test tunnel connectivity
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const tunnelWorks = await this.testTunnelConnectivity();
+        
+        if (tunnelWorks) {
+          console.error('SSH tunnel connectivity test successful');
+          return true;
+        } else {
+          console.error('SSH tunnels created but connectivity test failed');
+          await tunnelManager.disconnect();
+          return false;
+        }
+      } catch (tunnelError: any) {
+        console.error(`SSH tunnel creation failed: ${tunnelError.message}`);
+        try {
+          await tunnelManager.disconnect();
+        } catch (disconnectError) {
+          // Ignore disconnect errors
+        }
+        return false;
+      }
     } catch (error: any) {
-      console.error(`SSH tunnel creation failed: ${error.message}`);
+      console.error(`SSH tunnel setup error: ${error.message}`);
       return false;
     }
   }
 
   private async testTunnelConnectivity(): Promise<boolean> {
     try {
-      // Test if we can reach localhost:8080 (tunneled to Ludus API)
-      const result = spawn('curl', [
-        '-k', '-s', '--connect-timeout', '5',
-        'https://localhost:8080/version'
-      ], { stdio: 'pipe' });
-
-      return new Promise((resolve) => {
-        let output = '';
+      // Use native Node.js TCP socket testing instead of external curl
+      console.error('Testing tunnel connectivity to localhost:8080...');
+      
+      const isPortOpen = await new Promise<boolean>((resolve) => {
+        const socket = new net.Socket();
         
-        result.stdout.on('data', (data) => {
-          output += data.toString();
+        const timeout = setTimeout(() => {
+          socket.destroy();
+          resolve(false);
+        }, 5000); // 5 second timeout
+        
+        socket.once('connect', () => {
+          clearTimeout(timeout);
+          socket.end();
+          resolve(true);
         });
-
-        result.on('close', (code) => {
-          // If curl succeeds (code 0) or gets some response, tunnel is working
-          const tunnelWorks = code === 0 || output.length > 0;
-          resolve(tunnelWorks);
-        });
-
-        result.on('error', () => {
+        
+        socket.once('error', () => {
+          clearTimeout(timeout);
           resolve(false);
         });
+        
+        socket.connect(8080, '127.0.0.1');
       });
+
+      if (isPortOpen) {
+        console.error('Tunnel connectivity test successful - port 8080 is accessible');
+        return true;
+      } else {
+        console.error('Tunnel connectivity test failed - port 8080 is not accessible');
+        return false;
+      }
     } catch (error: any) {
-      console.error(`Tunnel connectivity test failed: ${error.message}`);
+      console.error(`Tunnel connectivity test error: ${error.message}`);
       return false;
     }
   }
@@ -602,7 +522,7 @@ export class InteractiveSetup {
       ]);
 
       const connectionMethod = credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel' || 'wireguard';
-      const sshAuthMethod = credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key' | 'plink' || 'password';
+      const sshAuthMethod = credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key' || 'password';
 
       // Check if all required credentials are present
       const baseRequiredCredentials = [
@@ -719,20 +639,12 @@ export class InteractiveSetup {
     
     // Ask for SSH authentication method
     console.error('\nSSH Authentication Method');
-    const isWindows = process.platform === 'win32';
+    console.error('Choose SSH authentication method:');
+    console.error('  (p) Password - Use SSH password authentication');  
+    console.error('  (k) Key - Use SSH key-based authentication');
     
-    if (isWindows) {
-      console.error('Choose SSH authentication method:');
-      console.error('  (p) PuTTY plink - Use plink with password (must be in PATH)');
-      console.error('  (k) Key - Use SSH key-based authentication');
-    } else {
-      console.error('Choose SSH authentication method:');
-      console.error('  (p) Password - Use SSH password authentication');
-      console.error('  (k) Key - Use SSH key-based authentication');
-    }
-    
-    const authChoice = await this.prompt(`SSH auth method? (p/k) [default: ${isWindows ? 'k' : 'p'}]: `);
-    let sshAuthMethod: 'password' | 'key' | 'plink';
+    const authChoice = await this.prompt('SSH auth method? (p/k) [default: p]: ');
+    let sshAuthMethod: 'password' | 'key';
     let sshPassword: string | undefined;
     let sshKeyPath: string | undefined;
     let sshKeyPassphrase: string | undefined;
@@ -741,14 +653,11 @@ export class InteractiveSetup {
       sshAuthMethod = 'key';
       sshKeyPath = await this.prompt('SSH Key Path: ');
       
-      // Ask if the key is password-protected
-      const isKeyProtected = await this.prompt('Is your SSH key password-protected? (y/n) [default: n]: ');
-      if (isKeyProtected.toLowerCase() === 'y') {
+      // Ask for passphrase if key is protected
+      const hasPassphrase = await this.prompt('Does your SSH key have a passphrase? (y/n) [default: n]: ');
+      if (hasPassphrase.toLowerCase() === 'y') {
         sshKeyPassphrase = await this.securePrompt('SSH Key Passphrase: ');
       }
-    } else if (isWindows) {
-      sshAuthMethod = 'plink';
-      sshPassword = await this.securePrompt('SSH Password: ');
     } else {
       sshAuthMethod = 'password';
       sshPassword = await this.securePrompt('SSH Password: ');
