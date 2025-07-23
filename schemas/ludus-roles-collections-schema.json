@@ -1,0 +1,1758 @@
+{
+  "ludus_roles_schema": {
+    "version": "2.0.0",
+    "last_updated": "2025-01-19",
+    "description": "Mapping of verified Ludus Ansible roles and collections to their variables",
+    "methodology": "Each role researched using GitHub links from Ludus docs/roles.md table and verified from actual repository files",
+    "CRITICAL_DOMAIN_CONFIG_WARNING": "IMPORTANT: Do NOT use 'domain:' configuration sections with ludus_child_domain or ludus_child_domain_join roles. These roles handle domain operations internally. The domain: { fqdn: prod.test.local, role: member } configuration is only for standard Ludus domain joining, not child domain scenarios.",
+    "sources": [
+      "Ludus official documentation (docs/roles.md table)",
+      "GitHub repositories (README.md files)",
+      "Repository defaults/main.yml files where available",
+      "Environment guides analysis"
+    ],
+    "roles": {
+      "badsectorlabs.ludus_vulhub": {
+        "description": "Runs Vulhub environments on a Linux system",
+        "repository": "https://github.com/badsectorlabs/ludus_vulhub",
+        "author": "Bad Sector Labs",
+        "dependencies": [
+          "geerlingguy.docker"
+        ],
+        "variables": {
+          "vulhub_git_url": {
+            "type": "string",
+            "default": "https://github.com/vulhub/vulhub",
+            "description": "URL to clone Vulhub repository from"
+          },
+          "vulhub_install_path": {
+            "type": "string",
+            "default": "/opt/vulhub",
+            "description": "Installation path for Vulhub"
+          },
+          "vulhub_branch": {
+            "type": "string",
+            "default": "master",
+            "description": "Git branch to checkout"
+          },
+          "vulhub_envs": {
+            "type": "array",
+            "required": true,
+            "default": [],
+            "description": "Array of vulhub environments to deploy",
+            "example": [
+              "confluence/CVE-2023-22527",
+              "airflow/CVE-2020-11978"
+            ]
+          },
+          "vulhub_persistent": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether environments persist across reboots"
+          }
+        }
+      },
+      "badsectorlabs.ludus_adcs": {
+        "description": "Installs ADCS on Windows Server and optionally configures Certified Preowned templates",
+        "repository": "https://github.com/badsectorlabs/ludus_adcs",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "note": "Not idempotent - setting ESC values to false after true won't remove templates",
+        "variables": {
+          "ludus_adcs_domain": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected domain name from Ludus config"
+          },
+          "ludus_adcs_dc": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected primary DC hostname"
+          },
+          "ludus_adcs_ca_host": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected CA host from Ludus config"
+          },
+          "ludus_adcs_domain_username": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin username"
+          },
+          "ludus_adcs_domain_password": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin password"
+          },
+          "ludus_adcs_ca_common_name": {
+            "type": "string",
+            "default": "{{ ludus_adcs_domain }}-CA",
+            "description": "CA certificate common name"
+          },
+          "ludus_adcs_esc1": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC1 template vulnerability"
+          },
+          "ludus_adcs_esc2": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC2 template vulnerability"
+          },
+          "ludus_adcs_esc3": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC3 template vulnerability"
+          },
+          "ludus_adcs_esc3_cra": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC3 CRA template vulnerability"
+          },
+          "ludus_adcs_esc4": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC4 template vulnerability"
+          },
+          "ludus_adcs_esc5": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC5 template vulnerability"
+          },
+          "ludus_adcs_esc6": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC6 template vulnerability"
+          },
+          "ludus_adcs_esc7": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC7 template vulnerability"
+          },
+          "ludus_adcs_esc8": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC8 template vulnerability"
+          },
+          "ludus_adcs_esc9": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC9 template vulnerability"
+          },
+          "ludus_adcs_esc11": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC11 template vulnerability"
+          },
+          "ludus_adcs_esc13": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC13 template vulnerability"
+          },
+          "ludus_adcs_esc15": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC15 template vulnerability"
+          },
+          "ludus_adcs_esc16": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable ESC16 template vulnerability"
+          },
+          "ludus_adcs_esc5_user": {
+            "type": "string",
+            "default": "esc5user",
+            "description": "Username for ESC5 exploitation"
+          },
+          "ludus_adcs_esc5_password": {
+            "type": "string",
+            "default": "ESC5password",
+            "description": "Password for ESC5 user"
+          },
+          "ludus_adcs_esc7_ca_manager_user": {
+            "type": "string",
+            "default": "esc7_camgr_user",
+            "description": "CA manager user for ESC7"
+          },
+          "ludus_adcs_esc7_ca_manager_password": {
+            "type": "string",
+            "default": "ESC7password",
+            "description": "CA manager password for ESC7"
+          },
+          "ludus_adcs_esc7_cert_manager_user": {
+            "type": "string",
+            "default": "esc7_certmgr_user",
+            "description": "Certificate manager user for ESC7"
+          },
+          "ludus_adcs_esc7_cert_manager_password": {
+            "type": "string",
+            "default": "ESC7password",
+            "description": "Certificate manager password for ESC7"
+          },
+          "ludus_adcs_esc9_user": {
+            "type": "string",
+            "default": "esc9user",
+            "description": "Username for ESC9 exploitation"
+          },
+          "ludus_adcs_esc9_password": {
+            "type": "string",
+            "default": "ESC9password",
+            "description": "Password for ESC9 user"
+          },
+          "ludus_adcs_esc13_user": {
+            "type": "string",
+            "default": "esc13user",
+            "description": "Username for ESC13 exploitation"
+          },
+          "ludus_adcs_esc13_password": {
+            "type": "string",
+            "default": "ESC13password",
+            "description": "Password for ESC13 user"
+          },
+          "ludus_adcs_esc13_group": {
+            "type": "string",
+            "default": "esc13group",
+            "description": "Group for ESC13 exploitation"
+          },
+          "ludus_adcs_esc13_template": {
+            "type": "string",
+            "default": "ESC13",
+            "description": "Template name for ESC13"
+          },
+          "ludus_adcs_esc16_user": {
+            "type": "string",
+            "default": "esc16user",
+            "description": "Username for ESC16 exploitation"
+          },
+          "ludus_adcs_esc16_password": {
+            "type": "string",
+            "default": "ESC16password",
+            "description": "Password for ESC16 user"
+          }
+        }
+      },
+      "badsectorlabs.ludus_bloodhound_ce": {
+        "description": "Installs Bloodhound CE on a Debian based system",
+        "repository": "https://github.com/badsectorlabs/ludus_bloodhound_ce",
+        "author": "Bad Sector Labs",
+        "dependencies": [
+          "geerlingguy.docker"
+        ],
+        "variables": {
+          "ludus_bloodhound_ce_install_path": {
+            "type": "string",
+            "default": "/opt/bloodhound",
+            "description": "Path where docker-compose.yml and admin creds are placed"
+          },
+          "ludus_bloodhound_listen_only_localhost": {
+            "type": "boolean",
+            "default": false,
+            "description": "Expose bloodhound web UI to 0.0.0.0:8080 if set to false"
+          },
+          "ludus_bloodhound_port": {
+            "type": "string",
+            "default": "8080",
+            "description": "The port bloodhound CE listens on"
+          },
+          "ludus_bloodhound_admin_password": {
+            "type": "string",
+            "default": "bloodhoundpassword",
+            "description": "The default admin password for bloodhound"
+          },
+          "ludus_bloodhound_admin_principal_name": {
+            "type": "string",
+            "default": "admin",
+            "description": "Admin principal name"
+          },
+          "ludus_bloodhound_admin_email_address": {
+            "type": "string",
+            "default": "admin@ludus.domain",
+            "description": "Admin email address"
+          },
+          "ludus_bloodhound_admin_first_name": {
+            "type": "string",
+            "default": "Bloodhound",
+            "description": "Admin first name"
+          },
+          "ludus_bloodhound_admin_last_name": {
+            "type": "string",
+            "default": "Admin",
+            "description": "Admin last name"
+          }
+        }
+      },
+      "badsectorlabs.ludus_mssql": {
+        "description": "Installs MSSQL on Windows systems",
+        "repository": "https://github.com/badsectorlabs/ludus_mssql",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {
+          "ludus_mssql_version": {
+            "type": "string",
+            "default": "2019",
+            "description": "MSSQL version to install",
+            "valid_options": [
+              "2019",
+              "2022"
+            ]
+          },
+          "ludus_install_directory": {
+            "type": "string",
+            "default": "/opt/ludus",
+            "description": "Ludus installation directory"
+          },
+          "ludus_mssql_iso_directory": {
+            "type": "string",
+            "default": "C:\\ludus",
+            "description": "Directory for MSSQL ISO files"
+          },
+          "ludus_mssql_sql_config_path": {
+            "type": "string",
+            "default": "{{ ludus_mssql_iso_directory }}\\sqlsrv_{{ ludus_mssql_version }}_config.ini",
+            "description": "Path to SQL Server configuration file"
+          },
+          "ludus_mssql_iso_url": {
+            "type": "string",
+            "default": "https://archive.org/download/en_sql_server_2019_standard_x64_dvd_814b57aa_202211/en_sql_server_2019_standard_x64_dvd_814b57aa.iso",
+            "description": "URL to download MSSQL ISO"
+          },
+          "ludus_mssql_iso_checksum": {
+            "type": "string",
+            "default": "sha256:1e56705b3544e77039584b3b38461df0321834822776aef8e50847fdd9edad44",
+            "description": "Checksum for MSSQL ISO verification"
+          },
+          "ludus_mssql_instance_name": {
+            "type": "string",
+            "default": "MSSQLSERVER",
+            "description": "SQL Server instance name"
+          },
+          "ludus_mssql_sql_license_key": {
+            "type": "string",
+            "default": null,
+            "description": "Optional SQL Server license key"
+          },
+          "ludus_mssql_ssms_url": {
+            "type": "string",
+            "default": "https://aka.ms/ssmsfullsetup",
+            "description": "URL to download SQL Server Management Studio"
+          },
+          "ludus_mssql_install_ssms": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to install SQL Server Management Studio"
+          }
+        }
+      },
+      "badsectorlabs.ludus_xz_backdoor": {
+        "description": "Installs the xz backdoor (CVE-2024-3094) on a Debian host and optionally installs the xzbot tool",
+        "repository": "https://github.com/badsectorlabs/ludus_xz_backdoor",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "warning": "This role deploys malware on purpose! Be careful.",
+        "variables": {
+          "ludus_xz_backdoor_install_xzbot": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install the xzbot cli tool used to send commands to the backdoor"
+          },
+          "ludus_xz_backdoor_install_backdoor": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install the xz backdoor library and reboot"
+          },
+          "ludus_xz_backdoor_uninstall_backdoor": {
+            "type": "boolean",
+            "default": false,
+            "description": "Remove the backdoor by replacing the symlink and rebooting"
+          }
+        }
+      },
+      "badsectorlabs.ludus_emux": {
+        "description": "Installs EMUX and runs an emulated device on Debian based hosts",
+        "repository": "https://github.com/badsectorlabs/ludus_emux",
+        "author": "Bad Sector Labs",
+        "dependencies": [
+          "geerlingguy.docker"
+        ],
+        "note": "Ports 80/443 mapped to emulated device - don't use host for other services",
+        "variables": {
+          "ludus_emux_path": {
+            "type": "string",
+            "default": "/opt/emux",
+            "description": "Installation path for EMUX"
+          },
+          "ludus_emux_device": {
+            "type": "integer",
+            "default": 4,
+            "description": "Device number to emulate",
+            "valid_options": {
+              "0": "DV-ARM (Damn Vulnerable ARM Router)",
+              "1": "DV-MIPSEL (Damn Vulnerable MIPS Router - Little Endian)",
+              "2": "DV-MIPSEB (Damn Vulnerable MIPS Router - Big Endian)",
+              "3": "PH0WNCTF (R0 Port Controller - Ph0wn 2021 CTF Challenge)",
+              "4": "TRI227WF (Trivision NC-227-WF IP Camera)",
+              "5": "AC15 (Tenda AC15 Wi-Fi Router)",
+              "6": "ARCHERC9 (Archer C9 Wi-Fi Router)",
+              "7": "DIR615C (D-Link DIR615C Wi-Fi Router)",
+              "8": "DCS935L (D-Link DCS-935L Camera)"
+            }
+          },
+          "ludus_emux_devices_map": {
+            "type": "object",
+            "default": {
+              "0": "DV-ARM",
+              "1": "DV-MIPSEL",
+              "2": "DV-MIPSEB",
+              "3": "PH0WNCTF",
+              "4": "TRI227WF",
+              "5": "AC15",
+              "6": "ARCHERC9",
+              "7": "DIR615C",
+              "8": "DCS935L"
+            },
+            "description": "Device ID to device name mapping - DO NOT MODIFY THIS VAR",
+            "readonly": true,
+            "note": "Reference mapping for device numbers to device names"
+          }
+        }
+      },
+      "aleemladha.ludus_exchange": {
+        "description": "Installs Microsoft Exchange Server 2019",
+        "repository": "https://github.com/aleemladha/ludus_exchange",
+        "author": "Aleem Ladha (@LadhaAleem)",
+        "dependencies": [],
+        "variables": {
+          "ludus_exchange_domain": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected domain name from Ludus config"
+          },
+          "ludus_exchange_dc": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected primary DC hostname"
+          },
+          "ludus_exchange_host": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected host from Ludus config"
+          },
+          "ludus_exchange_domain_username": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin username"
+          },
+          "ludus_exchange_domain_password": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin password"
+          }
+        }
+      },
+      "aleemladha.wazuh_server_install": {
+        "description": "Installing wazuh SIEM Unified XDR and SIEM protection with SOC Fortress Rules",
+        "repository": "https://github.com/aleemladha/wazuh_server_install",
+        "author": "Aleem Ladha (@LadhaAleem)",
+        "dependencies": [],
+        "note": "Only works with Ubuntu or Kali - Wazuh does not support Debian 11/12",
+        "variables": {
+          "wazuh_install_script_url": {
+            "type": "string",
+            "default": "https://packages.wazuh.com/4.7/wazuh-install.sh",
+            "description": "Wazuh installation script URL"
+          },
+          "socfortress_rules_script_url": {
+            "type": "string",
+            "default": "https://raw.githubusercontent.com/aaladha/Wazuh-Rules/main/wazuh_socfortress_rules.sh",
+            "description": "SOCFORTRESS Wazuh rules script URL"
+          },
+          "wazuh_admin_password": {
+            "type": "string",
+            "default": "Wazuh-123",
+            "description": "Optional force admin password (auto-generated if not set)"
+          }
+        }
+      },
+      "aleemladha.ludus_wazuh_agent": {
+        "description": "Deploys Wazuh Agents to Windows, Debian, and Ubuntu systems",
+        "repository": "https://github.com/aleemladha/ludus_wazuh_agent",
+        "author": "Aleem Ladha (@LadhaAleem)",
+        "dependencies": [],
+        "variables": {
+          "ludus_wazuh_siem_server": {
+            "type": "string",
+            "required": true,
+            "default": "",
+            "description": "IP address of Wazuh SIEM server (use 'ludus range status' to get IP)"
+          }
+        }
+      },
+      "ludus_child_domain": {
+        "description": "Create a child domain and domain controller using microsoft.ad.child_domain module",
+        "repository": "https://github.com/ChoiSG/ludus_ansible_roles",
+        "author": "ChoiSG (@_choisec)",
+        "dependencies": [],
+        "installation_method": "directory",
+        "note": "Must install from directory - not Ansible Galaxy. Do NOT use with primary-dc or secondary-dc roles when creating child domains.",
+        "IMPORTANT_DOMAIN_CONFIG_NOTE": "DO NOT include 'domain:' section in VM configuration when using ludus_child_domain role. The role handles domain creation internally. Example: Do NOT add 'domain: { fqdn: prod.test.local, role: member }' to VMs using this role.",
+        "variables": {
+          "dns_domain_name": {
+            "type": "string",
+            "default": "test.dev.raccoon",
+            "description": "The full DNS name of the child domain to create"
+          },
+          "domain_admin_user": {
+            "type": "string",
+            "default": "domainadmin@dev.raccoon",
+            "description": "Username of a domain admin for the parent domain"
+          },
+          "domain_admin_password": {
+            "type": "string",
+            "default": "password",
+            "description": "Password for the specified parent domain admin user"
+          },
+          "safe_mode_password": {
+            "type": "string",
+            "default": "password",
+            "description": "Safe mode password for the domain controller"
+          },
+          "parent_dc_ip": {
+            "type": "string",
+            "default": "1.1.1.1",
+            "description": "IP address of the parent domain controller"
+          },
+          "current_host_ip": {
+            "type": "string",
+            "default": "2.2.2.2",
+            "description": "IP address of the current host that will become the child domain controller"
+          },
+          "create_dns_delegation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to create a DNS delegation that references the new DNS server. Valid for Active Directory-integrated DNS only"
+          },
+          "domain_mode": {
+            "type": "string",
+            "default": "WinThreshold",
+            "description": "Specifies the domain functional level of the child domain. Cannot be lower than the forest functional level. Options: Win2003, Win2008, Win2008R2, Win2012, Win2012R2, WinThreshold, Win2025"
+          },
+          "reboot": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to reboot the host after domain controller installation if required"
+          },
+          "install_dns": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to install the DNS service when creating the domain controller"
+          }
+        }
+      },
+      "ludus_child_domain_join": {
+        "description": "Join a machine to the child domain created from ludus_child_domain",
+        "repository": "https://github.com/ChoiSG/ludus_ansible_roles",
+        "author": "ChoiSG (@_choisec)",
+        "dependencies": [],
+        "installation_method": "directory",
+        "note": "Must install from directory - required because Ludus backend doesn't support 3rd party domain/controllers",
+        "IMPORTANT_DOMAIN_CONFIG_NOTE": "DO NOT include 'domain:' section in VM configuration when using ludus_child_domain_join role. The role handles domain joining internally. Example: Do NOT add 'domain: { fqdn: prod.test.local, role: member }' to VMs using this role.",
+        "variables": {
+          "dc_ip": {
+            "type": "string",
+            "default": "10.2.30.10",
+            "description": "desired IP address"
+          },
+          "dns_domain_name": {
+            "type": "string",
+            "default": "dev.test.local",
+            "description": "desired subdomain.parent.domain"
+          },
+          "domain_admin_user": {
+            "type": "string",
+            "default": "administrator@dev.test.local",
+            "description": "<user>@<domain> format. Use `administrator`, since ludus's domainadmin default user is not created with ludus_child_domain"
+          },
+          "domain_admin_password": {
+            "type": "string",
+            "default": "password",
+            "description": "<this is hardcoded now> always use password"
+          }
+        }
+      },
+      "badsectorlabs.ludus_elastic_container": {
+        "description": "Installs Elastic Stack using containers",
+        "repository": "https://github.com/badsectorlabs/ludus_elastic_container",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {
+          "ludus_elastic_container_install_path": {
+            "type": "string",
+            "default": "/opt/elastic_container",
+            "description": "Installation path for Elastic container"
+          },
+          "ludus_elastic_password": {
+            "type": "string",
+            "default": "elasticpassword",
+            "description": "Password for Elastic user"
+          },
+          "ludus_elastic_stack_version": {
+            "type": "string",
+            "default": "8.12.2",
+            "description": "Elastic Stack version"
+          },
+          "ludus_elastic_container_branch": {
+            "type": "string",
+            "default": "05c0b91a36a0918d095c28295a9c64a9def275f5",
+            "description": "Known good commit, 2024-07-03"
+          }
+        }
+      },
+      "badsectorlabs.ludus_elastic_agent": {
+        "description": "Installs Elastic Agent for log collection",
+        "repository": "https://github.com/badsectorlabs/ludus_elastic_agent",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {
+          "ludus_install_directory": {
+            "type": "string",
+            "default": "/opt/ludus",
+            "description": "Ludus installation directory"
+          },
+          "ludus_elastic_container_install_path": {
+            "type": "string",
+            "default": "/opt/elastic_container",
+            "description": "Path on server VM for automatic token extraction"
+          },
+          "ludus_elastic_fleet_port": {
+            "type": "string",
+            "default": "8220",
+            "description": "Port for fleet service on server VM"
+          },
+          "ludus_elastic_enrollment_token": {
+            "type": "string",
+            "default": "",
+            "description": "Enrollment token for Elastic Fleet"
+          },
+          "ludus_elastic_fleet_server": {
+            "type": "string",
+            "default": "",
+            "description": "Fleet server URL"
+          },
+          "ludus_elastic_agent_version": {
+            "type": "string",
+            "default": "8.12.2",
+            "description": "Elastic Agent version"
+          }
+        }
+      },
+      "badsectorlabs.ludus_commandovm": {
+        "description": "Installs CommandoVM on Windows systems",
+        "repository": "https://github.com/badsectorlabs/ludus_commandovm",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {
+          "ludus_commandovm_use_commandovm_wallpaper": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to use CommandoVM wallpaper"
+          },
+          "ludus_commandovm_nopassword": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to disable password requirement"
+          },
+          "ludus_commandovm_password": {
+            "type": "string",
+            "default": null,
+            "description": "Optional password for CommandoVM user"
+          }
+        }
+      },
+      "badsectorlabs.ludus_flarevm": {
+        "description": "Installs FlareVM on Windows systems",
+        "repository": "https://github.com/badsectorlabs/ludus_flarevm",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {
+          "ludus_flarevm_use_flarevm_wallpaper": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to use FlareVM wallpaper"
+          },
+          "ludus_flarevm_config_file": {
+            "type": "string",
+            "default": "https://raw.githubusercontent.com/mandiant/flare-vm/refs/heads/main/config.xml",
+            "description": "URL to FlareVM configuration file"
+          }
+        }
+      },
+      "badsectorlabs.ludus_remnux": {
+        "description": "Installs REMnux on Linux systems",
+        "repository": "https://github.com/badsectorlabs/ludus_remnux",
+        "author": "Bad Sector Labs",
+        "dependencies": [],
+        "variables": {}
+      },
+      "aleemladha.ludus_exchange2016": {
+        "description": "Installs Microsoft Exchange Server 2016",
+        "repository": "https://github.com/aleemladha/ludus_exchange2016",
+        "author": "Aleem Ladha (@LadhaAleem)",
+        "dependencies": [],
+        "variables": {
+          "exchange_dotnet_install_path": {
+            "type": "string",
+            "default": "https://download.visualstudio.microsoft.com/download/pr/2d6bb6b2-226a-4baa-bdec-798822606ff1/8494001c276a4b96804cde7829c04d7f/ndp48-x86-x64-allos-enu.exe",
+            "description": ".NET Framework installer URL"
+          },
+          "vcredist2013_install_path": {
+            "type": "string",
+            "default": "https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe",
+            "description": "Visual C++ 2013 redistributable URL"
+          },
+          "rewrite_module_path": {
+            "type": "string",
+            "default": "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi",
+            "description": "IIS URL Rewrite module URL"
+          },
+          "ucma_runtime_path": {
+            "type": "string",
+            "default": "https://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe",
+            "description": "UCMA runtime setup URL"
+          },
+          "exchange_iso_url": {
+            "type": "string",
+            "default": "https://download.microsoft.com/download/2/5/8/258D30CF-CA4C-433A-A618-FB7E6BCC4EEE/ExchangeServer2016-x64-cu12.iso",
+            "description": "Exchange 2016 ISO download URL"
+          },
+          "exchange_iso_path": {
+            "type": "string",
+            "default": "C:\\exchange2016\\ExchangeServer2016-x64-cu12.iso",
+            "description": "Local path for Exchange ISO"
+          },
+          "ludus_exchange_domain": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected domain name from Ludus config"
+          },
+          "ludus_exchange_dc": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected primary DC hostname"
+          },
+          "ludus_exchange_host": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Auto-detected host from Ludus config"
+          },
+          "ludus_exchange_domain_username": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin username"
+          },
+          "ludus_exchange_domain_password": {
+            "type": "string",
+            "default": "{{ auto-detected }}",
+            "description": "Domain admin password"
+          }
+        }
+      },
+      "NocteDefensor.ludus_tailscale": {
+        "description": "Installs and configures Tailscale VPN",
+        "repository": "https://github.com/NocteDefensor/ludus_tailscale",
+        "author": "NocteDefensor",
+        "dependencies": [],
+        "installation_note": "Can also be installed as 'ludus_tailscale' - user should verify which role name they have installed",
+        "variables": {
+          "tailscale_state": {
+            "type": "string",
+            "default": "present",
+            "description": "State of Tailscale installation",
+            "valid_options": [
+              "present",
+              "absent"
+            ]
+          },
+          "tailscale_authkey": {
+            "type": "string",
+            "default": "tskey-auth-<REDACTED_KEY>",
+            "description": "Tailscale authentication key"
+          },
+          "tailscale_api_key": {
+            "type": "string",
+            "default": "tskey-api-<REDACTED_KEY>",
+            "description": "Tailscale API key"
+          }
+        }
+      },
+      "ludus_velociraptor_client": {
+        "description": "Installs Velociraptor client agent",
+        "repository": "https://github.com/fmurer/ludus_velociraptor_client",
+        "author": "fmurer",
+        "dependencies": [],
+        "variables": {
+          "velociraptor_version": {
+            "type": "string",
+            "default": "v0.72",
+            "description": "Velociraptor version"
+          },
+          "velociraptor_version_patch": {
+            "type": "string",
+            "default": "v0.72.0",
+            "description": "Velociraptor version with patch level"
+          },
+          "velociraptor_client_config": {
+            "type": "string",
+            "default": "",
+            "description": "Client configuration content"
+          },
+          "velociraptor_install_path": {
+            "type": "string",
+            "default": "/opt/velociraptor",
+            "description": "Install path on Velociraptor server - used to get client config"
+          }
+        }
+      },
+      "ludus_velociraptor_server": {
+        "description": "Installs Velociraptor server",
+        "repository": "https://github.com/fmurer/ludus_velociraptor_server",
+        "author": "fmurer",
+        "dependencies": [],
+        "variables": {
+          "velociraptor_version": {
+            "type": "string",
+            "default": "v0.72",
+            "description": "Velociraptor version"
+          },
+          "velociraptor_version_patch": {
+            "type": "string",
+            "default": "v0.72.0",
+            "description": "Velociraptor version with patch level"
+          },
+          "velociraptor_admin_user": {
+            "type": "string",
+            "default": "admin",
+            "description": "Admin username"
+          },
+          "velociraptor_admin_password": {
+            "type": "string",
+            "default": "pleasechangeme",
+            "description": "Admin password"
+          },
+          "velociraptor_host": {
+            "type": "string",
+            "default": "{{ ansible_default_ipv4.address }}",
+            "description": "Server host IP address"
+          },
+          "velociraptor_install_path": {
+            "type": "string",
+            "default": "/opt/velociraptor",
+            "description": "Installation path"
+          }
+        }
+      },
+      "ludus-local-users": {
+        "description": "Creates and manages local users and groups",
+        "repository": "https://github.com/Cyblex-Consulting/ludus-local-users",
+        "author": "Cyblex-Consulting",
+        "dependencies": [],
+        "variables": {
+          "ludus_local_users.login": {
+            "type": "string",
+            "default": "jdoe",
+            "description": "User login name"
+          },
+          "ludus_local_users.password": {
+            "type": "string",
+            "default": "aA8MaQBCtBtPYAFh",
+            "description": "User password"
+          },
+          "ludus_local_users.groups": {
+            "type": "string",
+            "default": "sudo,adm",
+            "description": "Groups to put user into (Linux only, comma separated)"
+          },
+          "ludus_local_users.sudo_nopasswd": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to set NOPASSWD in sudoers (Linux only)"
+          },
+          "ludus_local_users.name": {
+            "type": "string",
+            "default": "jdoe",
+            "description": "Group to modify (Windows only)"
+          },
+          "ludus_local_users.members": {
+            "type": "array",
+            "default": [
+              "my_local_user",
+              "MYRANGE\\Developers",
+              "MYRANGE\\Tier 1 Admins"
+            ],
+            "description": "List of accounts or groups to add to local group (Windows only)"
+          }
+        }
+      },
+      "ludus-gitlab-ce": {
+        "description": "Installs and configures GitLab Community Edition",
+        "repository": "https://github.com/Cyblex-Consulting/ludus-gitlab-ce",
+        "author": "Cyblex-Consulting",
+        "dependencies": [],
+        "variables": {
+          "ludus_gitlab.url": {
+            "type": "string",
+            "default": "http://localhost:8080",
+            "description": "URL where the instance will be exposed"
+          },
+          "ludus_gitlab.displayname": {
+            "type": "string",
+            "default": "MyCompany Gitlab",
+            "description": "Name of the instance"
+          },
+          "ludus_gitlab.smtp": {
+            "type": "string",
+            "default": "127.0.0.1",
+            "description": "SMTP server for sending emails"
+          },
+          "ludus_gitlab.email_from": {
+            "type": "string",
+            "default": "gitlab@example.com",
+            "description": "From email address for GitLab messages"
+          },
+          "ludus_gitlab.replyto": {
+            "type": "string",
+            "default": "no-reply@example.com",
+            "description": "Reply-to email address"
+          },
+          "ludus_gitlab.emailroot": {
+            "type": "string",
+            "default": "admin@example.com",
+            "description": "Root email account"
+          },
+          "ludus_gitlab.version": {
+            "type": "string",
+            "default": "16.7.0",
+            "description": "Optional GitLab version to install"
+          },
+          "ludus_gitlab.groups.name": {
+            "type": "string",
+            "default": "MyGroup",
+            "description": "Optional name of group to create"
+          },
+          "ludus_gitlab.users.name": {
+            "type": "string",
+            "default": "jdoe",
+            "description": "Optional login of user to create"
+          },
+          "ludus_gitlab.users.display_name": {
+            "type": "string",
+            "default": "John Doe",
+            "description": "Optional display name of user"
+          },
+          "ludus_gitlab.users.password": {
+            "type": "string",
+            "default": "aA8MaQBCtBtPYAFh",
+            "description": "Optional password of user"
+          },
+          "ludus_gitlab.users.email": {
+            "type": "string",
+            "default": "jdoe@myrange.corp",
+            "description": "Optional email of user"
+          },
+          "ludus_gitlab.users.group": {
+            "type": "string",
+            "default": "MyGroup",
+            "description": "Optional group to apply to user"
+          },
+          "ludus_gitlab.users.access_level": {
+            "type": "string",
+            "default": "maintainer",
+            "description": "Optional access level of user"
+          }
+        }
+      },
+      "ludus-ad-content": {
+        "description": "Creates Active Directory organizational units, groups, and users",
+        "repository": "https://github.com/Cyblex-Consulting/ludus-ad-content",
+        "author": "Cyblex-Consulting",
+        "dependencies": [],
+        "variables": {
+          "ludus_ad.ous.name": {
+            "type": "string",
+            "default": "France",
+            "description": "OU name"
+          },
+          "ludus_ad.ous.path": {
+            "type": "string",
+            "default": "DC=myrange,DC=corp",
+            "description": "OU path"
+          },
+          "ludus_ad.ous.description": {
+            "type": "string",
+            "default": "jdoe",
+            "description": "OU description"
+          },
+          "ludus_ad.groups.name": {
+            "type": "string",
+            "default": "France",
+            "description": "Group name"
+          },
+          "ludus_ad.groups.scope": {
+            "type": "string",
+            "default": "global",
+            "description": "Group scope"
+          },
+          "ludus_ad.groups.path": {
+            "type": "string",
+            "default": "OU=France,DC=myrange,DC=corp",
+            "description": "Group path"
+          },
+          "ludus_ad.groups.description": {
+            "type": "string",
+            "default": "jdoe",
+            "description": "Group description"
+          },
+          "ludus_ad.users.name": {
+            "type": "string",
+            "default": "France",
+            "description": "User name"
+          },
+          "ludus_ad.users.firstname": {
+            "type": "string",
+            "default": "John",
+            "description": "User first name"
+          },
+          "ludus_ad.users.surname": {
+            "type": "string",
+            "default": "Doe",
+            "description": "User surname"
+          },
+          "ludus_ad.users.display_name": {
+            "type": "string",
+            "default": "display_name",
+            "description": "User display name"
+          },
+          "ludus_ad.users.password": {
+            "type": "string",
+            "default": "GFVfPS432QkKN2YdQwJL",
+            "description": "User password"
+          },
+          "ludus_ad.users.path": {
+            "type": "string",
+            "default": "OU=France,DC=myrange,DC=corp",
+            "description": "User path"
+          },
+          "ludus_ad.users.description": {
+            "type": "string",
+            "default": "IT System Administrator",
+            "description": "User description"
+          },
+          "ludus_ad.users.groups": {
+            "type": "array",
+            "default": [
+              "Group 1",
+              "Group 2"
+            ],
+            "description": "List of groups to add user to"
+          }
+        }
+      },
+      "bagelByt3s.ludus_adfs": {
+        "description": "Collection for installing and configuring ADFS",
+        "repository": "https://github.com/bagelByt3s/ludus_adfs",
+        "author": "bagelByt3s",
+        "dependencies": [],
+        "type": "collection",
+        "roles": {
+          "install_adfs": {
+            "variables": {
+              "ludus_install_directory": {
+                "type": "string",
+                "default": "/opt/ludus",
+                "description": "Ludus installation directory"
+              }
+            }
+          },
+          "install_adcs": {
+            "variables": {}
+          },
+          "import_root_cert": {
+            "variables": {
+              "ludus_install_directory": {
+                "type": "string",
+                "default": "/opt/ludus",
+                "description": "Ludus installation directory"
+              },
+              "adfs_CA": {
+                "type": "string",
+                "default": "ludus-CA",
+                "description": "ADFS Certificate Authority name"
+              }
+            }
+          },
+          "entra_prep": {
+            "variables": {
+              "ludus_install_directory": {
+                "type": "string",
+                "default": "/opt/ludus",
+                "description": "Ludus installation directory"
+              }
+            }
+          }
+        }
+      },
+      "ludus_caldera_server": {
+        "description": "Installs MITRE Caldera server",
+        "repository": "https://github.com/frack113/ludus_caldera_server",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {
+          "ludus_caldera_git": {
+            "type": "string",
+            "default": "b24f6e7a99cab19cbf417009bda9b9c6c81abc31",
+            "description": "SHA-1 hash of the commit"
+          },
+          "ludus_caldera_admin_pwd": {
+            "type": "string",
+            "default": "admin",
+            "description": "Admin user password"
+          },
+          "ludus_caldera_red_pwd": {
+            "type": "string",
+            "default": "red",
+            "description": "Red team user password"
+          },
+          "ludus_caldera_blue_pwd": {
+            "type": "string",
+            "default": "blue",
+            "description": "Blue team user password"
+          }
+        }
+      },
+      "ludus_caldera_agent": {
+        "description": "Installs MITRE Caldera agent",
+        "repository": "https://github.com/frack113/ludus_caldera_agent",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {
+          "ludus_caldera_windows_agent_name": {
+            "type": "string",
+            "default": "C:\\Users\\Public\\splunkd.exe",
+            "description": "Name of the Windows payload"
+          }
+        }
+      },
+      "ludus_aurora_agent": {
+        "description": "Installs Aurora EDR agent",
+        "repository": "https://github.com/frack113/ludus_aurora_agent",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {
+          "ludus_aurora_dashboard": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to install the dashboard"
+          },
+          "ludus_aurora_udp_target": {
+            "type": "string",
+            "default": "",
+            "description": "UDP target for sending logs to SIEM"
+          },
+          "ludus_aurora_udp_format": {
+            "type": "string",
+            "default": "",
+            "description": "UDP format for SIEM logs"
+          }
+        }
+      },
+      "ludus_graylog_server": {
+        "description": "Installs Graylog server for log management",
+        "repository": "https://github.com/frack113/ludus_graylog_server",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {
+          "ludus_graylog_opensearch_admin_password": {
+            "type": "string",
+            "default": "pdMDL4!5ELcBSWqu",
+            "description": "OpenSearch admin password"
+          },
+          "ludus_graylog_svr_password_secret": {
+            "type": "string",
+            "default": "r9t-HW87CV3OJysF1BvVBmkZCvpFdGgLsXCkf8NUbUZSZnW2lvdwraeUdP1y4eP8wbOd2LizMjSvMiJPWsg4VcAufhij809c",
+            "description": "Graylog server password secret"
+          },
+          "ludus_graylog_svr_root_password_sha2": {
+            "type": "string",
+            "default": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+            "description": "Graylog server root password SHA2 hash"
+          }
+        }
+      },
+      "ludus_filigran_opencti": {
+        "description": "Installs Filigran OpenCTI threat intelligence platform",
+        "repository": "https://github.com/frack113/ludus_filigran_opencti",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {
+          "ludus_filigran_docker_redis": {
+            "type": "string",
+            "default": "7.4.2",
+            "description": "Redis Docker version"
+          },
+          "ludus_filigran_docker_elastic": {
+            "type": "string",
+            "default": "8.17.4",
+            "description": "Elasticsearch Docker version"
+          },
+          "ludus_filigran_docker_minio": {
+            "type": "string",
+            "default": "RELEASE.2024-05-28T17-19-04Z",
+            "description": "MinIO Docker version"
+          },
+          "ludus_filigran_docker_rabbitmq": {
+            "type": "string",
+            "default": "4.0-management",
+            "description": "RabbitMQ Docker version"
+          },
+          "ludus_filigran_docker_postgres": {
+            "type": "string",
+            "default": "17-alpine",
+            "description": "PostgreSQL Docker version"
+          },
+          "ludus_filigran_opencti_version": {
+            "type": "string",
+            "default": "6.6.10",
+            "description": "OpenCTI version"
+          },
+          "ludus_filigran_openbas_version": {
+            "type": "string",
+            "default": "1.16.0",
+            "description": "OpenBAS version"
+          },
+          "ludus_filigran_opencti_ADMIN_EMAIL": {
+            "type": "string",
+            "default": "admin@domain.com",
+            "description": "OpenCTI admin email"
+          },
+          "ludus_filigran_opencti_ADMIN_PASSWORD": {
+            "type": "string",
+            "default": "password",
+            "description": "OpenCTI admin password"
+          },
+          "ludus_filigran_opencti_ADMIN_TOKEN": {
+            "type": "string",
+            "default": "9079c861-460e-49ba-9948-54137cfeb8ca",
+            "description": "OpenCTI admin token"
+          },
+          "ludus_filigran_opencti_HEALTHCHECK_ACCESS_KEY": {
+            "type": "string",
+            "default": "9813287b-4234-4b9c-8382-73938f640455",
+            "description": "OpenCTI healthcheck access key"
+          },
+          "ludus_filigran_opencti_SMTP_HOSTNAME": {
+            "type": "string",
+            "default": "localhost",
+            "description": "SMTP hostname"
+          },
+          "ludus_filigran_opencti_MINIO_ROOT_USER": {
+            "type": "string",
+            "default": "d5e955ed-be95-4220-b828-d3d62c00cab3",
+            "description": "MinIO root user"
+          },
+          "ludus_filigran_opencti_MINIO_ROOT_PASSWORD": {
+            "type": "string",
+            "default": "a46c6ee2-d3a8-4cbc-a39e-6f03a1e53524",
+            "description": "MinIO root password"
+          },
+          "ludus_filigran_opencti_RABBITMQ_DEFAULT_USER": {
+            "type": "string",
+            "default": "guest",
+            "description": "RabbitMQ default user"
+          },
+          "ludus_filigran_opencti_RABBITMQ_DEFAULT_PASS": {
+            "type": "string",
+            "default": "guest",
+            "description": "RabbitMQ default password"
+          },
+          "ludus_filigran_opencti_ELASTIC_MEMORY_SIZE": {
+            "type": "string",
+            "default": "4G",
+            "description": "Elasticsearch memory size"
+          },
+          "ludus_filigran_opencti_POSTGRES_USER": {
+            "type": "string",
+            "default": "ChangeMe",
+            "description": "PostgreSQL user"
+          },
+          "ludus_filigran_opencti_POSTGRES_PASSWORD": {
+            "type": "string",
+            "default": "ChangeMe",
+            "description": "PostgreSQL password"
+          },
+          "ludus_filigran_opencti_external_import": {
+            "type": "array",
+            "default": [
+              "cisa-known-exploited-vulnerabilities",
+              "mitre"
+            ],
+            "description": "CTI connectors for external import"
+          },
+          "ludus_filigran_opencti_internal_enrichment": {
+            "type": "array",
+            "default": [],
+            "description": "Internal enrichment connectors"
+          },
+          "ludus_filigran_opencti_internal_export_file": {
+            "type": "array",
+            "default": [
+              "export-file-csv",
+              "export-file-stix",
+              "export-file-txt",
+              "export-report-pdf",
+              "export-ttps-file-navigator"
+            ],
+            "description": "Internal export file connectors"
+          },
+          "ludus_filigran_opencti_internal_import_file": {
+            "type": "array",
+            "default": [
+              "import-document",
+              "import-file-misp",
+              "import-file-stix",
+              "import-file-yara"
+            ],
+            "description": "Internal import file connectors"
+          },
+          "ludus_filigran_opencti_stream": {
+            "type": "array",
+            "default": [],
+            "description": "Stream connectors"
+          },
+          "ludus_filigran_openbas_collectors": {
+            "type": "array",
+            "default": [
+              "atomic-red-team",
+              "mitre-attack"
+            ],
+            "description": "BAS collectors"
+          },
+          "ludus_filigran_openbas_injectors": {
+            "type": "array",
+            "default": [
+              "http-query",
+              "nmap"
+            ],
+            "description": "BAS injectors"
+          }
+        }
+      },
+      "ludus_ghosts_server": {
+        "description": "Installs GHOSTS server for activity simulation",
+        "repository": "https://github.com/frack113/ludus_ghosts_server",
+        "author": "frack113",
+        "dependencies": [],
+        "variables": {}
+      },
+      "0xRedpoll.ludus_cobaltstrike_teamserver": {
+        "description": "Installs Cobalt Strike team server",
+        "repository": "https://github.com/0xRedpoll/ludus_cobaltstrike_teamserver",
+        "author": "0xRedpoll",
+        "dependencies": [],
+        "variables": {
+          "ludus_install_directory": {
+            "type": "string",
+            "default": "/opt/ludus",
+            "description": "Ludus installation directory"
+          },
+          "ludus_cobaltstrike_teamserver_password": {
+            "type": "string",
+            "default": "0xRedpoll",
+            "description": "Team server password"
+          },
+          "ludus_cobaltstrike_c2_profile": {
+            "type": "string",
+            "default": "",
+            "description": "C2 profile path"
+          },
+          "ludus_cobaltstrike_license": {
+            "type": "string",
+            "default": "0000-0000-0000-0000",
+            "description": "Cobalt Strike license key"
+          }
+        }
+      },
+      "0xRedpoll.ludus_mythic_teamserver": {
+        "description": "Installs Mythic C2 team server",
+        "repository": "https://github.com/0xRedpoll/ludus_mythic_teamserver",
+        "author": "0xRedpoll",
+        "dependencies": [],
+        "variables": {
+          "ludus_install_directory": {
+            "type": "string",
+            "default": "/opt/ludus",
+            "description": "Ludus installation directory"
+          }
+        }
+      },
+      "ludus-ad-vulns": {
+        "description": "Configures various Active Directory vulnerabilities",
+        "repository": "https://github.com/Primusinterp/ludus-ad-vulns",
+        "author": "Primusinterp",
+        "dependencies": [],
+        "variables": {
+          "user.identity": {
+            "type": "string",
+            "default": "fives",
+            "description": "SAM account name for Kerberoastable user"
+          },
+          "user.service_principal_name": {
+            "type": "string",
+            "default": "HTTP/ArcTraining",
+            "description": "Service Principal Name (SPN) value"
+          },
+          "machine_name": {
+            "type": "string",
+            "default": "maldev-srv1-2022",
+            "description": "Machine name for unconstrained delegation"
+          },
+          "acl.value.for": {
+            "type": "string",
+            "default": "cptrex",
+            "description": "Object to assign ACL for"
+          },
+          "acl.value.to": {
+            "type": "string",
+            "default": "CN=Bounty Hunters,OU=Bounty Hunters,DC=maldev,DC=local",
+            "description": "Object to assign ACL to"
+          },
+          "acl.value.right": {
+            "type": "string",
+            "default": "GenericAll",
+            "description": "ACL to apply"
+          },
+          "acl.value.inheritance": {
+            "type": "string",
+            "default": "None",
+            "description": "ACL inheritance setting"
+          },
+          "ludus_ad_vulns_openshares": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable open shares vulnerability"
+          },
+          "ludus_ad_vulns_kerberoasting": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable Kerberoasting vulnerability"
+          },
+          "ludus_ad_vulns_unconstrained_delegation_user": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable unconstrained delegation for user"
+          },
+          "ludus_ad_vulns_set_acl": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable ACL vulnerability"
+          },
+          "ludus_ad_vulns_unconstrained_delegation_machine": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable unconstrained delegation for machine"
+          }
+        }
+      },
+      "ludus_juiceshop": {
+        "description": "Installs OWASP Juice Shop vulnerable web application",
+        "repository": "https://github.com/xurger/ludus_juiceshop",
+        "author": "xurger",
+        "dependencies": [],
+        "variables": {
+          "ludus_juiceshop_port": {
+            "type": "integer",
+            "default": 80,
+            "description": "Port for Juice Shop to listen on"
+          },
+          "ludus_juiceshop_user": {
+            "type": "string",
+            "default": "root",
+            "description": "User to run Juice Shop as"
+          }
+        }
+      },
+      "synzack.ludus_sccm": {
+        "description": "Collection for deploying Microsoft System Center Configuration Manager",
+        "repository": "https://github.com/synzack/ansible-collection-ludus-sccm",
+        "author": "Zach Stein (@synzack21)",
+        "dependencies": [],
+        "type": "collection",
+        "roles": {
+          "disable_firewall": {
+            "variables": {}
+          },
+          "enable_webdav": {
+            "variables": {}
+          },
+          "install_adcs": {
+            "variables": {}
+          },
+          "ludus_sccm_distro": {
+            "variables": {
+              "ludus_sccm_site_server_hostname": {
+                "type": "string",
+                "default": "sccm-sitesrv",
+                "description": "SCCM site server hostname"
+              }
+            }
+          },
+          "ludus_sccm_mgmt": {
+            "variables": {
+              "ludus_sccm_site_server_hostname": {
+                "type": "string",
+                "default": "sccm-sitesrv",
+                "description": "SCCM site server hostname"
+              }
+            }
+          },
+          "ludus_sccm_siteserver": {
+            "variables": {
+              "ludus_install_directory": {
+                "type": "string",
+                "default": "/opt/ludus",
+                "description": "Ludus installation directory"
+              },
+              "ludus_sccm_host_path": {
+                "type": "string",
+                "default": "C:\\ludus\\sccm",
+                "description": "SCCM host path"
+              },
+              "ludus_sccm_sitecode": {
+                "type": "integer",
+                "default": 123,
+                "description": "SCCM site code"
+              },
+              "ludus_sccm_sitename": {
+                "type": "string",
+                "default": "Primary Site",
+                "description": "SCCM site name"
+              },
+              "ludus_sccm_site_server_hostname": {
+                "type": "string",
+                "default": "sccm-sitesrv",
+                "description": "SCCM site server hostname"
+              },
+              "ludus_sccm_distro_server_hostname": {
+                "type": "string",
+                "default": "sccm-distro",
+                "description": "SCCM distribution server hostname"
+              },
+              "ludus_sccm_mgmt_server_hostname": {
+                "type": "string",
+                "default": "sccm-mgmt",
+                "description": "SCCM management server hostname"
+              },
+              "ludus_sccm_sql_server_hostname": {
+                "type": "string",
+                "default": "sccm-sql",
+                "description": "SCCM SQL server hostname"
+              },
+              "ludus_sccm_configure_naa": {
+                "type": "boolean",
+                "default": false,
+                "description": "Configure Network Access Account"
+              },
+              "ludus_sccm_naa_username": {
+                "type": "string",
+                "default": "",
+                "description": "Network Access Account username"
+              },
+              "ludus_sccm_naa_password": {
+                "type": "string",
+                "default": "",
+                "description": "Network Access Account password"
+              },
+              "ludus_sccm_configure_client_push": {
+                "type": "boolean",
+                "default": false,
+                "description": "Configure client push account"
+              },
+              "ludus_sccm_client_push_username": {
+                "type": "string",
+                "default": "sccm_push",
+                "description": "Client push username"
+              },
+              "ludus_sccm_client_push_password": {
+                "type": "string",
+                "default": "password",
+                "description": "Client push password"
+              },
+              "ludus_sccm_enable_automatic_client_push_installation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable automatic client push installation"
+              },
+              "ludus_sccm_enable_system_type_configuration_manager": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable system type configuration manager"
+              },
+              "ludus_sccm_enable_system_type_server": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable system type server"
+              },
+              "ludus_sccm_enable_system_type_workstation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable system type workstation"
+              },
+              "ludus_sccm_install_client_to_domain_controller": {
+                "type": "boolean",
+                "default": false,
+                "description": "Install client to domain controller"
+              },
+              "ludus_sccm_allow_NTLM_fallback": {
+                "type": "boolean",
+                "default": true,
+                "description": "Allow NTLM fallback"
+              },
+              "ludus_sccm_configure_task_sequence": {
+                "type": "boolean",
+                "default": false,
+                "description": "Configure task sequence account"
+              },
+              "ludus_sccm_task_sequence_username": {
+                "type": "string",
+                "default": "sccm_push",
+                "description": "Task sequence username"
+              },
+              "ludus_sccm_task_sequence_password": {
+                "type": "string",
+                "default": "password",
+                "description": "Task sequence password"
+              },
+              "ludus_sccm_configure_domain_join": {
+                "type": "boolean",
+                "default": false,
+                "description": "Configure domain join account"
+              },
+              "ludus_sccm_domain_join_username": {
+                "type": "string",
+                "default": "sccm_push",
+                "description": "Domain join username"
+              },
+              "ludus_sccm_domain_join_password": {
+                "type": "string",
+                "default": "password",
+                "description": "Domain join password"
+              },
+              "ludus_sccm_enable_active_directory_forest_discovery": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable Active Directory forest discovery"
+              },
+              "ludus_sccm_enable_active_directory_boundary_creation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable Active Directory boundary creation"
+              },
+              "ludus_sccm_enable_subnet_boundary_creation": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable subnet boundary creation"
+              },
+              "ludus_sccm_enable_active_directory_group_discovery": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable Active Directory group discovery"
+              },
+              "ludus_sccm_enable_active_directory_system_discovery": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable Active Directory system discovery"
+              },
+              "ludus_sccm_enable_active_directory_user_discovery": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable Active Directory user discovery"
+              },
+              "ludus_sccm_enable_pxe": {
+                "type": "boolean",
+                "default": true,
+                "description": "Enable PXE"
+              },
+              "ludus_enable_pxe_password": {
+                "type": "boolean",
+                "default": false,
+                "description": "Enable PXE password"
+              },
+              "ludus_pxe_password": {
+                "type": "string",
+                "default": "Password123",
+                "description": "PXE password"
+              },
+              "ludus_domain_join_account": {
+                "type": "string",
+                "default": "domainadmin",
+                "description": "Domain join account"
+              },
+              "ludus_domain_join_password": {
+                "type": "string",
+                "default": "password",
+                "description": "Domain join password"
+              },
+              "ludus_sccm_configmgr_url": {
+                "type": "string",
+                "default": "https://download.microsoft.com/download/0/0/1/001d97e2-c427-4d4b-ad30-1556ee0ff1b0/MCM_Configmgr_2303.exe",
+                "description": "ConfigMgr download URL"
+              },
+              "ludus_sccm_adksetup_url": {
+                "type": "string",
+                "default": "https://download.microsoft.com/download/e/8/b/e8bec6c1-8153-408d-96b1-ee2985a600ad/adk/adksetup.exe",
+                "description": "ADK setup download URL"
+              },
+              "ludus_sccm_adkwinpesetup_url": {
+                "type": "string",
+                "default": "https://download.microsoft.com/download/17ac4263-5816-4f1b-8131-87c4d5a3331f/adkwinpeaddons/adkwinpesetup.exe",
+                "description": "ADK WinPE setup download URL"
+              }
+            }
+          },
+          "ludus_sccm_sql": {
+            "variables": {
+              "ludus_install_directory": {
+                "type": "string",
+                "default": "/opt/ludus",
+                "description": "Ludus installation directory"
+              },
+              "ludus_sccm_site_server_hostname": {
+                "type": "string",
+                "default": "sccm-sitesrv",
+                "description": "SCCM site server hostname"
+              },
+              "ludus_sccm_sql_server_hostname": {
+                "type": "string",
+                "default": "sccm-sql",
+                "description": "SCCM SQL server hostname"
+              },
+              "ludus_sccm_sql_svc_account_username": {
+                "type": "string",
+                "default": "sqlsccmsvc",
+                "description": "SQL service account username"
+              },
+              "ludus_sccm_sql_svc_account_password": {
+                "type": "string",
+                "default": "Password123",
+                "description": "SQL service account password"
+              },
+              "ludus_sccm_sql2022_url": {
+                "type": "string",
+                "default": "https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SQLServer2022-x64-ENU.iso",
+                "description": "SQL Server 2022 download URL"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

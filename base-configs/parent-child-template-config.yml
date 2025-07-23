@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://docs.ludus.cloud/schemas/range-config.json
+# Parent-Child Domain Template Configuration
+# Demonstrates parent domain with child domain and domain joining
+#
+# TOPOLOGY:
+# - VLAN 10: Parent domain (example.local) with primary DC
+# - VLAN 20: Child domain (kr.example.local) with child DC and member server
+#
+# IMPORTANT NOTES:
+# - Do NOT add 'domain:' configuration to VMs using ludus_child_domain_reborn or ludus_child_domain_join roles
+# - These roles handle domain operations internally
+# - Use 'administrator@domain' format for child domain operations (not domainadmin)
+
+ludus: 
+  - vm_name: "dc01-example-local"
+    hostname: "dc01"
+    template: win2022-rapt
+    vlan: 10 
+    ip_last_octet: 10 
+    ram_gb: 2
+    cpus: 1
+    windows:
+      sysprep: true
+    domain:
+      fqdn: example.local
+      role: primary-dc 
+
+  - vm_name: "kdc01-kr-example-local"
+    hostname: "kdc01"
+    template: win2022-rapt
+    vlan: 20 
+    ip_last_octet: 10 
+    ram_gb: 2
+    cpus: 1
+    windows:
+      sysprep: true
+    roles:
+      - ludus_child_domain_reborn
+    role_vars:
+      dns_domain_name: kr.example.local
+      domain_admin_user: domainadmin@example.local
+      domain_admin_password: password
+      safe_mode_password: password
+      create_dns_delegation: true 
+      parent_dc_ip: "10.2.10.10"
+      current_host_ip: "10.2.20.10"
+      reboot: true
+
+  # Ludus_Child_Domain_Join to the child domain controller from above
+  - vm_name: "{{ range_id }}-Internal-VLAN20-fs01"
+    hostname: "fs01"
+    template: win2016-server-x64-template
+    vlan: 20
+    ip_last_octet: 20
+    ram_gb: 2
+    cpus: 1
+    windows:
+      sysprep: true
+    roles:
+      - ludus_child_domain_join
+    role_vars:
+      dc_ip: "10.2.20.10"
+      dns_domain_name: "kr.example.local"
+      domain_admin_user: "administrator@kr.example.local"  # <user>@<domain> format. Use administrator, since ludus's domainadmin default user is not created with ludus_child_domain 
+      domain_admin_password: "password"
