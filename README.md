@@ -165,6 +165,12 @@ Complete guided workflow for range creation from requirements to deployment.
 **execute-ludus-cmd** 
 Safe execution of Ludus CLI commands with destructive action protection.
 
+- To use prompts with Claude Desktop hunt for the "plus" + button near your chat bar.
+  - Click "add from ludus and you will see both prompts. Select the one you want.
+  
+<img width="1056" height="216" alt="image" src="https://github.com/user-attachments/assets/617b9205-2dc3-4e1e-8663-90fb9857b3cf" />
+
+
 ### Available Tools
 
 **Range Management**
@@ -299,5 +305,13 @@ For additional help:
 - Check [GitHub repository](https://github.com/NocteDefensor/LudusMCP) for issues and updates
 ## References:
 - Ludus Documentation - https://docs.ludus.cloud/docs/intro
+
+## Credits
+- Ludus - [@badsectorlabs](https://x.com/badsectorlabs)
+- Claude - Wouldn't quite call this project vibe coding but maybe 4 beers deep in the passenger seat shouting out navigation commands.
+- Reddit MCP channel for lots of researching
+- MCP documentation - https://modelcontextprotocol.io/introduction
+- Anthropic MCP docs - https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector
+- MCP in VS Code - https://code.visualstudio.com/docs/copilot/chat/mcp-servers
 ## License
 Creative Commons Attribution ShareAlike 4.0
