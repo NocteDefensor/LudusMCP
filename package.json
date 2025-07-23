@@ -1,0 +1,66 @@
+{
+  "name": "ludus-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MCP server for managing Ludus cybersecurity training environments through natural language commands",
+  "main": "dist/server.js",
+  "bin": {
+    "ludus-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "inspector": "npx @modelcontextprotocol/inspector dist/server.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ludus",
+    "cybersecurity",
+    "training",
+    "virtualization",
+    "cli-wrapper"
+  ],
+  "author": "Ludus MCP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "ajv": "^8.17.1",
+    "ajv-draft-04": "^1.0.0",
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^4.1.0",
+    "keytar": "^7.9.0",
+    "node-ssh": "^13.2.1",
+    "ssh2": "^1.16.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "@types/ssh2": "^1.15.5",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NocteDefensor/LudusMCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NocteDefensor/LudusMCP/issues"
+  },
+  "homepage": "https://github.com/NocteDefensor/LudusMCP#readme"
+}
