@@ -157,6 +157,14 @@ npx ludus-mcp  # run from cloned directory if locally installed
 3. **Connectivity Test** - Verifies connection to Ludus server via WireGuard/SSH
 4. **MCP Protocol** - Starts Model Context Protocol server for tool communication
 
+### Available Prompts
+
+**create-ludus-range**
+Complete guided workflow for range creation from requirements to deployment.
+
+**execute-ludus-cmd** 
+Safe execution of Ludus CLI commands with destructive action protection.
+
 ### Available Tools
 
 **Range Management**
@@ -193,14 +201,6 @@ npx ludus-mcp  # run from cloned directory if locally installed
 - `get_credential_from_user` - Securely collect credentials
 - `insert_creds_range_config` - Inject credentials into configurations
 
-### Available Prompts
-
-**create-ludus-range**
-Complete guided workflow for range creation from requirements to deployment.
-
-**execute-ludus-cmd** 
-Safe execution of Ludus CLI commands with destructive action protection.
-
 ### Recommended Workflow
 
 1. **Plan Your Range**
@@ -224,7 +224,7 @@ Safe execution of Ludus CLI commands with destructive action protection.
 6. **Get Connection Info**
    Use `get_connection_info` to download RDP files and access VMs.
 
-### Advanced CLI Operations
+### Extensive or Advanced CLI Operations
 
 For operations not covered by specific tools, use the `execute-ludus-cmd` prompt:
 ```
