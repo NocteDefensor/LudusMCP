@@ -14,7 +14,7 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 ### Ludus Server Access
 Ensure you have:
 - Ludus server SSH access credentials
-- Ludus API key (obtain via `ludus apikey` command)
+- Ludus API key (obtain via `ludus user apikey` command)
 - WireGuard configuration file OR SSH tunnel capabilities (obtain wireguard conf from Ludus CLI)
 - Admin or user account on Ludus server. Non admin will be limited in same ways as using ludus cli with non admin account.
 
