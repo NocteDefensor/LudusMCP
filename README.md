@@ -20,11 +20,12 @@ Ensure you have:
 
 ## Installation
 
-### Global Installation (Recommended)
+### Global Installation (Recommended) (not yet pushed to NPM - will not work for now. clone repo and install from source as long as this message is up)
 Install the package globally to make the `ludus-mcp` command available system-wide:
 
 ```bash
 npm install -g ludus-mcp
+ludus-mcp --setup-keyring
 ```
 
 **What happens during installation:**
@@ -35,21 +36,14 @@ npm install -g ludus-mcp
 
 This is a **one-time installation process** that compiles everything for your specific platform.
 
-### Local Installation
-For local projects or custom paths:
-
-```bash
-npm install ludus-mcp
-npx ludus-mcp --setup-keyring  # Use npx for local installations
-```
-
 ### From Source (Development)
 ```bash
 git clone https://github.com/NocteDefensor/LudusMCP.git
 cd LudusMCP
+From within LudusMCP directory
 npm install    # Installs dependencies and builds automatically
-npm run build  # Manual build if needed
-```
+npx ludus-mcp --setup-keyring  # Use npx for local installations
+
 
 ### Installation Requirements
 The package includes native dependencies that require compilation during installation:
@@ -61,7 +55,7 @@ If installation fails, ensure you have proper build tools for your platform.
 ## Configuration
 
 ### Initial Setup
-Run the setup wizard to configure credentials securely:
+Run the setup wizard to configure credentials securely: (from within cloned directory if installing from source)
 
 ```bash
 npx ludus-mcp --setup-keyring
@@ -76,7 +70,7 @@ The setup wizard will prompt for:
 
 Credentials are stored securely in your OS credential manager (Windows Credential Manager, macOS Keychain, Linux Secret Service).
 
-### Update Credentials
+### Update Credentials (from within cloned directory if installing from source)
 To modify existing credentials:
 
 ```bash
@@ -86,7 +80,7 @@ npx ludus-mcp --renew-keyring
 ### Connection Methods
 
 **WireGuard VPN (Recommended)**
-- Direct connection to Ludus server via VPN tunnel
+- Direct connection to Ludus server for non admin functions via VPN tunnel
 - Requires WireGuard client and configuration file
 - Must be manually started before using MCP client
 
@@ -94,6 +88,7 @@ npx ludus-mcp --renew-keyring
 - Port forwarding through SSH connection
 - Fallback option when WireGuard unavailable
 - Automatically managed by MCP server
+- SSH tunnel will always be used for ADMIN API
 
 ## MCP Client Integration
 
@@ -166,7 +161,7 @@ For troubleshooting or testing the server independently:
 ```bash
 ludus-mcp  # If globally installed
 # OR
-npx ludus-mcp  # If locally installed
+npx ludus-mcp  # run from cloned directory if locally installed
 ```
 
 **Server Startup Process:**
@@ -269,7 +264,7 @@ Configuration files and data are stored in `~/.ludus-mcp/`:
 All files are automatically downloaded and updated on server startup.
 
 ## Security
-
+- This is for lab use only. Security is marginal. Some attempts have been made to limit OS command injection or path traversal. Additionally, credentials are handled via OS credential manager.
 ### Credential Management
 - External service credentials (API keys, SaaS tokens) use placeholder format: `{{LudusCredName-<user>-<name>}}`
 - Range-internal credentials (AD passwords, domain accounts) included directly
