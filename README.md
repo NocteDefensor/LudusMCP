@@ -64,7 +64,7 @@ npx ludus-mcp --setup-keyring
 The setup wizard will prompt for:
 - **Connection Method**: WireGuard VPN or SSH tunnel
 - **Ludus Admin Username**: Your Ludus admin account
-- **API Key**: Ludus API key from `ludus apikey` command  
+- **API Key**: Ludus API key from `ludus user apikey` command  
 - **SSH Credentials**: Host, username, and authentication method
 - **WireGuard Config**: Path to .conf file (if using WireGuard)
 
