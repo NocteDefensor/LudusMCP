@@ -43,7 +43,7 @@ cd LudusMCP
 From within LudusMCP directory
 npm install    # Installs dependencies and builds automatically
 npx ludus-mcp --setup-keyring  # Use npx for local installations
-
+```
 
 ### Installation Requirements
 The package includes native dependencies that require compilation during installation:
