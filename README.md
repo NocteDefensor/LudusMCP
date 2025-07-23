@@ -305,7 +305,10 @@ For additional help:
 - Check [GitHub repository](https://github.com/NocteDefensor/LudusMCP) for issues and updates
 ## References:
 - Ludus Documentation - https://docs.ludus.cloud/docs/intro
-
+## Coming Changes
+- May switch to [Desktop Extension](https://www.anthropic.com/engineering/desktop-extensions) setup vs the current homegrown keyring config/renew functions.
+- Will add more sample reference templates. 
+- Will attempt to keep up with new roles by adding them to the schema for LLM reference.
 ## Credits
 - Ludus - [@badsectorlabs](https://x.com/badsectorlabs)
 - Claude - Wouldn't quite call this project vibe coding but maybe 4 beers deep in the passenger seat shouting out navigation commands.
