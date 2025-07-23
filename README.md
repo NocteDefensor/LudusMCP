@@ -16,7 +16,7 @@ Ensure you have:
 - Ludus server SSH access credentials
 - Ludus API key (obtain via `ludus apikey` command)
 - WireGuard configuration file OR SSH tunnel capabilities
-- Admin or user account on Ludus server
+- Admin account on Ludus server
 
 ## Installation
 
