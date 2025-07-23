@@ -205,7 +205,7 @@ Safe execution of Ludus CLI commands with destructive action protection.
 - `ludus_help` - Get help for Ludus commands
 - `list_all_users` - List all Ludus users (admin only)
 - `get_credential_from_user` - Securely collect credentials
-- `insert_creds_range_config` - Inject credentials into configurations
+- `insert_creds_range_config` - Inject credentials into configurations (note: the LLM doesn't actually interact with OS credential management/keyring at all. It passes the name the credential is stored under to the function. The function retrieves the credential and replaces placeholder with cred. 
 
 ### Recommended Workflow
 
