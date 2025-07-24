@@ -1,0 +1,63 @@
+# Sample Schema Template for Ludus Roles and Collections
+# This is a template showing the standard format for YAML schema files
+
+name: sample_role_name
+type: role  # or "collection" for role collections
+version: "1.0.0"
+description: "Brief description of what this role/collection does"
+repository: "https://github.com/author/repo_name"
+author: "Author Name (@github_handle)"
+
+# Optional fields
+dependencies: 
+  - "other.required.role"
+  - "another.dependency"
+
+installation_method: "galaxy"  # or "directory" if must be installed from directory
+note: "Any important notes about usage or limitations"
+warning: "Any critical warnings (e.g., 'This role deploys malware')"
+
+# For single roles, use "variables" directly
+variables:
+  variable_name:
+    type: "string"  # string, boolean, integer, array, object
+    required: true  # or false
+    default: "default_value"
+    description: "Description of what this variable does"
+    valid_options:  # optional - for enumerated values
+      - "option1"
+      - "option2"
+    example:  # optional - example usage
+      - "example_value1"
+      - "example_value2"
+
+  another_variable:
+    type: "boolean"
+    default: false
+    description: "Another example variable"
+
+# For collections, use "roles" with nested variables
+# roles:
+#   role_name_1:
+#     variables:
+#       role1_var:
+#         type: "string"
+#         default: "value"
+#         description: "Variable for role 1"
+#   role_name_2:
+#     variables:
+#       role2_var:
+#         type: "integer"
+#         default: 80
+#         description: "Variable for role 2"
+
+# Special fields for collections only
+# IMPORTANT_DOMAIN_CONFIG_NOTE: "Special notes about domain configuration"
+# readonly: true  # for variables that should not be modified
+
+# Common variable types and patterns:
+# - External credentials: Use placeholders like "tskey-auth-<REDACTED_KEY>"
+# - Paths: Use sensible defaults like "/opt/application"
+# - Ports: Use integers with reasonable defaults
+# - URLs: Provide working default URLs when possible
+# - Auto-detected: Use "{{ auto-detected }}" for Ludus-managed values 
