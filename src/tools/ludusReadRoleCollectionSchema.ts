@@ -6,7 +6,7 @@ import * as yaml from 'js-yaml';
 
 export const ludusReadRoleCollectionSchemaTool: Tool = {
   name: 'ludus_read_role_collection_schema',
-  description: '**ROLE SCHEMA REFERENCE** - Reads all Ludus role and collection schemas from individual YAML files. Returns comprehensive role data including variables, descriptions, dependencies, and GitHub repositories. Essential for range planning and configuration validation.',
+  description: '**ROLE SCHEMA REFERENCE** - Reads Ludus role and collection schemas from individual YAML files. Returns comprehensive role data including variables, descriptions, dependencies, and GitHub repositories. Essential for range planning and configuration validation.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -14,6 +14,11 @@ export const ludusReadRoleCollectionSchemaTool: Tool = {
         type: 'boolean',
         description: 'Show help information about available roles and collections',
         default: false
+      },
+      file_names: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Optional array of specific YAML file names to read (e.g., ["ludus_ad.yaml", "sccm_collection.yaml"]). If omitted, reads all YAML files in the schemas directory.'
       }
     }
   }
@@ -22,7 +27,7 @@ export const ludusReadRoleCollectionSchemaTool: Tool = {
 /**
  * Load all YAML schema files from the schemas directory and aggregate them
  */
-async function loadAllYamlSchemas(schemaDir: string): Promise<any> {
+async function loadAllYamlSchemas(schemaDir: string, fileNamesFilter?: string[]): Promise<any> {
   const aggregatedSchema = {
     ludus_roles_schema: {
       roles: {} as Record<string, any>,
@@ -32,7 +37,9 @@ async function loadAllYamlSchemas(schemaDir: string): Promise<any> {
         total_roles: 0,
         total_collections: 0,
         last_updated: new Date().toISOString(),
-        source_files: [] as string[]
+        source_files: [] as string[],
+        filtered: fileNamesFilter ? true : false,
+        requested_files: fileNamesFilter || []
       }
     }
   };
@@ -40,12 +47,30 @@ async function loadAllYamlSchemas(schemaDir: string): Promise<any> {
   try {
     // Read all files in the schemas directory
     const files = await fs.readdir(schemaDir);
-    const yamlFiles = files.filter(file => 
+    let yamlFiles = files.filter(file => 
       file.endsWith('.yaml') || file.endsWith('.yml')
     );
 
+    // Apply file name filter if provided
+    if (fileNamesFilter && fileNamesFilter.length > 0) {
+      yamlFiles = yamlFiles.filter(file => fileNamesFilter.includes(file));
+      
+      // Check for any requested files that weren't found
+      const missingFiles = fileNamesFilter.filter(requested => 
+        !yamlFiles.includes(requested)
+      );
+      
+      if (missingFiles.length > 0) {
+        throw new Error(`Requested files not found: ${missingFiles.join(', ')}. Available files: ${files.filter(f => f.endsWith('.yaml') || f.endsWith('.yml')).join(', ')}`);
+      }
+    }
+
     if (yamlFiles.length === 0) {
-      throw new Error('No YAML schema files found in schemas directory');
+      if (fileNamesFilter && fileNamesFilter.length > 0) {
+        throw new Error(`No matching YAML files found for filter: ${fileNamesFilter.join(', ')}`);
+      } else {
+        throw new Error('No YAML schema files found in schemas directory');
+      }
     }
 
     // Process each YAML file
@@ -96,7 +121,7 @@ async function loadAllYamlSchemas(schemaDir: string): Promise<any> {
 
 export async function handleLudusReadRoleCollectionSchema(args: any): Promise<CallToolResult> {
   try {
-    const { help = false } = args;
+    const { help = false, file_names } = args;
 
     if (help) {
       return {
@@ -106,10 +131,10 @@ export async function handleLudusReadRoleCollectionSchema(args: any): Promise<Ca
             text: `**LUDUS ROLE COLLECTION SCHEMA TOOL**
 
 **PURPOSE:**
-Reads all Ludus role and collection schemas from individual YAML files in ~/.ludus-mcp/schemas/
+Reads Ludus role and collection schemas from individual YAML files. Essential reference for range planning and configuration validation.
 
 **WHAT IT RETURNS:**
-- Complete inventory of all available Ludus roles and collections
+- Complete inventory of available Ludus roles and collections
 - Role variables, types, and requirements for each role
 - Collection definitions with bundled roles
 - GitHub repository links and documentation
@@ -122,14 +147,29 @@ Reads all Ludus role and collection schemas from individual YAML files in ~/.lud
 ├── domain_controller_collection.yaml
 └── monitoring_stack.yaml
 
-**USAGE:**
-- Use during range planning to understand available roles
-- Verify role variables before writing configurations  
-- Research role capabilities and requirements
-- Find GitHub repositories for detailed documentation
+**USAGE OPTIONS:**
 
-**NOTE:** 
-This tool reads ALL YAML schema files and returns complete data. No filtering is applied - you get everything in one comprehensive response.`
+1. **Read All Schemas (Default):**
+   \`ludus_read_role_collection_schema\`
+   - Returns complete data from all YAML files
+
+2. **Read Specific Files:**
+   \`ludus_read_role_collection_schema file_names=["ludus_ad.yaml", "sccm_collection.yaml"]\`
+   - Returns data only from specified files
+   - Faster when you need specific roles/collections
+   - Exact file names required (including .yaml/.yml extension)
+
+**FILE NAME EXAMPLES:**
+- "ludus_child_domain.yaml"
+- "badsectorlabs.ludus_vulhub.yaml" 
+- "synzack.ludus_sccm.yaml"
+- "Sample-schema.yaml"
+
+**TIPS:**
+- Use \`ludus_list_role_collection_schemas\` first to see available files
+- File names are case-sensitive and must include extension
+- Mix and match roles and collections in file_names array
+- Error messages will show available files if names don't match`
           }
         ]
       };
@@ -154,8 +194,8 @@ This tool reads ALL YAML schema files and returns complete data. No filtering is
       };
     }
 
-    // Load all YAML schemas
-    const aggregatedSchema = await loadAllYamlSchemas(schemaDir);
+    // Load YAML schemas (all or filtered)
+    const aggregatedSchema = await loadAllYamlSchemas(schemaDir, file_names);
 
     // Return the complete aggregated schema
     return {
@@ -172,7 +212,7 @@ This tool reads ALL YAML schema files and returns complete data. No filtering is
       content: [
         {
           type: 'text',
-          text: `Error reading role schemas: ${error.message}\n\nTroubleshooting:\n- Restart the MCP server to reinitialize schemas\n- Check that YAML files exist in ~/.ludus-mcp/schemas/\n- Verify YAML file syntax is valid\n- Ensure file system permissions allow reading`
+          text: `Error reading role schemas: ${error.message}\n\nTroubleshooting:\n- Restart the MCP server to reinitialize schemas\n- Check that YAML files exist in ~/.ludus-mcp/schemas/\n- Verify YAML file syntax is valid\n- Ensure file system permissions allow reading\n- Use exact file names with extensions (e.g., "ludus_ad.yaml")\n- Use ludus_list_role_collection_schemas to see available files`
         }
       ],
       isError: true

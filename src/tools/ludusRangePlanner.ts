@@ -681,13 +681,14 @@ STEP 1: UNDERSTAND & CLARIFY
 - Determine complexity automatically from component count
 
 STEP 2: RESEARCH PHASE (Use tools in this exact order)
-1. ludus_read_role_collection_schema - Get comprehensive role data
-2. ludus_read_range_config_schema - Understand YAML structure
-3. ludus_roles_docs_read - Get complete roles documentation
-4. ludus_networking_docs_read - Get networking configuration info
-5. list_range_configs - Discover base templates in ~/.ludus-mcp/range-config-templates/base-configs/
-6. read_range_config - Examine 1-3 relevant base templates
-7. ludus_environment_guides_search - Get environment-specific guidance if needed
+1. ludus_list_role_collection_schemas - Get inventory of available role/collection YAML files
+2. ludus_read_role_collection_schema - Get comprehensive role data (use file_names filtering for targeted research)
+3. ludus_read_range_config_schema - Understand YAML structure
+4. ludus_roles_docs_read - Get complete roles documentation
+5. ludus_networking_docs_read - Get networking configuration info
+6. list_range_configs - Discover base templates in ~/.ludus-mcp/range-config-templates/base-configs/
+7. read_range_config - Examine 1-3 relevant base templates
+8. ludus_environment_guides_search - Get environment-specific guidance if needed
 
 STEP 3: BUILD RANGE CONFIG
 - Design complete VM architecture using research data
@@ -697,6 +698,7 @@ STEP 3: BUILD RANGE CONFIG
 
 STEP 4: COMPREHENSIVE VALIDATION
 - Run ludus_range_config_check_against_plan with user requirements and roles used
+- MANDATORY: Run ludus_list_role_collection_schemas to verify available roles/collections
 - MANDATORY: Run ludus_read_role_collection_schema to verify all role variables
 - Cross-check every role and variable against schema
 

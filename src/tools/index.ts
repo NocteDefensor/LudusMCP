@@ -96,6 +96,22 @@ export const ludusRangeConfigCheckAgainstPlanTool: Tool = {
 // Import the existing static schema tool
 export { ludusReadRoleCollectionSchemaTool } from './ludusReadRoleCollectionSchema.js';
 
+// NEW: List YAML role/collection schema files
+export const ludusListRoleCollectionSchemasTool: Tool = {
+  name: 'ludus_list_role_collection_schemas',
+  description: 'List all available role and collection schema files (.yaml/.yml) in ~/.ludus-mcp/schemas/. Shows inventory of roles, collections, and templates with file metadata.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      help: {
+        type: 'boolean',
+        description: 'Show detailed help information about this tool',
+        default: false
+      }
+    }
+  }
+};
+
 // ============================================================================
 // STATIC TOOL EXPORTS - Core Range Management
 // ============================================================================
@@ -492,6 +508,7 @@ export const listAllUsersTool: Tool = {
 export { handleLudusRangePlanner } from './ludusRangePlanner.js';
 export { handleLudusRangeConfigCheckAgainstPlan } from './ludusRangeConfigCheckAgainstPlan.js';
 export { handleLudusReadRoleCollectionSchema } from './ludusReadRoleCollectionSchema.js';
+export { handleLudusListRoleCollectionSchemas } from './ludusListRoleCollectionSchemas.js';
 export { handleReadRangeConfig, handleWriteRangeConfig, handleValidateRangeConfig, handleListRangeConfigs, handleGetRangeConfig } from './rangeConfig.js';
 export { handleSetRangeConfig } from './setRangeConfig.js';
 export { handleGetConnectionInfo } from './getConnectionInfo.js';

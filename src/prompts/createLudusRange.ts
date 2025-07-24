@@ -39,13 +39,20 @@ ${roles ? '- Validate user-specified roles exist and match requirements' : ''}
 - Note save preference: ${save_config}
 
 STEP 2: RESEARCH PHASE (Use tools in this order)
-1. ludus_read_role_collection_schema - Get comprehensive role data and variables
-2. ludus_read_range_config_schema - Understand YAML structure and validation rules  
-3. ludus_roles_docs_read - Get complete roles documentation
-4. ludus_networking_docs_read - Get networking configuration info
-5. list_range_configs - Discover base templates in ~/.ludus-mcp/range-config-templates/base-configs/
-6. read_range_config - Examine 1-3 relevant base templates for patterns
-7. ludus_environment_guides_search - Get environment-specific guidance if needed
+1. ludus_list_role_collection_schemas - Get inventory of available role/collection YAML files
+2. ludus_read_role_collection_schema - Get comprehensive role data and variables (use file_names filtering if you only need specific roles)
+3. ludus_read_range_config_schema - Understand YAML structure and validation rules  
+4. ludus_roles_docs_read - Get complete roles documentation
+5. ludus_networking_docs_read - Get networking configuration info
+6. list_range_configs - Discover base templates in ~/.ludus-mcp/range-config-templates/base-configs/
+7. read_range_config - Examine 1-3 relevant base templates for patterns
+8. ludus_environment_guides_search - Get environment-specific guidance if needed
+
+SCHEMA TOOL OPTIMIZATION:
+- Use ludus_list_role_collection_schemas first to see what's available and plan your research
+- For TARGETED research: Use ludus_read_role_collection_schema with file_names=["specific_role.yaml", "another_role.yaml"] 
+- For COMPREHENSIVE research: Use ludus_read_role_collection_schema without filtering to get everything
+- Choose filtering based on requirements complexity and confidence level
 
 EXTERNAL ROLE HANDLING:
 - If requirements not covered by official Ludus roles: ASK USER with options:
@@ -89,7 +96,8 @@ WHEN UNCERTAIN: Ask user "Is this credential for an external service or internal
 STEP 4: COMPREHENSIVE VALIDATION - MANDATORY SCHEMA VALIDATION
 **CRITICAL:** Use BOTH schemas to validate BEFORE writing any configuration files
 
-ROLE VARIABLES VALIDATION:
+ROLE/COLLECTION VALIDATION:
+- MANDATORY: Run ludus_list_role_collection_schemas to see all available roles/collections
 - MANDATORY: Run ludus_read_role_collection_schema to get complete role definitions
 - Cross-check EVERY role and variable in your configuration against the schema
 - Verify all required variables are present and correctly formatted
