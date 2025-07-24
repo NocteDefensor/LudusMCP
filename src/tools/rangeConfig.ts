@@ -990,7 +990,7 @@ export async function handleGetRangeConfig(args: GetRangeConfigArgs, logger: Log
   
   try {
     // Build the command arguments
-    const cmdArgs: string[] = ['range', 'config', 'get'];
+    const cmdArgs: string[] = ['config', 'get'];
     
     // Add example argument if requested
     if (example) {
@@ -1003,7 +1003,7 @@ export async function handleGetRangeConfig(args: GetRangeConfigArgs, logger: Log
     }
 
     // Execute the command
-    const result = await cliWrapper.executeCommand('', cmdArgs);
+    const result = await cliWrapper.executeCommand('range', cmdArgs);
 
     const targetUser = user || 'current user';
     const configType = example ? 'example configuration' : `current range configuration for ${targetUser}`;

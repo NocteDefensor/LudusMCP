@@ -296,15 +296,15 @@ export const getRangeConfigTool: Tool = {
 
 export const setRangeConfigTool: Tool = {
   name: 'set_range_config',
-  description: 'Apply range configuration to Ludus server. Sets active configuration for deployment.',
+  description: 'Apply range configuration to Ludus server. Sets active configuration for deployment.\n\n**WORKING DIRECTORY**: All file paths are relative to ~/.ludus-mcp/range-config-templates/\n\n**PATH USAGE**: Use relative paths only (e.g., "base-configs/acme.yml", "user1/config.yaml")',
   inputSchema: {
     type: 'object',
     properties: {
-      configPath: { type: 'string', description: 'Path to configuration file' },
+      file: { type: 'string', description: 'Relative file path (e.g., "base-configs/acme.yml") of the configuration file within ~/.ludus-mcp/range-config-templates/' },
       user: { type: 'string', description: 'Target user (admin only)' },
       help: { type: 'boolean', description: 'Show help information' }
     },
-    required: ['configPath']
+    required: ['file']
   }
 };
 
