@@ -1,0 +1,118 @@
+# Schema for netpenguins.ludus_sliver Role
+# Builds and deploys Sliver C2 framework from source with systemd service integration
+
+name: netpenguins.ludus_sliver
+type: role
+version: "1.0.0"
+description: "An Ansible role to build and deploy the Sliver C2 framework from source, with optional systemd service integration and configuration file support. Designed for use in Ludus ranges, but works anywhere you want a fresh, up-to-date Sliver install!"
+repository: "https://github.com/NetPenguins/ludus_sliver"
+author: "NetPenguins (@NetPenguins)"
+
+dependencies: []
+
+installation_method: "galaxy"  # ludus ansible role add netpenguins.ludus_sliver
+note: "Installs all build dependencies (Go, git, build tools), clones Sliver repo, builds both sliver-server and sliver-client from source. Supports custom config files via role's files/ directory."
+warning: "This role deploys the Sliver C2 framework which is designed for red team exercises and penetration testing. Ensure proper authorization before deployment. Requires internet access to fetch Sliver and dependencies."
+
+variables:
+  sliver_repo_url:
+    type: "string"
+    required: false
+    default: "https://github.com/BishopFox/sliver.git"
+    description: "Sliver GitHub repository URL. Typically unchanged unless using a fork or mirror."
+    example:
+      - "https://github.com/BishopFox/sliver.git"
+      - "https://github.com/yourfork/sliver.git"
+      - "https://internal-git.company.com/sliver.git"
+
+  sliver_version:
+    type: "string"
+    required: false
+    default: "stable"
+    description: "Version to install. 'stable' uses latest release tag, 'latest' uses master branch, or specify any specific tag/branch/commit."
+    valid_options:
+      - "stable"
+      - "latest"
+    example:
+      - "stable"
+      - "latest"
+      - "v1.5.42"
+      - "dev"
+      - "feature-branch"
+      - "abc123def456"
+
+  sliver_install_path:
+    type: "string"
+    required: false
+    default: "/usr/local/bin"
+    description: "Directory where Sliver binaries will be installed. Binaries are also symlinked to /usr/local/bin for system-wide access."
+    example:
+      - "/usr/local/bin"
+      - "/opt/sliver"
+      - "/home/sliver/bin"
+      - "/usr/bin"
+
+  sliver_build_user:
+    type: "string"
+    required: false
+    default: "root"
+    description: "User account to perform the build process as. Must have sufficient permissions to install dependencies and write to install path."
+    example:
+      - "root"
+      - "sliver"
+      - "ansible"
+      - "ubuntu"
+
+  sliver_create_service:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Whether to install and enable a systemd service for sliver-server. Service will be configured to start automatically on boot."
+    example:
+      - true
+      - false
+
+  sliver_service_name:
+    type: "string"
+    required: false
+    default: "sliver-server"
+    description: "Name of the systemd service for sliver-server. Used for service management commands (systemctl start/stop/status)."
+    example:
+      - "sliver-server"
+      - "sliver"
+      - "c2-server"
+      - "sliver-daemon"
+
+  sliver_service_user:
+    type: "string"
+    required: false
+    default: "root"
+    description: "User account that the sliver-server systemd service will run as. Should have appropriate permissions for C2 operations."
+    example:
+      - "root"
+      - "sliver"
+      - "c2user"
+      - "operator"
+
+  sliver_service_group:
+    type: "string"
+    required: false
+    default: "root"
+    description: "Group that the sliver-server systemd service will run as. Should match or be compatible with the service user."
+    example:
+      - "root"
+      - "sliver"
+      - "c2group"
+      - "operators"
+
+  sliver_service_args:
+    type: "string"
+    required: false
+    default: ""
+    description: "Extra command-line arguments to pass to sliver-server when started as a service. Useful for custom configurations or debugging."
+    example:
+      - ""
+      - "--lhost 0.0.0.0"
+      - "--lport 8443"
+      - "--debug"
+      - "--config /etc/sliver/config.yaml" 

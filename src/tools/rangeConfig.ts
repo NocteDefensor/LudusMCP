@@ -173,41 +173,28 @@ export interface GetRangeConfigArgs {
 }
 
 /**
- * Get allowed base directories for range config scanning
+ * Get allowed base paths for security validation
+ * Only allows access to range-config-templates directory
  */
 function getAllowedBasePaths(): string[] {
   const allowedPaths = [];
   
-  // Current working directory (MCP root)
-  allowedPaths.push(path.resolve(process.cwd()));
-  
-  // User's .ludus-mcp directory
-  const ludusConfigDir = path.join(os.homedir(), '.ludus-mcp');
-  allowedPaths.push(path.resolve(ludusConfigDir));
+  // Only allow range-config-templates directory and subdirectories
+  const rangeConfigTemplatesDir = path.join(os.homedir(), '.ludus-mcp', 'range-config-templates');
+  allowedPaths.push(path.resolve(rangeConfigTemplatesDir));
   
   return allowedPaths;
 }
 
 /**
- * Get default search directories when no directory is specified
+ * Get default directories to search for range configurations
+ * Restricts search to range-config-templates directory only
  */
 function getDefaultSearchDirectories(): string[] {
   const searchDirs = [];
   
-  // First priority: user's range config templates directory
-  const userRangeConfigTemplatesDir = RANGE_CONFIG_TEMPLATES_DIR;
-  searchDirs.push(userRangeConfigTemplatesDir);
-  
-  // Second priority: user's .ludus-mcp/range-config-templates (base templates)
-  const userRangeTemplatesDir = path.join(os.homedir(), '.ludus-mcp', 'range-config-templates');
-  searchDirs.push(userRangeTemplatesDir);
-  
-  // Third priority: user's .ludus-mcp directory (legacy/other configs)
-  const ludusConfigDir = path.join(os.homedir(), '.ludus-mcp');
-  searchDirs.push(ludusConfigDir);
-  
-  // Fourth priority: range-config-templates in current working directory (development)
-  const rangeConfigTemplatesDir = path.join(process.cwd(), 'range-config-templates');
+  // Primary search location: ~/.ludus-mcp/range-config-templates/ and subdirectories
+  const rangeConfigTemplatesDir = path.join(os.homedir(), '.ludus-mcp', 'range-config-templates');
   searchDirs.push(rangeConfigTemplatesDir);
   
   return searchDirs;
@@ -1040,10 +1027,11 @@ export async function handleGetRangeConfig(args: GetRangeConfigArgs, logger: Log
 }
 
 /**
- * Handle smart fallback search when no directory is specified
+ * Smart fallback search in default directories when no directory is specified
+ * Now restricted to range-config-templates directory only
  */
 async function handleSmartFallbackSearch(recursive: boolean, logger: Logger): Promise<any> {
-  logger.info('Smart fallback search for range configurations', { recursive });
+  logger.info('Smart search for range configurations in ~/.ludus-mcp/range-config-templates/', { recursive });
   
   const searchDirs = getDefaultSearchDirectories();
   const allConfigs = [];

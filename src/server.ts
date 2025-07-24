@@ -42,7 +42,8 @@ import {
   ludusNetworkingSearchTool,
   ludusReadRangeConfigSchemaTool,
   ludusRangeConfigCheckAgainstPlanTool,
-  ludusReadRoleCollectionSchemaTool
+  ludusReadRoleCollectionSchemaTool,
+  ludusListRoleCollectionSchemasTool
 } from './tools/index.js';
 import { handleListAllUsers } from './tools/listAllUsers.js';
 import { handleReadRangeConfig, handleWriteRangeConfig, handleValidateRangeConfig, handleListRangeConfigs, handleGetRangeConfig } from './tools/rangeConfig.js';
@@ -60,6 +61,7 @@ import { handleLudusNetworkingDocsRead } from './tools/ludusNetworkingSearch.js'
 import { handleLudusReadRangeConfigSchema } from './tools/ludusReadRangeConfigSchema.js';
 import { handleLudusRangeConfigCheckAgainstPlan } from './tools/ludusRangeConfigCheckAgainstPlan.js';
 import { handleLudusReadRoleCollectionSchema } from './tools/ludusReadRoleCollectionSchema.js';
+import { handleLudusListRoleCollectionSchemas } from './tools/ludusListRoleCollectionSchemas.js';
 import { 
   getCredentials, 
   CREDENTIAL_KEYS, 
@@ -139,7 +141,8 @@ class LudusMCPServer {
           ludusNetworkingSearchTool,
           ludusReadRangeConfigSchemaTool,
           ludusRangeConfigCheckAgainstPlanTool,
-          ludusReadRoleCollectionSchemaTool
+          ludusReadRoleCollectionSchemaTool,
+          ludusListRoleCollectionSchemasTool
         ],
       };
     });
@@ -204,6 +207,8 @@ class LudusMCPServer {
           return await this.handleLudusRangeConfigCheckAgainstPlan(args);
         case 'ludus_read_role_collection_schema':
           return await this.handleLudusReadRoleCollectionSchema(args);
+        case 'ludus_list_role_collection_schemas':
+          return await this.handleLudusListRoleCollectionSchemas(args);
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -1727,6 +1732,29 @@ class LudusMCPServer {
                   `- Restart the MCP server to reinitialize the schema\n` +
                   `- Check file system permissions\n` +
                   `- Verify the schema file was created during server startup`
+          }
+        ]
+      };
+    }
+  }
+
+  private async handleLudusListRoleCollectionSchemas(args: any) {
+    this.logger.info('Listing role collection schemas', { args });
+    
+    try {
+      return await handleLudusListRoleCollectionSchemas(args, this.logger);
+    } catch (error: any) {
+      this.logger.error('Failed to list role collection schemas', { error: error.message });
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to list role collection schemas: \`${error.message}\`\n\n` +
+                  `Troubleshooting:\n` +
+                  `- Restart the MCP server to download schemas from GitHub\n` +
+                  `- Check internet connection for GitHub access\n` +
+                  `- Verify ~/.ludus-mcp/schemas/ directory exists\n` +
+                  `- Ensure the 'yaml-schemas' branch is available`
           }
         ]
       };

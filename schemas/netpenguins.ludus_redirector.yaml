@@ -1,0 +1,87 @@
+# Schema for netpenguins.ludus_redirector Role
+# Apache-based redirector with SSL support and custom rewrite rules
+
+name: netpenguins.ludus_redirector
+type: role
+version: "1.0.0"
+description: "An Ansible role for Ludus to deploy and configure an Apache-based redirector, supporting custom rewrite rules. Designed for use in Ludus ranges and can be easily integrated with other roles and custom configurations."
+repository: "https://github.com/NetPenguins/ludus_redirector"
+author: "NetPenguins (@NetPenguins)"
+
+dependencies: []
+
+installation_method: "galaxy"  # ludus ansible role add netpenguins.ludus_redirector
+note: "Although many view apache2 modrewrite as overkill it is a solid skill to have when practicing opsec friendly infrastructure. This role gives the general skeleton of a standard redirector. The real fun is expanding on it!"
+warning: "This role is designed for red team exercises and penetration testing. Ensure proper authorization before deployment."
+
+variables:
+  redirector_target_host:
+    type: "string"
+    required: false
+    default: "c2.ludus"
+    description: "Target host for proxy/rewrite operations. This is where traffic will be redirected to (typically your C2 server)."
+    example:
+      - "c2.ludus"
+      - "teamserver.internal.local"
+      - "10.0.200.5"
+
+  redirector_host:
+    type: "string"
+    required: false
+    default: "c2.redir.ludus"
+    description: "The ServerName for Apache configuration. This is the hostname that the redirector will respond to."
+    example:
+      - "c2.redir.ludus"
+      - "redirector.example.com"
+      - "proxy.teamserver.local"
+
+  kali_vlan_subnet:
+    type: "string"
+    required: false
+    default: "10.{{ range_second_octet }}.200.0/24"
+    description: "Subnet restriction for Apache access control. Only clients from this subnet will be allowed to access the redirector via Apache's 'Require ip' directive."
+    example:
+      - "10.{{ range_second_octet }}.200.0/24"
+      - "192.168.100.0/24"
+      - "10.0.0.0/8"
+
+  ssl_certificate_file:
+    type: "string"
+    required: false
+    default: "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+    description: "Path to SSL certificate file for HTTPS support."
+    example:
+      - "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+      - "/etc/ssl/certs/custom-cert.pem"
+      - "/opt/ssl/redirector.crt"
+
+  ssl_certificate_key_file:
+    type: "string"
+    required: false
+    default: "/etc/ssl/private/ssl-cert-snakeoil.key"
+    description: "Path to SSL certificate private key file."
+    example:
+      - "/etc/ssl/private/ssl-cert-snakeoil.key"
+      - "/etc/ssl/private/custom-key.key"
+      - "/opt/ssl/redirector.key"
+
+  ssl_certificate_chain_file:
+    type: "string"
+    required: false
+    default: "/etc/ssl/certs/chain.pem"
+    description: "Path to SSL certificate chain file (optional). Uncomment in defaults/main.yml to use."
+    example:
+      - "/etc/ssl/certs/chain.pem"
+      - "/etc/ssl/certs/intermediate.pem"
+      - "/opt/ssl/ca-bundle.crt"
+
+  rewrite_rules:
+    type: "array"
+    required: false
+    default: []
+    description: "List of Apache RewriteRule strings for custom traffic routing. These rules control which routes are proxied or redirected to your target host. The range_second_octet variable allows dynamic IP configuration."
+    example:
+      - "RewriteRule ^/l33t(/.*)?$ https://10.{{ range_second_octet }}.200.5/l33t$1 [P,L]"
+      - "RewriteRule ^/g3t(/.*)?$ http://10.{{ range_second_octet }}.200.5/g3t$1 [P,L]"
+      - "RewriteRule ^/getsome(/.*)?$ https://{{ redirector_target_host }}/getsome$1 [P,L]"
+      - "RewriteRule ^/api(/.*)?$ https://backend.internal.local/api$1 [P,L]" 

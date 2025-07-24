@@ -12,47 +12,140 @@ export async function downloadSchemas(logger: Logger): Promise<void> {
   const tempDir = path.join(ludusConfigDir, 'temp-schemas-download');
 
   try {
-    logger.info('Downloading fresh schemas from GitHub...');
+    logger.info('Updating schemas from GitHub (preserving custom schemas)...');
 
     // Ensure .ludus-mcp directory exists
     await fs.mkdir(ludusConfigDir, { recursive: true });
 
-    // Clean slate - remove existing schemas directory and temp
-    await removeDirectorySafe(schemasDir);
-    await removeDirectorySafe(tempDir);
+    // Check if schemas directory already exists
+    const schemasExists = await directoryExists(schemasDir);
+    
+    if (schemasExists) {
+      logger.info('Existing schemas directory found - merging with official schemas');
+      await mergeSchemas(schemasDir, tempDir, repoUrl, targetPath, logger);
+    } else {
+      logger.info('No existing schemas directory - creating fresh installation');
+      await freshInstallSchemas(schemasDir, tempDir, repoUrl, targetPath, logger);
+    }
 
-    // Clone fresh GitHub schemas folder
-    logger.info('Cloning schemas from GitHub repository...');
-    await cloneSchemas(schemasDir, tempDir, repoUrl, targetPath, logger);
-
-    // Download range-config.json into the schemas folder
+    // Always update range-config.json (official file)
     await downloadRangeConfigSchema(schemasDir, logger);
 
-    // Get file count and structure verification
+    // Report final state
     const schemaFiles = await findSchemaFiles(schemasDir);
-    
-    logger.info(`Successfully synchronized schemas to ~/.ludus-mcp/schemas/`, {
-      schemaFiles: schemaFiles.length,
+    logger.info(`Schema synchronization complete`, {
+      totalFiles: schemaFiles.length,
       files: schemaFiles.map(f => path.basename(f))
     });
 
-    if (schemaFiles.length > 0) {
-      logger.info(`Schema files available: ${schemaFiles.map(f => path.basename(f)).join(', ')}`);
-    }
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn('Failed to download schemas (continuing without update)', { error: errorMessage });
-    
-    // Clean up on error
+    logger.warn('Failed to update schemas (continuing without update)', { error: errorMessage });
     await removeDirectorySafe(tempDir);
-    // Don't throw - fail gracefully as requested
   }
 }
 
 /**
- * Clone schemas from GitHub repository
+ * Check if directory exists
  */
+async function directoryExists(dirPath: string): Promise<boolean> {
+  try {
+    const stats = await fs.stat(dirPath);
+    return stats.isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Merge official schemas with existing custom schemas
+ */
+async function mergeSchemas(
+  schemasDir: string, 
+  tempDir: string, 
+  repoUrl: string, 
+  targetPath: string, 
+  logger: Logger
+): Promise<void> {
+  // Clean temp directory
+  await removeDirectorySafe(tempDir);
+  
+  // Download official schemas to temp location
+  logger.info('Downloading official schemas to temporary location...');
+  await cloneSchemas(tempDir, tempDir + '-git', repoUrl, targetPath, logger);
+  
+  // Get list of official schema files
+  const officialSchemas = await findYamlSchemaFiles(tempDir);
+  const officialFileNames = officialSchemas.map(f => path.basename(f));
+  
+  logger.info(`Found ${officialFileNames.length} official schemas to update: ${officialFileNames.join(', ')}`);
+  
+  // Copy official schemas to target (overwriting official files only)
+  for (const officialFile of officialSchemas) {
+    const fileName = path.basename(officialFile);
+    const targetFile = path.join(schemasDir, fileName);
+    
+    try {
+      await fs.copyFile(officialFile, targetFile);
+      logger.debug(`Updated official schema: ${fileName}`);
+    } catch (error) {
+      logger.warn(`Failed to update schema ${fileName}`, { error: error instanceof Error ? error.message : String(error) });
+    }
+  }
+  
+  // Identify custom schemas (existing files not in official list)
+  const existingSchemas = await findYamlSchemaFiles(schemasDir);
+  const customSchemas = existingSchemas.filter(f => 
+    !officialFileNames.includes(path.basename(f))
+  );
+  
+  if (customSchemas.length > 0) {
+    const customFileNames = customSchemas.map(f => path.basename(f));
+    logger.info(`Preserved ${customSchemas.length} custom schemas: ${customFileNames.join(', ')}`);
+  }
+  
+  // Clean up temp directory
+  await removeDirectorySafe(tempDir);
+}
+
+/**
+ * Fresh installation of schemas (no existing directory)
+ */
+async function freshInstallSchemas(
+  schemasDir: string, 
+  tempDir: string, 
+  repoUrl: string, 
+  targetPath: string, 
+  logger: Logger
+): Promise<void> {
+  // Clean temp directory
+  await removeDirectorySafe(tempDir);
+  
+  // Direct clone to final location (original behavior for fresh installs)
+  await cloneSchemas(schemasDir, tempDir, repoUrl, targetPath, logger);
+}
+
+/**
+ * Find YAML schema files (.yaml and .yml) in a directory (non-recursive)
+ */
+async function findYamlSchemaFiles(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  
+  try {
+    const items = await fs.readdir(dir, { withFileTypes: true });
+    
+    for (const item of items) {
+      if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml'))) {
+        files.push(path.join(dir, item.name));
+      }
+    }
+  } catch (error) {
+    // Directory doesn't exist or can't be read
+  }
+  
+  return files.sort();
+}
+
 async function cloneSchemas(
   schemasDir: string, 
   tempDir: string, 
@@ -65,50 +158,39 @@ async function cloneSchemas(
   execSync(`git clone --filter=blob:none --sparse --depth 1 --branch yaml-schemas "${repoUrl}" "${tempDir}"`, { stdio: 'pipe' });
   execSync(`git -C "${tempDir}" sparse-checkout set "${targetPath}"`, { stdio: 'pipe' });
 
-  // Move schemas to final location (Windows-safe approach)
-  const sourceSchemasPath = path.join(tempDir, targetPath);
-  await copyDirectoryRecursive(sourceSchemasPath, schemasDir);
-
+  const sourceSchemas = path.join(tempDir, targetPath);
+  
+  // Copy schemas to destination
+  await copyDirectoryRecursive(sourceSchemas, schemasDir);
+  
   // Clean up temp directory
   await removeDirectorySafe(tempDir);
-
-  const schemaFiles = await findSchemaFiles(schemasDir);
-  logger.info('GitHub schemas clone completed', {
-    cloned: schemaFiles.length,
-    files: schemaFiles.map(f => path.basename(f))
-  });
 }
 
-/**
- * Download range-config.json schema from docs.ludus.cloud
- */
 async function downloadRangeConfigSchema(schemasDir: string, logger: Logger): Promise<void> {
-  const rangeConfigSchemaFilePath = path.join(schemasDir, 'range-config.json');
-
   try {
-    logger.info('Downloading range-config.json schema from docs.ludus.cloud...');
+    logger.info('Downloading range-config.json schema...');
     
+    // Download range-config schema
     const response = await fetch('https://docs.ludus.cloud/schemas/range-config.json');
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`Failed to fetch range-config schema: ${response.status} ${response.statusText}`);
     }
     
-    const rangeConfigSchema = await response.text();
+    const schemaContent = await response.text();
+    const schemaPath = path.join(schemasDir, 'range-config.json');
     
-    // Write the range-config schema to disk
-    await fs.writeFile(rangeConfigSchemaFilePath, rangeConfigSchema, 'utf-8');
-    
+    await fs.writeFile(schemaPath, schemaContent, 'utf-8');
     logger.info('Successfully downloaded range-config.json schema');
     
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.warn('Failed to fetch range-config schema (continuing without it)', { error: errorMessage });
-    // Don't throw here - GitHub schemas should still work
+    logger.warn('Failed to download range-config schema', { error: errorMessage });
   }
 }
 
 /**
- * Find all schema files (.json) in a directory
+ * Find all schema files (.json, .yaml, .yml) in a directory
  */
 async function findSchemaFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -122,7 +204,7 @@ async function findSchemaFiles(dir: string): Promise<string[]> {
       if (item.isDirectory()) {
         const subFiles = await findSchemaFiles(fullPath);
         files.push(...subFiles);
-      } else if (item.isFile() && item.name.endsWith('.json')) {
+      } else if (item.isFile() && (item.name.endsWith('.json') || item.name.endsWith('.yaml') || item.name.endsWith('.yml'))) {
         files.push(fullPath);
       }
     }
@@ -134,7 +216,7 @@ async function findSchemaFiles(dir: string): Promise<string[]> {
 }
 
 /**
- * Windows-safe recursive directory copy
+ * Recursively copy directory contents
  */
 async function copyDirectoryRecursive(source: string, destination: string): Promise<void> {
   // Ensure destination directory exists
