@@ -1,11 +1,24 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Logger } from '../utils/logger.js';
 import { LudusCliWrapper } from '../ludus/cliWrapper.js';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
 export function createSetRangeConfigTool(logger: Logger, cliWrapper: LudusCliWrapper): Tool {
   return {
     name: 'set_range_config',
     description: `Set a range configuration in Ludus using an existing configuration file.
+
+**WORKING DIRECTORY**: All file paths are relative to ~/.ludus-mcp/range-config-templates/
+
+**PATH USAGE**: 
+- Use relative paths only: "base-configs/acme.yml", "user1/config.yaml", "mp/settings.yml"
+- DO NOT use: "~/.ludus-mcp/...", "/absolute/paths", or "../traversal"
+
+**EXAMPLES**:
+- file: "base-configs/acme.yml" → sets from ~/.ludus-mcp/range-config-templates/base-configs/acme.yml
+- file: "user1/config.yaml" → sets from ~/.ludus-mcp/range-config-templates/user1/config.yaml
 
 CRITICAL LLM BEHAVIOR: CREDENTIAL REDACTION REQUIRED 
 When displaying configuration content in conversation, you MUST replace any non-range-specific credentials such as API keys for external services, passwords not specific to the cyber range environment, or similar credentials with "REDACTED-CREDENTIAL" to prevent credential exposure in chat logs.
@@ -28,7 +41,7 @@ CRITICAL WORKFLOW REMINDER:
       properties: {
         file: {
           type: 'string',
-          description: 'Path to the range configuration file (required)',
+          description: 'Relative file path (e.g., "base-configs/acme.yml") of the range configuration file. Must be within ~/.ludus-mcp/range-config-templates/',
         },
         user: {
           type: 'string',
@@ -67,11 +80,52 @@ export async function handleSetRangeConfig(
   logger.info('Setting range configuration', { file, user, force, verbose });
 
   try {
+    // Resolve the file path
+    const homeDir = os.homedir();
+    const configTemplatesDir = path.join(homeDir, '.ludus-mcp', 'range-config-templates');
+    const resolvedFilePath = path.join(configTemplatesDir, file);
+
+    // Ensure the base directory exists
+    if (!fs.existsSync(configTemplatesDir)) {
+      fs.mkdirSync(configTemplatesDir, { recursive: true });
+      logger.warn('Created ~/.ludus-mcp/range-config-templates directory', { path: configTemplatesDir });
+    }
+
+    // Security validation: ensure the resolved path is within allowed boundaries
+    const relativePath = path.relative(configTemplatesDir, resolvedFilePath);
+    if (relativePath && (relativePath.startsWith('..') || path.isAbsolute(relativePath))) {
+      const errorMessage = `Access denied: file path '${file}' is outside allowed directory. Files must be within ~/.ludus-mcp/range-config-templates/`;
+      logger.error('Security validation failed for file access', { 
+        file, 
+        resolvedFilePath, 
+        relativePath,
+        configTemplatesDir 
+      });
+      return {
+        success: false,
+        file: file,
+        error: errorMessage,
+        message: `Failed to set range configuration: ${errorMessage}`
+      };
+    }
+
+    // Check if the file exists
+    if (!fs.existsSync(resolvedFilePath)) {
+      const errorMessage = `Configuration file not found: ${file}`;
+      logger.error('Configuration file not found', { file, resolvedFilePath });
+      return {
+        success: false,
+        file: file,
+        error: errorMessage,
+        message: `Failed to set range configuration: ${errorMessage}`
+      };
+    }
+
     // Build the command arguments
-    const cmdArgs: string[] = ['range', 'config', 'set'];
+    const cmdArgs: string[] = ['config', 'set'];
     
     // Add file flag
-    cmdArgs.push('-f', file);
+    cmdArgs.push('-f', resolvedFilePath);
     
     // Add optional flags
     if (force) {
@@ -87,7 +141,7 @@ export async function handleSetRangeConfig(
     }
 
     // Execute the command
-    const result = await cliWrapper.executeCommand('', cmdArgs);
+    const result = await cliWrapper.executeCommand('range', cmdArgs);
 
     const targetUser = user || 'current user';
     
