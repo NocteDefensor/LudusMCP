@@ -7,15 +7,15 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 ### System Requirements
 - Node.js 18.0.0 or higher
 - npm package manager
-- Ludus CLI binary installed and in PATH
+- Ludus CLI binary [installed](https://docs.ludus.cloud/docs/quick-start/using-cli-locally) and in PATH
 - Active Ludus server environment
 - Network connectivity to Ludus server via WireGuard VPN or SSH
 
 ### Ludus Server Access
 Ensure you have:
 - Ludus server SSH access credentials
-- Ludus API key (obtain via `ludus apikey` command)
-- WireGuard configuration file OR SSH tunnel capabilities
+- Ludus API key (obtain via `ludus user apikey` command)
+- WireGuard configuration file OR SSH tunnel capabilities (obtain wireguard conf from Ludus CLI)
 - Admin or user account on Ludus server. Non admin will be limited in same ways as using ludus cli with non admin account.
 
 ## Installation
@@ -42,7 +42,7 @@ git clone https://github.com/NocteDefensor/LudusMCP.git
 cd LudusMCP
 From within LudusMCP directory
 npm install    # Installs dependencies and builds automatically
-npx ludus-mcp --setup-keyring  # Use npx for local installations
+npx ludus-mcp --setup-keyring  # Use npx for local from source installations by running it from within clone/install directory
 ```
 
 ### Installation Requirements
@@ -64,7 +64,7 @@ npx ludus-mcp --setup-keyring
 The setup wizard will prompt for:
 - **Connection Method**: WireGuard VPN or SSH tunnel
 - **Ludus Admin Username**: Your Ludus admin account
-- **API Key**: Ludus API key from `ludus apikey` command  
+- **API Key**: Ludus API key from `ludus user apikey` command  
 - **SSH Credentials**: Host, username, and authentication method
 - **WireGuard Config**: Path to .conf file (if using WireGuard)
 
@@ -165,6 +165,12 @@ Complete guided workflow for range creation from requirements to deployment.
 **execute-ludus-cmd** 
 Safe execution of Ludus CLI commands with destructive action protection.
 
+- To use prompts with Claude Desktop hunt for the "plus" + button near your chat bar.
+  - Click "add from ludus and you will see both prompts. Select the one you want.
+  
+<img width="1056" height="216" alt="image" src="https://github.com/user-attachments/assets/617b9205-2dc3-4e1e-8663-90fb9857b3cf" />
+
+
 ### Available Tools
 
 **Range Management**
@@ -199,7 +205,7 @@ Safe execution of Ludus CLI commands with destructive action protection.
 - `ludus_help` - Get help for Ludus commands
 - `list_all_users` - List all Ludus users (admin only)
 - `get_credential_from_user` - Securely collect credentials
-- `insert_creds_range_config` - Inject credentials into configurations
+- `insert_creds_range_config` - Inject credentials into configurations (note: the LLM doesn't actually interact with OS credential management/keyring at all. It passes the name the credential is stored under to the function. The function retrieves the credential and replaces placeholder with cred. 
 
 ### Recommended Workflow
 
@@ -297,7 +303,18 @@ For additional help:
 - Use `ludus_docs_search` for comprehensive guides  
 - Review generated configurations with `read_range_config`
 - Check [GitHub repository](https://github.com/NocteDefensor/LudusMCP) for issues and updates
-
+## References:
+- Ludus Documentation - https://docs.ludus.cloud/docs/intro
+## Coming Changes
+- May switch to [Desktop Extension](https://www.anthropic.com/engineering/desktop-extensions) setup vs the current homegrown keyring config/renew functions.
+- Will add more sample reference templates. 
+- Will attempt to keep up with new roles by adding them to the schema for LLM reference.
+## Credits
+- Ludus - [@badsectorlabs](https://x.com/badsectorlabs)
+- Claude - Wouldn't quite call this project vibe coding but maybe 4 beers deep in the passenger seat shouting out navigation commands.
+- Reddit MCP channel for lots of researching
+- MCP documentation - https://modelcontextprotocol.io/introduction
+- Anthropic MCP docs - https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector
+- MCP in VS Code - https://code.visualstudio.com/docs/copilot/chat/mcp-servers
 ## License
-
-MIT License 
+Creative Commons Attribution ShareAlike 4.0
