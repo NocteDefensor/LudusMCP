@@ -34,7 +34,7 @@ function resolveConfigPath(filePath: string, user?: string): string {
   
   // SECURITY: Block path traversal attempts
   if (filePath.includes('..') || filePath.includes('~')) {
-    throw new Error('Path traversal patterns (../, ~) are not allowed for security reasons.');
+    throw new Error('Path traversal patterns (../, ~) are not allowed for security reasons. Use relative paths only (e.g., "base-configs", "user1/config.yml").');
   }
   
   // SECURITY: Block Windows and Unix path separators at start
@@ -444,12 +444,17 @@ export function createReadRangeConfigTool(logger: Logger, cliWrapper: LudusCliWr
     name: 'read_range_config',
     description: `Read and return the content of a Ludus range configuration file from local filesystem or remote URL. Does not perform validation - use for examining configs.
 
-**FILE PATH REQUIREMENTS**: 
-- Use relative paths only for local files (e.g., "base-configs/acme.yml", "user1/config.yaml")
-- All local files must be within ~/.ludus-mcp/range-config-templates/ directory
+**WORKING DIRECTORY**: All local file paths are relative to ~/.ludus-mcp/range-config-templates/
+
+**PATH USAGE**: 
+- Use relative paths only: "base-configs/acme.yml", "user1/config.yaml", "mp/settings.yml"
+- DO NOT use: "~/.ludus-mcp/...", "/absolute/paths", or "../traversal"
 - URLs (http/https) are allowed for remote configs
 
-**SECURITY RESTRICTIONS**: Local file access restricted to ~/.ludus-mcp/range-config-templates/ and subdirectories only for security.
+**EXAMPLES**:
+- source: "base-configs/acme.yml" → reads ~/.ludus-mcp/range-config-templates/base-configs/acme.yml
+- source: "user1/config.yaml" → reads ~/.ludus-mcp/range-config-templates/user1/config.yaml
+- source: "https://example.com/config.yml" → reads from URL
 
 CRITICAL LLM BEHAVIOR: CREDENTIAL REDACTION REQUIRED 
 When displaying configuration content in conversation, you MUST replace any non-range-specific credentials such as API keys for external services, passwords not specific to the cyber range environment, or similar credentials with "REDACTED-CREDENTIAL" to prevent credential exposure in chat logs.`,
@@ -583,14 +588,23 @@ CRITICAL WORKFLOW REMINDER:
 export function createListRangeConfigsTool(logger: Logger, cliWrapper: LudusCliWrapper): Tool {
   return {
     name: 'list_range_configs',
-    description: `List range configuration files. If no directory specified, automatically searches ~/.ludus-mcp/range-config-templates/ recursively. Shows file names, sizes, and validation status.
+    description: `List range configuration files within the Ludus MCP templates directory. Shows file names, sizes, and validation status.
 
-**FILE PATH REQUIREMENTS**: 
-- Use relative paths only (e.g., "base-configs", "user1")
-- All directories must be within ~/.ludus-mcp/range-config-templates/
-- Lists .yml, .yaml, and .json files only
+**WORKING DIRECTORY**: All paths are relative to ~/.ludus-mcp/range-config-templates/ 
 
-**SECURITY RESTRICTIONS**: Directory access restricted to ~/.ludus-mcp/range-config-templates/ and subdirectories only for security.
+**PATH USAGE**: 
+- Use relative paths only: "base-configs", "user1", "mp/configs"
+- DO NOT use: "~/.ludus-mcp/...", "/absolute/paths", or "../traversal"
+- If no directory specified, automatically searches all templates recursively
+
+**FILE RESTRICTIONS**: 
+- Only searches .yml, .yaml, and .json files
+- All directories must be within the templates directory for security
+
+**EXAMPLES**:
+- directory: "base-configs" → searches ~/.ludus-mcp/range-config-templates/base-configs/
+- directory: "user1" → searches ~/.ludus-mcp/range-config-templates/user1/
+- (no directory) → searches all of ~/.ludus-mcp/range-config-templates/
 
 CRITICAL WORKFLOW REMINDER:
 - To deploy with a specific config file, you must first use set_range_config to make it active
@@ -601,7 +615,7 @@ CRITICAL WORKFLOW REMINDER:
       properties: {
         directory: {
           type: 'string',
-          description: 'Optional relative directory path to search (e.g., "base-configs", "user1"). If omitted, searches all of ~/.ludus-mcp/range-config-templates/ automatically. Must be within range-config-templates/ for security.'
+          description: 'Relative directory path within ~/.ludus-mcp/range-config-templates/ to search (e.g., "base-configs", "user1", "mp/configs"). Do NOT include "~/.ludus-mcp" or absolute paths. If omitted, searches all templates automatically.'
         },
         recursive: {
           type: 'boolean',
@@ -1113,8 +1127,8 @@ async function handleSmartFallbackSearch(recursive: boolean, logger: Logger): Pr
     totalCount: allConfigs.length,
     validCount: allConfigs.filter(c => c.validation.valid).length,
     message: allConfigs.length > 0 
-      ? `Found ${allConfigs.length} range configuration${allConfigs.length === 1 ? '' : 's'} across ${searchResults.filter(r => r.found).length} director${searchResults.filter(r => r.found).length === 1 ? 'y' : 'ies'}`
-      : `No range configurations found in any default directories`
+      ? `Found ${allConfigs.length} range configuration${allConfigs.length === 1 ? '' : 's'} across ${searchResults.filter(r => r.found).length} director${searchResults.filter(r => r.found).length === 1 ? 'y' : 'ies'}\n\n*** IMPORTANT: Use relative paths only (e.g., "base-configs/file.yml", "user1/config.yaml") - do not use ~/.ludus-mcp/ or absolute paths ***`
+      : `No range configurations found in any default directories\n\n*** IMPORTANT: Use relative paths only (e.g., "base-configs", "user1") - do not use ~/.ludus-mcp/ or absolute paths ***`
   };
 }
 
@@ -1231,6 +1245,6 @@ async function searchDirectoryForConfigs(targetDirectory: string, recursive: boo
     configs,
     totalCount: configs.length,
     validCount: configs.filter(c => c.validation.valid).length,
-    message: `Found ${configs.length} range configuration${configs.length === 1 ? '' : 's'} in ${targetDirectory}${recursive ? ' (including subdirectories)' : ''}`
+    message: `Found ${configs.length} range configuration${configs.length === 1 ? '' : 's'} in ${targetDirectory}${recursive ? ' (including subdirectories)' : ''}\n\n*** IMPORTANT: Use relative paths only (e.g., "base-configs/file.yml", "user1/config.yaml") - do not use ~/.ludus-mcp/ or absolute paths ***`
   };
 } 
