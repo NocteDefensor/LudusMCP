@@ -1071,7 +1071,8 @@ class LudusMCPServer {
                     `- Use read_range_config with file path to examine specific configs\n` +
                     `- Use validate_range_config to see detailed validation results\n` +
                     `- Use write_range_config to fix invalid configurations\n` +
-                    `- Use deploy_range to deploy valid configurations`
+                    `- Use deploy_range to deploy valid configurations` +
+                    (result.message ? `\n\n${result.message}` : '')
                   : `Range Configurations in ${result.directory}\n\n` +
                     `**Summary:**\n` +
                     `- Total configs: ${result.totalCount}\n` +
@@ -1094,7 +1095,8 @@ class LudusMCPServer {
                     `- Use read_range_config with file path to examine specific configs\n` +
                     `- Use validate_range_config to see detailed validation results\n` +
                     `- Use write_range_config to fix invalid configurations\n` +
-                    `- Use deploy_range to deploy valid configurations`)
+                    `- Use deploy_range to deploy valid configurations` +
+                    (result.message ? `\n\n${result.message}` : ''))
               : `Failed to list configurations: ${result.message}\n\n` +
                 (result.allowedPaths ? 
                   `**Security Notice:** Directory access is restricted to:\n` +
@@ -1120,7 +1122,8 @@ class LudusMCPServer {
                   `- Check if the directory exists and is readable\n` +
                   `- Verify directory permissions\n` +
                   `- Ensure proper file system access\n` +
-                  `- Try using absolute directory paths`
+                  `- Use relative paths only (e.g., "base-configs", "user1")\n` +
+                  `- Omit directory parameter to search all templates automatically`
           }
         ]
       };

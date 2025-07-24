@@ -12,6 +12,11 @@ export type CreateLudusRangeArgs = z.infer<typeof CreateLudusRangeArgsSchema>;
 export async function handleCreateLudusRangePrompt(args: CreateLudusRangeArgs) {
   const { requirements, roles, save_config = false } = args;
 
+  // Convert string input to proper boolean
+  const shouldSaveConfig = typeof save_config === 'string' 
+    ? ['true', 'TRUE', 't', 'T', '1', 'yes', 'YES', 'y', 'Y'].includes(save_config)
+    : save_config === true;
+
   return {
     messages: [
       {
@@ -36,7 +41,7 @@ ${roles ? `- Consider user-specified roles: "${roles}"` : ''}
 - If requirements are vague or missing critical details, ask clarifying questions
 - Determine complexity level automatically based on component count and integration needs
 ${roles ? '- Validate user-specified roles exist and match requirements' : ''}
-- Note save preference: ${save_config}
+- Configuration save setting: ${shouldSaveConfig ? 'SAVE configuration to file after creation' : 'DO NOT save configuration (display only)'}
 
 STEP 2: RESEARCH PHASE (Use tools in this order)
 1. ludus_list_role_collection_schemas - Get inventory of available role/collection YAML files
@@ -126,7 +131,7 @@ STEP 5: SYNTAX VALIDATION
 - FINAL CHECK: Re-verify role variables against ludus_read_role_collection_schema
 
 STEP 6: SAVE & NEXT STEPS
-- Only after ALL validations pass: Use write_range_config to save configuration
+- Only after ALL validations pass: ${shouldSaveConfig ? 'Use write_range_config to save configuration to file' : 'Display configuration content without saving'}
 - Provide clear next steps for user:
   * Configuration summary
   * Deployment instructions (set_range_config, then deploy_range)
