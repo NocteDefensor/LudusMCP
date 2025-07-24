@@ -1,0 +1,181 @@
+name: badsectorlabs.ludus_adcs
+type: role
+version: "1.0.0"
+description: "Installs ADCS on Windows Server and optionally configures Certified Preowned templates"
+repository: "https://github.com/badsectorlabs/ludus_adcs"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+note: "Not idempotent - setting ESC values to false after true won't remove templates"
+
+variables:
+  ludus_adcs_domain:
+    type: "string"
+    default: "{{ auto-detected }}"
+    description: "Auto-detected domain name from Ludus config"
+    
+  ludus_adcs_dc:
+    type: "string"
+    default: "{{ auto-detected }}"
+    description: "Auto-detected primary DC hostname"
+    
+  ludus_adcs_ca_host:
+    type: "string"
+    default: "{{ auto-detected }}"
+    description: "Auto-detected CA host from Ludus config"
+    
+  ludus_adcs_domain_username:
+    type: "string"
+    default: "{{ auto-detected }}"
+    description: "Domain admin username"
+    
+  ludus_adcs_domain_password:
+    type: "string"
+    default: "{{ auto-detected }}"
+    description: "Domain admin password"
+    
+  ludus_adcs_ca_common_name:
+    type: "string"
+    default: "{{ ludus_adcs_domain }}-CA"
+    description: "CA certificate common name"
+    
+  ludus_adcs_esc1:
+    type: "boolean"
+    default: true
+    description: "Enable ESC1 template vulnerability"
+    
+  ludus_adcs_esc2:
+    type: "boolean"
+    default: true
+    description: "Enable ESC2 template vulnerability"
+    
+  ludus_adcs_esc3:
+    type: "boolean"
+    default: true
+    description: "Enable ESC3 template vulnerability"
+    
+  ludus_adcs_esc3_cra:
+    type: "boolean"
+    default: true
+    description: "Enable ESC3 CRA template vulnerability"
+    
+  ludus_adcs_esc4:
+    type: "boolean"
+    default: true
+    description: "Enable ESC4 template vulnerability"
+    
+  ludus_adcs_esc5:
+    type: "boolean"
+    default: true
+    description: "Enable ESC5 template vulnerability"
+    
+  ludus_adcs_esc6:
+    type: "boolean"
+    default: true
+    description: "Enable ESC6 template vulnerability"
+    
+  ludus_adcs_esc7:
+    type: "boolean"
+    default: true
+    description: "Enable ESC7 template vulnerability"
+    
+  ludus_adcs_esc8:
+    type: "boolean"
+    default: true
+    description: "Enable ESC8 template vulnerability"
+    
+  ludus_adcs_esc9:
+    type: "boolean"
+    default: true
+    description: "Enable ESC9 template vulnerability"
+    
+  ludus_adcs_esc11:
+    type: "boolean"
+    default: true
+    description: "Enable ESC11 template vulnerability"
+    
+  ludus_adcs_esc13:
+    type: "boolean"
+    default: true
+    description: "Enable ESC13 template vulnerability"
+    
+  ludus_adcs_esc15:
+    type: "boolean"
+    default: true
+    description: "Enable ESC15 template vulnerability"
+    
+  ludus_adcs_esc16:
+    type: "boolean"
+    default: true
+    description: "Enable ESC16 template vulnerability"
+    
+  ludus_adcs_esc5_user:
+    type: "string"
+    default: "esc5user"
+    description: "Username for ESC5 exploitation"
+    
+  ludus_adcs_esc5_password:
+    type: "string"
+    default: "ESC5password"
+    description: "Password for ESC5 user"
+    
+  ludus_adcs_esc7_ca_manager_user:
+    type: "string"
+    default: "esc7_camgr_user"
+    description: "CA manager user for ESC7"
+    
+  ludus_adcs_esc7_ca_manager_password:
+    type: "string"
+    default: "ESC7password"
+    description: "CA manager password for ESC7"
+    
+  ludus_adcs_esc7_cert_manager_user:
+    type: "string"
+    default: "esc7_certmgr_user"
+    description: "Certificate manager user for ESC7"
+    
+  ludus_adcs_esc7_cert_manager_password:
+    type: "string"
+    default: "ESC7password"
+    description: "Certificate manager password for ESC7"
+    
+  ludus_adcs_esc9_user:
+    type: "string"
+    default: "esc9user"
+    description: "Username for ESC9 exploitation"
+    
+  ludus_adcs_esc9_password:
+    type: "string"
+    default: "ESC9password"
+    description: "Password for ESC9 user"
+    
+  ludus_adcs_esc13_user:
+    type: "string"
+    default: "esc13user"
+    description: "Username for ESC13 exploitation"
+    
+  ludus_adcs_esc13_password:
+    type: "string"
+    default: "ESC13password"
+    description: "Password for ESC13 user"
+    
+  ludus_adcs_esc13_group:
+    type: "string"
+    default: "esc13group"
+    description: "Group for ESC13 exploitation"
+    
+  ludus_adcs_esc13_template:
+    type: "string"
+    default: "ESC13"
+    description: "Template name for ESC13"
+    
+  ludus_adcs_esc16_user:
+    type: "string"
+    default: "esc16user"
+    description: "Username for ESC16 exploitation"
+    
+  ludus_adcs_esc16_password:
+    type: "string"
+    default: "ESC16password"
+    description: "Password for ESC16 user" 

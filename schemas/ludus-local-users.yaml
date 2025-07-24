@@ -1,0 +1,42 @@
+name: ludus-local-users
+type: role
+version: "1.0.0"
+description: "Creates and manages local users and groups"
+repository: "https://github.com/Cyblex-Consulting/ludus-local-users"
+author: "Cyblex-Consulting"
+
+dependencies: []
+
+variables:
+  ludus_local_users.login:
+    type: "string"
+    default: "jdoe"
+    description: "User login name"
+    
+  ludus_local_users.password:
+    type: "string"
+    default: "aA8MaQBCtBtPYAFh"
+    description: "User password"
+    
+  ludus_local_users.groups:
+    type: "string"
+    default: "sudo,adm"
+    description: "Groups to put user into (Linux only, comma separated)"
+    
+  ludus_local_users.sudo_nopasswd:
+    type: "boolean"
+    default: true
+    description: "Whether to set NOPASSWD in sudoers (Linux only)"
+    
+  ludus_local_users.name:
+    type: "string"
+    default: "jdoe"
+    description: "Group to modify (Windows only)"
+    
+  ludus_local_users.members:
+    type: "array"
+    default:
+      - "my_local_user"
+      - "MYRANGE\\Developers"
+      - "MYRANGE\\Tier 1 Admins"
+    description: "List of accounts or groups to add to local group (Windows only)" 

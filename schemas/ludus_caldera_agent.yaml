@@ -1,0 +1,14 @@
+name: ludus_caldera_agent
+type: role
+version: "1.0.0"
+description: "Installs MITRE Caldera agent"
+repository: "https://github.com/frack113/ludus_caldera_agent"
+author: "frack113"
+
+dependencies: []
+
+variables:
+  ludus_caldera_windows_agent_name:
+    type: "string"
+    default: "C:\\Users\\Public\\splunkd.exe"
+    description: "Name of the Windows payload" 

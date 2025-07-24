@@ -1,0 +1,154 @@
+name: ludus_filigran_opencti
+type: role
+version: "1.0.0"
+description: "Installs Filigran OpenCTI threat intelligence platform"
+repository: "https://github.com/frack113/ludus_filigran_opencti"
+author: "frack113"
+
+dependencies: []
+
+variables:
+  ludus_filigran_docker_redis:
+    type: "string"
+    default: "7.4.2"
+    description: "Redis Docker version"
+    
+  ludus_filigran_docker_elastic:
+    type: "string"
+    default: "8.17.4"
+    description: "Elasticsearch Docker version"
+    
+  ludus_filigran_docker_minio:
+    type: "string"
+    default: "RELEASE.2024-05-28T17-19-04Z"
+    description: "MinIO Docker version"
+    
+  ludus_filigran_docker_rabbitmq:
+    type: "string"
+    default: "4.0-management"
+    description: "RabbitMQ Docker version"
+    
+  ludus_filigran_docker_postgres:
+    type: "string"
+    default: "17-alpine"
+    description: "PostgreSQL Docker version"
+    
+  ludus_filigran_opencti_version:
+    type: "string"
+    default: "6.6.10"
+    description: "OpenCTI version"
+    
+  ludus_filigran_openbas_version:
+    type: "string"
+    default: "1.16.0"
+    description: "OpenBAS version"
+    
+  ludus_filigran_opencti_ADMIN_EMAIL:
+    type: "string"
+    default: "admin@domain.com"
+    description: "OpenCTI admin email"
+    
+  ludus_filigran_opencti_ADMIN_PASSWORD:
+    type: "string"
+    default: "password"
+    description: "OpenCTI admin password"
+    
+  ludus_filigran_opencti_ADMIN_TOKEN:
+    type: "string"
+    default: "9079c861-460e-49ba-9948-54137cfeb8ca"
+    description: "OpenCTI admin token"
+    
+  ludus_filigran_opencti_HEALTHCHECK_ACCESS_KEY:
+    type: "string"
+    default: "9813287b-4234-4b9c-8382-73938f640455"
+    description: "OpenCTI healthcheck access key"
+    
+  ludus_filigran_opencti_SMTP_HOSTNAME:
+    type: "string"
+    default: "localhost"
+    description: "SMTP hostname"
+    
+  ludus_filigran_opencti_MINIO_ROOT_USER:
+    type: "string"
+    default: "d5e955ed-be95-4220-b828-d3d62c00cab3"
+    description: "MinIO root user"
+    
+  ludus_filigran_opencti_MINIO_ROOT_PASSWORD:
+    type: "string"
+    default: "a46c6ee2-d3a8-4cbc-a39e-6f03a1e53524"
+    description: "MinIO root password"
+    
+  ludus_filigran_opencti_RABBITMQ_DEFAULT_USER:
+    type: "string"
+    default: "guest"
+    description: "RabbitMQ default user"
+    
+  ludus_filigran_opencti_RABBITMQ_DEFAULT_PASS:
+    type: "string"
+    default: "guest"
+    description: "RabbitMQ default password"
+    
+  ludus_filigran_opencti_ELASTIC_MEMORY_SIZE:
+    type: "string"
+    default: "4G"
+    description: "Elasticsearch memory size"
+    
+  ludus_filigran_opencti_POSTGRES_USER:
+    type: "string"
+    default: "ChangeMe"
+    description: "PostgreSQL user"
+    
+  ludus_filigran_opencti_POSTGRES_PASSWORD:
+    type: "string"
+    default: "ChangeMe"
+    description: "PostgreSQL password"
+    
+  ludus_filigran_opencti_external_import:
+    type: "array"
+    default:
+      - "cisa-known-exploited-vulnerabilities"
+      - "mitre"
+    description: "CTI connectors for external import"
+    
+  ludus_filigran_opencti_internal_enrichment:
+    type: "array"
+    default: []
+    description: "Internal enrichment connectors"
+    
+  ludus_filigran_opencti_internal_export_file:
+    type: "array"
+    default:
+      - "export-file-csv"
+      - "export-file-stix"
+      - "export-file-txt"
+      - "export-report-pdf"
+      - "export-ttps-file-navigator"
+    description: "Internal export file connectors"
+    
+  ludus_filigran_opencti_internal_import_file:
+    type: "array"
+    default:
+      - "import-document"
+      - "import-file-misp"
+      - "import-file-stix"
+      - "import-file-yara"
+    description: "Internal import file connectors"
+    
+  ludus_filigran_opencti_stream:
+    type: "array"
+    default: []
+    description: "Stream connectors"
+    
+  ludus_filigran_openbas_collectors:
+    type: "array"
+    default:
+      - "atomic-red-team"
+      - "mitre-attack"
+    description: "BAS collectors"
+    
+  ludus_filigran_openbas_injectors:
+    type: "array"
+    default:
+      - "http-query"
+      - "nmap"
+    description: "BAS injectors" 

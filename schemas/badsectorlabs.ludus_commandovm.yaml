@@ -1,0 +1,24 @@
+name: badsectorlabs.ludus_commandovm
+type: role
+version: "1.0.0"
+description: "Installs CommandoVM on Windows systems"
+repository: "https://github.com/badsectorlabs/ludus_commandovm"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+variables:
+  ludus_commandovm_use_commandovm_wallpaper:
+    type: "boolean"
+    default: true
+    description: "Whether to use CommandoVM wallpaper"
+    
+  ludus_commandovm_nopassword:
+    type: "boolean"
+    default: true
+    description: "Whether to disable password requirement"
+    
+  ludus_commandovm_password:
+    type: "string"
+    default: null
+    description: "Optional password for CommandoVM user" 

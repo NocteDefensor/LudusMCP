@@ -1,0 +1,69 @@
+name: ludus-ad-vulns
+type: role
+version: "1.0.0"
+description: "Configures various Active Directory vulnerabilities"
+repository: "https://github.com/Primusinterp/ludus-ad-vulns"
+author: "Primusinterp"
+
+dependencies: []
+
+variables:
+  user.identity:
+    type: "string"
+    default: "fives"
+    description: "SAM account name for Kerberoastable user"
+    
+  user.service_principal_name:
+    type: "string"
+    default: "HTTP/ArcTraining"
+    description: "Service Principal Name (SPN) value"
+    
+  machine_name:
+    type: "string"
+    default: "maldev-srv1-2022"
+    description: "Machine name for unconstrained delegation"
+    
+  acl.value.for:
+    type: "string"
+    default: "cptrex"
+    description: "Object to assign ACL for"
+    
+  acl.value.to:
+    type: "string"
+    default: "CN=Bounty Hunters,OU=Bounty Hunters,DC=maldev,DC=local"
+    description: "Object to assign ACL to"
+    
+  acl.value.right:
+    type: "string"
+    default: "GenericAll"
+    description: "ACL to apply"
+    
+  acl.value.inheritance:
+    type: "string"
+    default: "None"
+    description: "ACL inheritance setting"
+    
+  ludus_ad_vulns_openshares:
+    type: "boolean"
+    default: false
+    description: "Enable open shares vulnerability"
+    
+  ludus_ad_vulns_kerberoasting:
+    type: "boolean"
+    default: false
+    description: "Enable Kerberoasting vulnerability"
+    
+  ludus_ad_vulns_unconstrained_delegation_user:
+    type: "boolean"
+    default: false
+    description: "Enable unconstrained delegation for user"
+    
+  ludus_ad_vulns_set_acl:
+    type: "boolean"
+    default: false
+    description: "Enable ACL vulnerability"
+    
+  ludus_ad_vulns_unconstrained_delegation_machine:
+    type: "boolean"
+    default: false
+    description: "Enable unconstrained delegation for machine" 

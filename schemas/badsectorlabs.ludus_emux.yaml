@@ -1,0 +1,48 @@
+name: badsectorlabs.ludus_emux
+type: role
+version: "1.0.0"
+description: "Installs EMUX and runs an emulated device on Debian based hosts"
+repository: "https://github.com/badsectorlabs/ludus_emux"
+author: "Bad Sector Labs"
+
+dependencies:
+  - "geerlingguy.docker"
+
+note: "Ports 80/443 mapped to emulated device - don't use host for other services"
+
+variables:
+  ludus_emux_path:
+    type: "string"
+    default: "/opt/emux"
+    description: "Installation path for EMUX"
+    
+  ludus_emux_device:
+    type: "integer"
+    default: 4
+    description: "Device number to emulate"
+    valid_options:
+      0: "DV-ARM (Damn Vulnerable ARM Router)"
+      1: "DV-MIPSEL (Damn Vulnerable MIPS Router - Little Endian)"
+      2: "DV-MIPSEB (Damn Vulnerable MIPS Router - Big Endian)"
+      3: "PH0WNCTF (R0 Port Controller - Ph0wn 2021 CTF Challenge)"
+      4: "TRI227WF (Trivision NC-227-WF IP Camera)"
+      5: "AC15 (Tenda AC15 Wi-Fi Router)"
+      6: "ARCHERC9 (Archer C9 Wi-Fi Router)"
+      7: "DIR615C (D-Link DIR615C Wi-Fi Router)"
+      8: "DCS935L (D-Link DCS-935L Camera)"
+      
+  ludus_emux_devices_map:
+    type: "object"
+    default:
+      "0": "DV-ARM"
+      "1": "DV-MIPSEL"
+      "2": "DV-MIPSEB"
+      "3": "PH0WNCTF"
+      "4": "TRI227WF"
+      "5": "AC15"
+      "6": "ARCHERC9"
+      "7": "DIR615C"
+      "8": "DCS935L"
+    description: "Device ID to device name mapping - DO NOT MODIFY THIS VAR"
+    readonly: true
+    note: "Reference mapping for device numbers to device names" 

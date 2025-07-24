@@ -1,0 +1,50 @@
+name: badsectorlabs.ludus_bloodhound_ce
+type: role
+version: "1.0.0"
+description: "Installs Bloodhound CE on a Debian based system"
+repository: "https://github.com/badsectorlabs/ludus_bloodhound_ce"
+author: "Bad Sector Labs"
+
+dependencies:
+  - "geerlingguy.docker"
+
+variables:
+  ludus_bloodhound_ce_install_path:
+    type: "string"
+    default: "/opt/bloodhound"
+    description: "Path where docker-compose.yml and admin creds are placed"
+    
+  ludus_bloodhound_listen_only_localhost:
+    type: "boolean"
+    default: false
+    description: "Expose bloodhound web UI to 0.0.0.0:8080 if set to false"
+    
+  ludus_bloodhound_port:
+    type: "string"
+    default: "8080"
+    description: "The port bloodhound CE listens on"
+    
+  ludus_bloodhound_admin_password:
+    type: "string"
+    default: "bloodhoundpassword"
+    description: "The default admin password for bloodhound"
+    
+  ludus_bloodhound_admin_principal_name:
+    type: "string"
+    default: "admin"
+    description: "Admin principal name"
+    
+  ludus_bloodhound_admin_email_address:
+    type: "string"
+    default: "admin@ludus.domain"
+    description: "Admin email address"
+    
+  ludus_bloodhound_admin_first_name:
+    type: "string"
+    default: "Bloodhound"
+    description: "Admin first name"
+    
+  ludus_bloodhound_admin_last_name:
+    type: "string"
+    default: "Admin"
+    description: "Admin last name" 

@@ -1,0 +1,19 @@
+name: ludus_juiceshop
+type: role
+version: "1.0.0"
+description: "Installs OWASP Juice Shop vulnerable web application"
+repository: "https://github.com/xurger/ludus_juiceshop"
+author: "xurger"
+
+dependencies: []
+
+variables:
+  ludus_juiceshop_port:
+    type: "integer"
+    default: 80
+    description: "Port for Juice Shop to listen on"
+    
+  ludus_juiceshop_user:
+    type: "string"
+    default: "root"
+    description: "User to run Juice Shop as" 

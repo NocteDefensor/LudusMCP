@@ -1,0 +1,62 @@
+name: badsectorlabs.ludus_mssql
+type: role
+version: "1.0.0"
+description: "Installs MSSQL on Windows systems"
+repository: "https://github.com/badsectorlabs/ludus_mssql"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+variables:
+  ludus_mssql_version:
+    type: "string"
+    default: "2019"
+    description: "MSSQL version to install"
+    valid_options:
+      - "2019"
+      - "2022"
+      
+  ludus_install_directory:
+    type: "string"
+    default: "/opt/ludus"
+    description: "Ludus installation directory"
+    
+  ludus_mssql_iso_directory:
+    type: "string"
+    default: "C:\\ludus"
+    description: "Directory for MSSQL ISO files"
+    
+  ludus_mssql_sql_config_path:
+    type: "string"
+    default: "{{ ludus_mssql_iso_directory }}\\sqlsrv_{{ ludus_mssql_version }}_config.ini"
+    description: "Path to SQL Server configuration file"
+    
+  ludus_mssql_iso_url:
+    type: "string"
+    default: "https://archive.org/download/en_sql_server_2019_standard_x64_dvd_814b57aa_202211/en_sql_server_2019_standard_x64_dvd_814b57aa.iso"
+    description: "URL to download MSSQL ISO"
+    
+  ludus_mssql_iso_checksum:
+    type: "string"
+    default: "sha256:1e56705b3544e77039584b3b38461df0321834822776aef8e50847fdd9edad44"
+    description: "Checksum for MSSQL ISO verification"
+    
+  ludus_mssql_instance_name:
+    type: "string"
+    default: "MSSQLSERVER"
+    description: "SQL Server instance name"
+    
+  ludus_mssql_sql_license_key:
+    type: "string"
+    default: null
+    description: "Optional SQL Server license key"
+    
+  ludus_mssql_ssms_url:
+    type: "string"
+    default: "https://aka.ms/ssmsfullsetup"
+    description: "URL to download SQL Server Management Studio"
+    
+  ludus_mssql_install_ssms:
+    type: "boolean"
+    default: true
+    description: "Whether to install SQL Server Management Studio" 

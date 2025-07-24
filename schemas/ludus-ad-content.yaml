@@ -1,0 +1,86 @@
+name: ludus-ad-content
+type: role
+version: "1.0.0"
+description: "Creates Active Directory organizational units, groups, and users"
+repository: "https://github.com/Cyblex-Consulting/ludus-ad-content"
+author: "Cyblex-Consulting"
+
+dependencies: []
+
+variables:
+  ludus_ad.ous.name:
+    type: "string"
+    default: "France"
+    description: "OU name"
+    
+  ludus_ad.ous.path:
+    type: "string"
+    default: "DC=myrange,DC=corp"
+    description: "OU path"
+    
+  ludus_ad.ous.description:
+    type: "string"
+    default: "jdoe"
+    description: "OU description"
+    
+  ludus_ad.groups.name:
+    type: "string"
+    default: "France"
+    description: "Group name"
+    
+  ludus_ad.groups.scope:
+    type: "string"
+    default: "global"
+    description: "Group scope"
+    
+  ludus_ad.groups.path:
+    type: "string"
+    default: "OU=France,DC=myrange,DC=corp"
+    description: "Group path"
+    
+  ludus_ad.groups.description:
+    type: "string"
+    default: "jdoe"
+    description: "Group description"
+    
+  ludus_ad.users.name:
+    type: "string"
+    default: "France"
+    description: "User name"
+    
+  ludus_ad.users.firstname:
+    type: "string"
+    default: "John"
+    description: "User first name"
+    
+  ludus_ad.users.surname:
+    type: "string"
+    default: "Doe"
+    description: "User surname"
+    
+  ludus_ad.users.display_name:
+    type: "string"
+    default: "display_name"
+    description: "User display name"
+    
+  ludus_ad.users.password:
+    type: "string"
+    default: "GFVfPS432QkKN2YdQwJL"
+    description: "User password"
+    
+  ludus_ad.users.path:
+    type: "string"
+    default: "OU=France,DC=myrange,DC=corp"
+    description: "User path"
+    
+  ludus_ad.users.description:
+    type: "string"
+    default: "IT System Administrator"
+    description: "User description"
+    
+  ludus_ad.users.groups:
+    type: "array"
+    default:
+      - "Group 1"
+      - "Group 2"
+    description: "List of groups to add user to" 

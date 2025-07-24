@@ -1,0 +1,10 @@
+name: ludus_ghosts_server
+type: role
+version: "1.0.0"
+description: "Installs GHOSTS server for activity simulation"
+repository: "https://github.com/frack113/ludus_ghosts_server"
+author: "frack113"
+
+dependencies: []
+
+variables: {} 

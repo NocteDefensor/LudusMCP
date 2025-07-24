@@ -1,0 +1,24 @@
+name: ludus_graylog_server
+type: role
+version: "1.0.0"
+description: "Installs Graylog server for log management"
+repository: "https://github.com/frack113/ludus_graylog_server"
+author: "frack113"
+
+dependencies: []
+
+variables:
+  ludus_graylog_opensearch_admin_password:
+    type: "string"
+    default: "pdMDL4!5ELcBSWqu"
+    description: "OpenSearch admin password"
+    
+  ludus_graylog_svr_password_secret:
+    type: "string"
+    default: "r9t-HW87CV3OJysF1BvVBmkZCvpFdGgLsXCkf8NUbUZSZnW2lvdwraeUdP1y4eP8wbOd2LizMjSvMiJPWsg4VcAufhij809c"
+    description: "Graylog server password secret"
+    
+  ludus_graylog_svr_root_password_sha2:
+    type: "string"
+    default: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+    description: "Graylog server root password SHA2 hash" 

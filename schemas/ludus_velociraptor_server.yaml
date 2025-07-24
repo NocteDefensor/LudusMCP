@@ -1,0 +1,39 @@
+name: ludus_velociraptor_server
+type: role
+version: "1.0.0"
+description: "Installs Velociraptor server"
+repository: "https://github.com/fmurer/ludus_velociraptor_server"
+author: "fmurer"
+
+dependencies: []
+
+variables:
+  velociraptor_version:
+    type: "string"
+    default: "v0.72"
+    description: "Velociraptor version"
+    
+  velociraptor_version_patch:
+    type: "string"
+    default: "v0.72.0"
+    description: "Velociraptor version with patch level"
+    
+  velociraptor_admin_user:
+    type: "string"
+    default: "admin"
+    description: "Admin username"
+    
+  velociraptor_admin_password:
+    type: "string"
+    default: "pleasechangeme"
+    description: "Admin password"
+    
+  velociraptor_host:
+    type: "string"
+    default: "{{ ansible_default_ipv4.address }}"
+    description: "Server host IP address"
+    
+  velociraptor_install_path:
+    type: "string"
+    default: "/opt/velociraptor"
+    description: "Installation path" 
