@@ -86,7 +86,7 @@ Directory exists but no .yaml or .yml files found in: ${schemaDir}
 
 **To Fix:**
 1. Restart the MCP server to download schemas from GitHub
-2. Check that the 'yaml-schemas' branch exists in the repository
+2. Check that the repository and schemas are available on main branch
 3. Verify your internet connection
 
 **Expected Files:** Role and collection schema files with .yaml or .yml extensions`
