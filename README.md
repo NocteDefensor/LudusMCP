@@ -64,9 +64,11 @@ npx ludus-mcp --setup-keyring
 The setup wizard will prompt for:
 - **Connection Method**: WireGuard VPN or SSH tunnel
 - **Ludus Admin Username**: Your Ludus admin account
-- **API Key**: Ludus API key from `ludus user apikey` command  
+- **API Key**: Ludus API key from `ludus user apikey` command.
 - **SSH Credentials**: Host, username, and authentication method
 - **WireGuard Config**: Path to .conf file (if using WireGuard)
+
+**NOTE** Do not use quotes or single quotes around any values during the keyring setup or renew operations.
 
 Credentials are stored securely in your OS credential manager (Windows Credential Manager, macOS Keychain, Linux Secret Service).
 
@@ -199,6 +201,7 @@ Safe execution of Ludus CLI commands with destructive action protection.
 - `ludus_read_range_config_schema` - View configuration schema
 - `ludus_range_config_check_against_plan` - Validate against requirements
 - `ludus_read_role_collection_schema` - View role schemas
+- `ludus_list_role_collection_schemas` - List all available role/collection schemas
 
 **Utility & Administration**
 - `ludus_cli_execute` - Execute arbitrary Ludus CLI commands
@@ -206,6 +209,31 @@ Safe execution of Ludus CLI commands with destructive action protection.
 - `list_all_users` - List all Ludus users (admin only)
 - `get_credential_from_user` - Securely collect credentials
 - `insert_creds_range_config` - Inject credentials into configurations (note: the LLM doesn't actually interact with OS credential management/keyring at all. It passes the name the credential is stored under to the function. The function retrieves the credential and replaces placeholder with cred. 
+
+### Role and Collection Schemas
+
+The MCP server maintains detailed schemas for all available Ludus roles and collections to help the LLM understand role capabilities, variables, and requirements during range planning.
+
+**Schema Location**
+Official schemas are stored in `~/.ludus-mcp/schemas/` as individual YAML files, one per role or collection. These are automatically downloaded and updated from the GitHub repository on server startup.
+
+**Schema Tools**
+- `ludus_list_role_collection_schemas` - List all available role/collection schema files
+- `ludus_read_role_collection_schema` - Read schema data (all schemas or specific files)
+
+**Adding Custom Schemas**
+To add schemas for custom roles or third-party roles not in the official repository:
+
+1. Create a YAML file in `~/.ludus-mcp/schemas/` following the standard format
+2. Use a distinctive name to avoid conflicts (e.g., `company.custom_role.yaml`)
+3. Include all required fields: `name`, `type`, `description`, `variables`
+4. Refer to `Sample-schema.yaml` in the schemas directory for proper formatting and structure
+
+**Schema Persistence**
+Custom schemas are preserved during server restarts. The update process only overwrites official schemas from the repository, leaving your custom files intact.
+
+**Filtered Reading**
+Use `ludus_read_role_collection_schema` with the `file_names` parameter to read specific schemas instead of all schemas at once.
 
 ### Recommended Workflow
 
@@ -245,16 +273,19 @@ Configuration files and data are stored in `~/.ludus-mcp/`:
 ~/.ludus-mcp/
 ├── range-config-templates/
 │   └── base-configs/           # GitHub templates (auto-updated)
-├── schemas/                    # JSON schemas (auto-updated)
-│   ├── ludus-roles-collections-schema.json
-│   └── range-config.json
+├── schemas/                    # Role/collection schemas (auto-updated)
+│   ├── Sample-schema.yaml     # Template for custom schemas
+│   ├── ludus_sccm.yaml        # Individual role schemas
+│   ├── badsectorlabs.ludus_vulhub.yaml
+│   ├── custom_role.yaml       # Your custom schemas (preserved)
+│   └── range-config.json      # Range configuration schema
 └── ludus-docs/                 # Cached documentation (auto-updated)
     ├── environment-guides/
     ├── quick-start/
     └── troubleshooting/
 ```
 
-All files are automatically downloaded and updated on server startup.
+Official files are automatically downloaded and updated on server startup. Custom files you create are preserved.
 
 ## Security
 - This is for lab use only. Security is marginal. Some attempts have been made to limit OS command injection or path traversal. Additionally, credentials are handled via OS credential manager.
