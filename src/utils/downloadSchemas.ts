@@ -153,9 +153,9 @@ async function cloneSchemas(
   targetPath: string, 
   logger: Logger
 ): Promise<void> {
-  // Clone only the specific schemas folder from yaml-schemas branch
-  logger.info('Cloning schemas from GitHub repository (yaml-schemas branch)...');
-  execSync(`git clone --filter=blob:none --sparse --depth 1 --branch yaml-schemas "${repoUrl}" "${tempDir}"`, { stdio: 'pipe' });
+  // Clone only the specific schemas folder from main branch
+  logger.info('Cloning schemas from GitHub repository (main branch)...');
+  execSync(`git clone --filter=blob:none --sparse --depth 1 --branch main "${repoUrl}" "${tempDir}"`, { stdio: 'pipe' });
   execSync(`git -C "${tempDir}" sparse-checkout set "${targetPath}"`, { stdio: 'pipe' });
 
   const sourceSchemas = path.join(tempDir, targetPath);

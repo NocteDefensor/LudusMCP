@@ -1757,7 +1757,7 @@ class LudusMCPServer {
                   `- Restart the MCP server to download schemas from GitHub\n` +
                   `- Check internet connection for GitHub access\n` +
                   `- Verify ~/.ludus-mcp/schemas/ directory exists\n` +
-                  `- Ensure the 'yaml-schemas' branch is available`
+                  `- Ensure the repository and schemas are available on main branch`
           }
         ]
       };
