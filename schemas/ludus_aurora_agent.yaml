@@ -1,0 +1,24 @@
+name: ludus_aurora_agent
+type: role
+version: "1.0.0"
+description: "Installs Aurora EDR agent"
+repository: "https://github.com/frack113/ludus_aurora_agent"
+author: "frack113"
+
+dependencies: []
+
+variables:
+  ludus_aurora_dashboard:
+    type: "boolean"
+    default: false
+    description: "Whether to install the dashboard"
+    
+  ludus_aurora_udp_target:
+    type: "string"
+    default: ""
+    description: "UDP target for sending logs to SIEM"
+    
+  ludus_aurora_udp_format:
+    type: "string"
+    default: ""
+    description: "UDP format for SIEM logs" 

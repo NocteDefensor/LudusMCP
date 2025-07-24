@@ -60,9 +60,9 @@ async function cloneSchemas(
   targetPath: string, 
   logger: Logger
 ): Promise<void> {
-  // Clone only the specific schemas folder
-  logger.info('Cloning schemas from GitHub repository...');
-  execSync(`git clone --filter=blob:none --sparse --depth 1 "${repoUrl}" "${tempDir}"`, { stdio: 'pipe' });
+  // Clone only the specific schemas folder from yaml-schemas branch
+  logger.info('Cloning schemas from GitHub repository (yaml-schemas branch)...');
+  execSync(`git clone --filter=blob:none --sparse --depth 1 --branch yaml-schemas "${repoUrl}" "${tempDir}"`, { stdio: 'pipe' });
   execSync(`git -C "${tempDir}" sparse-checkout set "${targetPath}"`, { stdio: 'pipe' });
 
   // Move schemas to final location (Windows-safe approach)

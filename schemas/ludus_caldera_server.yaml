@@ -1,0 +1,29 @@
+name: ludus_caldera_server
+type: role
+version: "1.0.0"
+description: "Installs MITRE Caldera server"
+repository: "https://github.com/frack113/ludus_caldera_server"
+author: "frack113"
+
+dependencies: []
+
+variables:
+  ludus_caldera_git:
+    type: "string"
+    default: "b24f6e7a99cab19cbf417009bda9b9c6c81abc31"
+    description: "SHA-1 hash of the commit"
+    
+  ludus_caldera_admin_pwd:
+    type: "string"
+    default: "admin"
+    description: "Admin user password"
+    
+  ludus_caldera_red_pwd:
+    type: "string"
+    default: "red"
+    description: "Red team user password"
+    
+  ludus_caldera_blue_pwd:
+    type: "string"
+    default: "blue"
+    description: "Blue team user password" 

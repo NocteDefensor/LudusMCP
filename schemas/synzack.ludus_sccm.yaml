@@ -1,0 +1,266 @@
+name: synzack.ludus_sccm
+type: collection
+version: "1.0.0"
+description: "Collection for deploying Microsoft System Center Configuration Manager"
+repository: "https://github.com/synzack/ansible-collection-ludus-sccm"
+author: "Zach Stein (@synzack21)"
+
+dependencies: []
+
+roles:
+  disable_firewall:
+    variables: {}
+    
+  enable_webdav:
+    variables: {}
+    
+  install_adcs:
+    variables: {}
+    
+  ludus_sccm_distro:
+    variables:
+      ludus_sccm_site_server_hostname:
+        type: "string"
+        default: "sccm-sitesrv"
+        description: "SCCM site server hostname"
+        
+  ludus_sccm_mgmt:
+    variables:
+      ludus_sccm_site_server_hostname:
+        type: "string"
+        default: "sccm-sitesrv"
+        description: "SCCM site server hostname"
+        
+  ludus_sccm_siteserver:
+    variables:
+      ludus_install_directory:
+        type: "string"
+        default: "/opt/ludus"
+        description: "Ludus installation directory"
+        
+      ludus_sccm_host_path:
+        type: "string"
+        default: "C:\\ludus\\sccm"
+        description: "SCCM host path"
+        
+      ludus_sccm_sitecode:
+        type: "integer"
+        default: 123
+        description: "SCCM site code"
+        
+      ludus_sccm_sitename:
+        type: "string"
+        default: "Primary Site"
+        description: "SCCM site name"
+        
+      ludus_sccm_site_server_hostname:
+        type: "string"
+        default: "sccm-sitesrv"
+        description: "SCCM site server hostname"
+        
+      ludus_sccm_distro_server_hostname:
+        type: "string"
+        default: "sccm-distro"
+        description: "SCCM distribution server hostname"
+        
+      ludus_sccm_mgmt_server_hostname:
+        type: "string"
+        default: "sccm-mgmt"
+        description: "SCCM management server hostname"
+        
+      ludus_sccm_sql_server_hostname:
+        type: "string"
+        default: "sccm-sql"
+        description: "SCCM SQL server hostname"
+        
+      ludus_sccm_configure_naa:
+        type: "boolean"
+        default: false
+        description: "Configure Network Access Account"
+        
+      ludus_sccm_naa_username:
+        type: "string"
+        default: ""
+        description: "Network Access Account username"
+        
+      ludus_sccm_naa_password:
+        type: "string"
+        default: ""
+        description: "Network Access Account password"
+        
+      ludus_sccm_configure_client_push:
+        type: "boolean"
+        default: false
+        description: "Configure client push account"
+        
+      ludus_sccm_client_push_username:
+        type: "string"
+        default: "sccm_push"
+        description: "Client push username"
+        
+      ludus_sccm_client_push_password:
+        type: "string"
+        default: "password"
+        description: "Client push password"
+        
+      ludus_sccm_enable_automatic_client_push_installation:
+        type: "boolean"
+        default: true
+        description: "Enable automatic client push installation"
+        
+      ludus_sccm_enable_system_type_configuration_manager:
+        type: "boolean"
+        default: true
+        description: "Enable system type configuration manager"
+        
+      ludus_sccm_enable_system_type_server:
+        type: "boolean"
+        default: true
+        description: "Enable system type server"
+        
+      ludus_sccm_enable_system_type_workstation:
+        type: "boolean"
+        default: true
+        description: "Enable system type workstation"
+        
+      ludus_sccm_install_client_to_domain_controller:
+        type: "boolean"
+        default: false
+        description: "Install client to domain controller"
+        
+      ludus_sccm_allow_NTLM_fallback:
+        type: "boolean"
+        default: true
+        description: "Allow NTLM fallback"
+        
+      ludus_sccm_configure_task_sequence:
+        type: "boolean"
+        default: false
+        description: "Configure task sequence account"
+        
+      ludus_sccm_task_sequence_username:
+        type: "string"
+        default: "sccm_push"
+        description: "Task sequence username"
+        
+      ludus_sccm_task_sequence_password:
+        type: "string"
+        default: "password"
+        description: "Task sequence password"
+        
+      ludus_sccm_configure_domain_join:
+        type: "boolean"
+        default: false
+        description: "Configure domain join account"
+        
+      ludus_sccm_domain_join_username:
+        type: "string"
+        default: "sccm_push"
+        description: "Domain join username"
+        
+      ludus_sccm_domain_join_password:
+        type: "string"
+        default: "password"
+        description: "Domain join password"
+        
+      ludus_sccm_enable_active_directory_forest_discovery:
+        type: "boolean"
+        default: true
+        description: "Enable Active Directory forest discovery"
+        
+      ludus_sccm_enable_active_directory_boundary_creation:
+        type: "boolean"
+        default: true
+        description: "Enable Active Directory boundary creation"
+        
+      ludus_sccm_enable_subnet_boundary_creation:
+        type: "boolean"
+        default: true
+        description: "Enable subnet boundary creation"
+        
+      ludus_sccm_enable_active_directory_group_discovery:
+        type: "boolean"
+        default: true
+        description: "Enable Active Directory group discovery"
+        
+      ludus_sccm_enable_active_directory_system_discovery:
+        type: "boolean"
+        default: true
+        description: "Enable Active Directory system discovery"
+        
+      ludus_sccm_enable_active_directory_user_discovery:
+        type: "boolean"
+        default: true
+        description: "Enable Active Directory user discovery"
+        
+      ludus_sccm_enable_pxe:
+        type: "boolean"
+        default: true
+        description: "Enable PXE"
+        
+      ludus_enable_pxe_password:
+        type: "boolean"
+        default: false
+        description: "Enable PXE password"
+        
+      ludus_pxe_password:
+        type: "string"
+        default: "Password123"
+        description: "PXE password"
+        
+      ludus_domain_join_account:
+        type: "string"
+        default: "domainadmin"
+        description: "Domain join account"
+        
+      ludus_domain_join_password:
+        type: "string"
+        default: "password"
+        description: "Domain join password"
+        
+      ludus_sccm_configmgr_url:
+        type: "string"
+        default: "https://download.microsoft.com/download/0/0/1/001d97e2-c427-4d4b-ad30-1556ee0ff1b0/MCM_Configmgr_2303.exe"
+        description: "ConfigMgr download URL"
+        
+      ludus_sccm_adksetup_url:
+        type: "string"
+        default: "https://download.microsoft.com/download/e/8/b/e8bec6c1-8153-408d-96b1-ee2985a600ad/adk/adksetup.exe"
+        description: "ADK setup download URL"
+        
+      ludus_sccm_adkwinpesetup_url:
+        type: "string"
+        default: "https://download.microsoft.com/download/17ac4263-5816-4f1b-8131-87c4d5a3331f/adkwinpeaddons/adkwinpesetup.exe"
+        description: "ADK WinPE setup download URL"
+        
+  ludus_sccm_sql:
+    variables:
+      ludus_install_directory:
+        type: "string"
+        default: "/opt/ludus"
+        description: "Ludus installation directory"
+        
+      ludus_sccm_site_server_hostname:
+        type: "string"
+        default: "sccm-sitesrv"
+        description: "SCCM site server hostname"
+        
+      ludus_sccm_sql_server_hostname:
+        type: "string"
+        default: "sccm-sql"
+        description: "SCCM SQL server hostname"
+        
+      ludus_sccm_sql_svc_account_username:
+        type: "string"
+        default: "sqlsccmsvc"
+        description: "SQL service account username"
+        
+      ludus_sccm_sql_svc_account_password:
+        type: "string"
+        default: "Password123"
+        description: "SQL service account password"
+        
+      ludus_sccm_sql2022_url:
+        type: "string"
+        default: "https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SQLServer2022-x64-ENU.iso"
+        description: "SQL Server 2022 download URL" 

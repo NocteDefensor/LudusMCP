@@ -1,0 +1,19 @@
+name: badsectorlabs.ludus_flarevm
+type: role
+version: "1.0.0"
+description: "Installs FlareVM on Windows systems"
+repository: "https://github.com/badsectorlabs/ludus_flarevm"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+variables:
+  ludus_flarevm_use_flarevm_wallpaper:
+    type: "boolean"
+    default: true
+    description: "Whether to use FlareVM wallpaper"
+    
+  ludus_flarevm_config_file:
+    type: "string"
+    default: "https://raw.githubusercontent.com/mandiant/flare-vm/refs/heads/main/config.xml"
+    description: "URL to FlareVM configuration file" 

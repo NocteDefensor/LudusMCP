@@ -1,0 +1,15 @@
+name: aleemladha.ludus_wazuh_agent
+type: role
+version: "1.0.0"
+description: "Deploys Wazuh Agents to Windows, Debian, and Ubuntu systems"
+repository: "https://github.com/aleemladha/ludus_wazuh_agent"
+author: "Aleem Ladha (@LadhaAleem)"
+
+dependencies: []
+
+variables:
+  ludus_wazuh_siem_server:
+    type: "string"
+    required: true
+    default: ""
+    description: "IP address of Wazuh SIEM server (use 'ludus range status' to get IP)" 

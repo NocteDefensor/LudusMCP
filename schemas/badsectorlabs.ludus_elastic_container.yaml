@@ -1,0 +1,29 @@
+name: badsectorlabs.ludus_elastic_container
+type: role
+version: "1.0.0"
+description: "Installs Elastic Stack using containers"
+repository: "https://github.com/badsectorlabs/ludus_elastic_container"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+variables:
+  ludus_elastic_container_install_path:
+    type: "string"
+    default: "/opt/elastic_container"
+    description: "Installation path for Elastic container"
+    
+  ludus_elastic_password:
+    type: "string"
+    default: "elasticpassword"
+    description: "Password for Elastic user"
+    
+  ludus_elastic_stack_version:
+    type: "string"
+    default: "8.12.2"
+    description: "Elastic Stack version"
+    
+  ludus_elastic_container_branch:
+    type: "string"
+    default: "05c0b91a36a0918d095c28295a9c64a9def275f5"
+    description: "Known good commit, 2024-07-03" 

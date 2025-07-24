@@ -1,0 +1,29 @@
+name: 0xRedpoll.ludus_cobaltstrike_teamserver
+type: role
+version: "1.0.0"
+description: "Installs Cobalt Strike team server"
+repository: "https://github.com/0xRedpoll/ludus_cobaltstrike_teamserver"
+author: "0xRedpoll"
+
+dependencies: []
+
+variables:
+  ludus_install_directory:
+    type: "string"
+    default: "/opt/ludus"
+    description: "Ludus installation directory"
+    
+  ludus_cobaltstrike_teamserver_password:
+    type: "string"
+    default: "0xRedpoll"
+    description: "Team server password"
+    
+  ludus_cobaltstrike_c2_profile:
+    type: "string"
+    default: ""
+    description: "C2 profile path"
+    
+  ludus_cobaltstrike_license:
+    type: "string"
+    default: "0000-0000-0000-0000"
+    description: "Cobalt Strike license key" 

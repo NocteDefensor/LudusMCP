@@ -1,0 +1,26 @@
+name: badsectorlabs.ludus_xz_backdoor
+type: role
+version: "1.0.0"
+description: "Installs the xz backdoor (CVE-2024-3094) on a Debian host and optionally installs the xzbot tool"
+repository: "https://github.com/badsectorlabs/ludus_xz_backdoor"
+author: "Bad Sector Labs"
+
+dependencies: []
+
+warning: "This role deploys malware on purpose! Be careful."
+
+variables:
+  ludus_xz_backdoor_install_xzbot:
+    type: "boolean"
+    default: true
+    description: "Install the xzbot cli tool used to send commands to the backdoor"
+    
+  ludus_xz_backdoor_install_backdoor:
+    type: "boolean"
+    default: true
+    description: "Install the xz backdoor library and reboot"
+    
+  ludus_xz_backdoor_uninstall_backdoor:
+    type: "boolean"
+    default: false
+    description: "Remove the backdoor by replacing the symlink and rebooting" 

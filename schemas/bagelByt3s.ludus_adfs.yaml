@@ -1,0 +1,38 @@
+name: bagelByt3s.ludus_adfs
+type: collection
+version: "1.0.0"
+description: "Collection for installing and configuring ADFS"
+repository: "https://github.com/bagelByt3s/ludus_adfs"
+author: "bagelByt3s"
+
+dependencies: []
+
+roles:
+  install_adfs:
+    variables:
+      ludus_install_directory:
+        type: "string"
+        default: "/opt/ludus"
+        description: "Ludus installation directory"
+        
+  install_adcs:
+    variables: {}
+    
+  import_root_cert:
+    variables:
+      ludus_install_directory:
+        type: "string"
+        default: "/opt/ludus"
+        description: "Ludus installation directory"
+        
+      adfs_CA:
+        type: "string"
+        default: "ludus-CA"
+        description: "ADFS Certificate Authority name"
+        
+  entra_prep:
+    variables:
+      ludus_install_directory:
+        type: "string"
+        default: "/opt/ludus"
+        description: "Ludus installation directory" 

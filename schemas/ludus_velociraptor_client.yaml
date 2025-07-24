@@ -1,0 +1,29 @@
+name: ludus_velociraptor_client
+type: role
+version: "1.0.0"
+description: "Installs Velociraptor client agent"
+repository: "https://github.com/fmurer/ludus_velociraptor_client"
+author: "fmurer"
+
+dependencies: []
+
+variables:
+  velociraptor_version:
+    type: "string"
+    default: "v0.72"
+    description: "Velociraptor version"
+    
+  velociraptor_version_patch:
+    type: "string"
+    default: "v0.72.0"
+    description: "Velociraptor version with patch level"
+    
+  velociraptor_client_config:
+    type: "string"
+    default: ""
+    description: "Client configuration content"
+    
+  velociraptor_install_path:
+    type: "string"
+    default: "/opt/velociraptor"
+    description: "Install path on Velociraptor server - used to get client config" 

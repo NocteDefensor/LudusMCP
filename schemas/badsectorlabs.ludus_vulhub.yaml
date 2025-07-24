@@ -1,0 +1,39 @@
+name: badsectorlabs.ludus_vulhub
+type: role
+version: "1.0.0"
+description: "Runs Vulhub environments on a Linux system"
+repository: "https://github.com/badsectorlabs/ludus_vulhub"
+author: "Bad Sector Labs"
+
+dependencies: 
+  - "geerlingguy.docker"
+
+variables:
+  vulhub_git_url:
+    type: "string"
+    default: "https://github.com/vulhub/vulhub"
+    description: "URL to clone Vulhub repository from"
+    
+  vulhub_install_path:
+    type: "string"
+    default: "/opt/vulhub"
+    description: "Installation path for Vulhub"
+    
+  vulhub_branch:
+    type: "string"
+    default: "master"
+    description: "Git branch to checkout"
+    
+  vulhub_envs:
+    type: "array"
+    required: true
+    default: []
+    description: "Array of vulhub environments to deploy"
+    example:
+      - "confluence/CVE-2023-22527"
+      - "airflow/CVE-2020-11978"
+      
+  vulhub_persistent:
+    type: "boolean"
+    default: true
+    description: "Whether environments persist across reboots" 

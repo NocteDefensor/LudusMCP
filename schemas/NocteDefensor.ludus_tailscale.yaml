@@ -1,0 +1,29 @@
+name: NocteDefensor.ludus_tailscale
+type: role
+version: "1.0.0"
+description: "Installs and configures Tailscale VPN"
+repository: "https://github.com/NocteDefensor/ludus_tailscale"
+author: "NocteDefensor"
+
+dependencies: []
+
+installation_note: "Can also be installed as 'ludus_tailscale' - user should verify which role name they have installed"
+
+variables:
+  tailscale_state:
+    type: "string"
+    default: "present"
+    description: "State of Tailscale installation"
+    valid_options:
+      - "present" 
+      - "absent"
+      
+  tailscale_authkey:
+    type: "string"
+    default: "tskey-auth-<REDACTED_KEY>"
+    description: "Tailscale authentication key"
+    
+  tailscale_api_key:
+    type: "string"
+    default: "tskey-api-<REDACTED_KEY>"
+    description: "Tailscale API key" 

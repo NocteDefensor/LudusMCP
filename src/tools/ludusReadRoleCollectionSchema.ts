@@ -2,193 +2,167 @@ import { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-
-interface RoleSchemaSearch {
-  role_names?: string[];
-  variable_names?: string[];
-  descriptions?: string[];
-  authors?: string[];
-  types?: string[];
-}
+import * as yaml from 'js-yaml';
 
 export const ludusReadRoleCollectionSchemaTool: Tool = {
   name: 'ludus_read_role_collection_schema',
-  description: '**ROLE SCHEMA REFERENCE** - Supporting tool to search the comprehensive Ludus role collection schema. NOT for primary range planning - use ludus_range_planner FIRST for range creation! This tool provides detailed role/variable lookups for research and validation phases.',
+  description: '**ROLE SCHEMA REFERENCE** - Reads all Ludus role and collection schemas from individual YAML files. Returns comprehensive role data including variables, descriptions, dependencies, and GitHub repositories. Essential for range planning and configuration validation.',
   inputSchema: {
     type: 'object',
     properties: {
-      search_filters: {
-        type: 'object',
-        description: 'Optional filters to search the schema',
-        properties: {
-          role_names: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Array of role names to search for (partial matches)'
-          },
-          variable_names: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Array of variable names to search for (partial matches)'
-          },
-          descriptions: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Array of description keywords to search for'
-          },
-          authors: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Array of author names to search for'
-          },
-          types: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Array of types to filter by (role, collection)'
-          }
-        }
-      },
-      include_full_schema: {
+      help: {
         type: 'boolean',
-        description: 'If true, returns the full schema without filtering',
+        description: 'Show help information about available roles and collections',
         default: false
       }
     }
   }
 };
 
+/**
+ * Load all YAML schema files from the schemas directory and aggregate them
+ */
+async function loadAllYamlSchemas(schemaDir: string): Promise<any> {
+  const aggregatedSchema = {
+    ludus_roles_schema: {
+      roles: {} as Record<string, any>,
+      collections: {} as Record<string, any>,
+      metadata: {
+        total_files: 0,
+        total_roles: 0,
+        total_collections: 0,
+        last_updated: new Date().toISOString(),
+        source_files: [] as string[]
+      }
+    }
+  };
+
+  try {
+    // Read all files in the schemas directory
+    const files = await fs.readdir(schemaDir);
+    const yamlFiles = files.filter(file => 
+      file.endsWith('.yaml') || file.endsWith('.yml')
+    );
+
+    if (yamlFiles.length === 0) {
+      throw new Error('No YAML schema files found in schemas directory');
+    }
+
+    // Process each YAML file
+    for (const file of yamlFiles) {
+      try {
+        const filePath = path.join(schemaDir, file);
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        const parsedYaml = yaml.load(fileContent) as any;
+
+        if (!parsedYaml || typeof parsedYaml !== 'object') {
+          console.warn(`Skipping invalid YAML file: ${file}`);
+          continue;
+        }
+
+        // Determine if it's a role or collection based on type field
+        const itemType = parsedYaml.type || 'role'; // Default to role if not specified
+        const itemName = parsedYaml.name || path.basename(file, path.extname(file));
+
+        if (itemType === 'collection') {
+          aggregatedSchema.ludus_roles_schema.collections[itemName] = {
+            ...parsedYaml,
+            source_file: file
+          };
+          aggregatedSchema.ludus_roles_schema.metadata.total_collections++;
+        } else {
+          aggregatedSchema.ludus_roles_schema.roles[itemName] = {
+            ...parsedYaml,
+            source_file: file
+          };
+          aggregatedSchema.ludus_roles_schema.metadata.total_roles++;
+        }
+
+        aggregatedSchema.ludus_roles_schema.metadata.source_files.push(file);
+        aggregatedSchema.ludus_roles_schema.metadata.total_files++;
+
+      } catch (fileError) {
+        console.warn(`Error processing YAML file ${file}:`, fileError);
+        // Continue processing other files
+      }
+    }
+
+    return aggregatedSchema;
+
+  } catch (error) {
+    throw new Error(`Failed to load YAML schemas: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
 export async function handleLudusReadRoleCollectionSchema(args: any): Promise<CallToolResult> {
   try {
-    // Read schema from downloaded file only
-    const homeDir = os.homedir();
-    const schemaDir = path.join(homeDir, '.ludus-mcp', 'schemas');
-    const schemaFilePath = path.join(schemaDir, 'ludus-roles-collections-schema.json');
-    
-    let schema;
-    try {
-      const fileContent = await fs.readFile(schemaFilePath, 'utf-8');
-      schema = JSON.parse(fileContent);
-    } catch (fileError) {
+    const { help = false } = args;
+
+    if (help) {
       return {
         content: [
           {
             type: 'text',
-            text: `Error: Schema file not found at ${schemaFilePath}. Please ensure schemas have been downloaded from GitHub during server initialization.`
+            text: `**LUDUS ROLE COLLECTION SCHEMA TOOL**
+
+**PURPOSE:**
+Reads all Ludus role and collection schemas from individual YAML files in ~/.ludus-mcp/schemas/
+
+**WHAT IT RETURNS:**
+- Complete inventory of all available Ludus roles and collections
+- Role variables, types, and requirements for each role
+- Collection definitions with bundled roles
+- GitHub repository links and documentation
+- Author information and version details
+
+**FILE STRUCTURE:**
+~/.ludus-mcp/schemas/
+├── ludus_ad.yaml
+├── ludus_sccm.yaml  
+├── domain_controller_collection.yaml
+└── monitoring_stack.yaml
+
+**USAGE:**
+- Use during range planning to understand available roles
+- Verify role variables before writing configurations  
+- Research role capabilities and requirements
+- Find GitHub repositories for detailed documentation
+
+**NOTE:** 
+This tool reads ALL YAML schema files and returns complete data. No filtering is applied - you get everything in one comprehensive response.`
+          }
+        ]
+      };
+    }
+
+    // Read schemas from YAML files
+    const homeDir = os.homedir();
+    const schemaDir = path.join(homeDir, '.ludus-mcp', 'schemas');
+    
+    // Check if schemas directory exists
+    try {
+      await fs.access(schemaDir);
+    } catch {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: Schemas directory not found at ${schemaDir}. Please ensure YAML schema files have been downloaded from GitHub during server initialization.`
           }
         ],
         isError: true
       };
     }
 
-    const { search_filters, include_full_schema = false } = args;
+    // Load all YAML schemas
+    const aggregatedSchema = await loadAllYamlSchemas(schemaDir);
 
-    if (include_full_schema || !search_filters) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(schema, null, 2)
-          }
-        ]
-      };
-    }
-
-    // Apply filters
-    const filteredRoles: any = {};
-    const roles = schema.ludus_roles_schema?.roles || {};
-
-    for (const [roleName, roleData] of Object.entries(roles)) {
-      let matchesFilters = true;
-
-      // Filter by role names
-      if (search_filters.role_names?.length > 0) {
-        const nameMatch = search_filters.role_names.some((searchName: string) =>
-          roleName.toLowerCase().includes(searchName.toLowerCase())
-        );
-        if (!nameMatch) matchesFilters = false;
-      }
-
-      // Filter by authors
-      if (search_filters.authors?.length > 0 && matchesFilters) {
-        const authorMatch = search_filters.authors.some((searchAuthor: string) =>
-          (roleData as any).author?.toLowerCase().includes(searchAuthor.toLowerCase())
-        );
-        if (!authorMatch) matchesFilters = false;
-      }
-
-      // Filter by types
-      if (search_filters.types?.length > 0 && matchesFilters) {
-        const roleType = (roleData as any).type || 'role';
-        const typeMatch = search_filters.types.some((searchType: string) =>
-          roleType.toLowerCase() === searchType.toLowerCase()
-        );
-        if (!typeMatch) matchesFilters = false;
-      }
-
-      // Filter by descriptions
-      if (search_filters.descriptions?.length > 0 && matchesFilters) {
-        const descMatch = search_filters.descriptions.some((searchDesc: string) =>
-          (roleData as any).description?.toLowerCase().includes(searchDesc.toLowerCase())
-        );
-        if (!descMatch) matchesFilters = false;
-      }
-
-      // Filter by variable names
-      if (search_filters.variable_names?.length > 0 && matchesFilters) {
-        const variables = (roleData as any).variables || {};
-        const roles = (roleData as any).roles || {};
-        
-        let varMatch = false;
-        
-        // Check direct variables
-        for (const varName of Object.keys(variables)) {
-          if (search_filters.variable_names.some((searchVar: string) =>
-            varName.toLowerCase().includes(searchVar.toLowerCase())
-          )) {
-            varMatch = true;
-            break;
-          }
-        }
-        
-        // Check collection sub-role variables
-        if (!varMatch) {
-          for (const subRole of Object.values(roles)) {
-            const subVars = (subRole as any).variables || {};
-            for (const varName of Object.keys(subVars)) {
-              if (search_filters.variable_names.some((searchVar: string) =>
-                varName.toLowerCase().includes(searchVar.toLowerCase())
-              )) {
-                varMatch = true;
-                break;
-              }
-            }
-            if (varMatch) break;
-          }
-        }
-        
-        if (!varMatch) matchesFilters = false;
-      }
-
-      if (matchesFilters) {
-        filteredRoles[roleName] = roleData;
-      }
-    }
-
-    const filteredSchema = {
-      ...schema,
-      ludus_roles_schema: {
-        ...schema.ludus_roles_schema,
-        roles: filteredRoles,
-        filtered_count: Object.keys(filteredRoles).length,
-        total_roles: Object.keys(roles).length
-      }
-    };
-
+    // Return the complete aggregated schema
     return {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(filteredSchema, null, 2)
+          text: JSON.stringify(aggregatedSchema, null, 2)
         }
       ]
     };
@@ -198,7 +172,7 @@ export async function handleLudusReadRoleCollectionSchema(args: any): Promise<Ca
       content: [
         {
           type: 'text',
-          text: `Error reading role schema: ${error.message}`
+          text: `Error reading role schemas: ${error.message}\n\nTroubleshooting:\n- Restart the MCP server to reinitialize schemas\n- Check that YAML files exist in ~/.ludus-mcp/schemas/\n- Verify YAML file syntax is valid\n- Ensure file system permissions allow reading`
         }
       ],
       isError: true

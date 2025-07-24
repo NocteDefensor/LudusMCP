@@ -1,0 +1,14 @@
+name: 0xRedpoll.ludus_mythic_teamserver
+type: role
+version: "1.0.0"
+description: "Installs Mythic C2 team server"
+repository: "https://github.com/0xRedpoll/ludus_mythic_teamserver"
+author: "0xRedpoll"
+
+dependencies: []
+
+variables:
+  ludus_install_directory:
+    type: "string"
+    default: "/opt/ludus"
+    description: "Ludus installation directory" 

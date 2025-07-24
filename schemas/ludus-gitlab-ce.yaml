@@ -1,0 +1,79 @@
+name: ludus-gitlab-ce
+type: role
+version: "1.0.0"
+description: "Installs and configures GitLab Community Edition"
+repository: "https://github.com/Cyblex-Consulting/ludus-gitlab-ce"
+author: "Cyblex-Consulting"
+
+dependencies: []
+
+variables:
+  ludus_gitlab.url:
+    type: "string"
+    default: "http://localhost:8080"
+    description: "URL where the instance will be exposed"
+    
+  ludus_gitlab.displayname:
+    type: "string"
+    default: "MyCompany Gitlab"
+    description: "Name of the instance"
+    
+  ludus_gitlab.smtp:
+    type: "string"
+    default: "127.0.0.1"
+    description: "SMTP server for sending emails"
+    
+  ludus_gitlab.email_from:
+    type: "string"
+    default: "gitlab@example.com"
+    description: "From email address for GitLab messages"
+    
+  ludus_gitlab.replyto:
+    type: "string"
+    default: "no-reply@example.com"
+    description: "Reply-to email address"
+    
+  ludus_gitlab.emailroot:
+    type: "string"
+    default: "admin@example.com"
+    description: "Root email account"
+    
+  ludus_gitlab.version:
+    type: "string"
+    default: "16.7.0"
+    description: "Optional GitLab version to install"
+    
+  ludus_gitlab.groups.name:
+    type: "string"
+    default: "MyGroup"
+    description: "Optional name of group to create"
+    
+  ludus_gitlab.users.name:
+    type: "string"
+    default: "jdoe"
+    description: "Optional login of user to create"
+    
+  ludus_gitlab.users.display_name:
+    type: "string"
+    default: "John Doe"
+    description: "Optional display name of user"
+    
+  ludus_gitlab.users.password:
+    type: "string"
+    default: "aA8MaQBCtBtPYAFh"
+    description: "Optional password of user"
+    
+  ludus_gitlab.users.email:
+    type: "string"
+    default: "jdoe@myrange.corp"
+    description: "Optional email of user"
+    
+  ludus_gitlab.users.group:
+    type: "string"
+    default: "MyGroup"
+    description: "Optional group to apply to user"
+    
+  ludus_gitlab.users.access_level:
+    type: "string"
+    default: "maintainer"
+    description: "Optional access level of user" 

@@ -1,0 +1,73 @@
+name: ludus_child_domain
+type: role
+version: "1.0.0"
+description: "Create a child domain and domain controller using microsoft.ad.child_domain module"
+repository: "https://github.com/ChoiSG/ludus_ansible_roles"
+author: "ChoiSG (@_choisec)"
+
+dependencies: []
+
+installation_method: "directory"
+
+note: "Must install from directory - not Ansible Galaxy. Do NOT use with primary-dc or secondary-dc roles when creating child domains."
+
+IMPORTANT_DOMAIN_CONFIG_NOTE: "DO NOT include 'domain:' section in VM configuration when using ludus_child_domain role. The role handles domain creation internally. Example: Do NOT add 'domain: { fqdn: prod.test.local, role: member }' to VMs using this role."
+
+variables:
+  dns_domain_name:
+    type: "string"
+    default: "test.dev.raccoon"
+    description: "The full DNS name of the child domain to create"
+    
+  domain_admin_user:
+    type: "string"
+    default: "domainadmin@dev.raccoon"
+    description: "Username of a domain admin for the parent domain"
+    
+  domain_admin_password:
+    type: "string"
+    default: "password"
+    description: "Password for the specified parent domain admin user"
+    
+  safe_mode_password:
+    type: "string"
+    default: "password"
+    description: "Safe mode password for the domain controller"
+    
+  parent_dc_ip:
+    type: "string"
+    default: "1.1.1.1"
+    description: "IP address of the parent domain controller"
+    
+  current_host_ip:
+    type: "string"
+    default: "2.2.2.2"
+    description: "IP address of the current host that will become the child domain controller"
+    
+  create_dns_delegation:
+    type: "boolean"
+    default: true
+    description: "Whether to create a DNS delegation that references the new DNS server. Valid for Active Directory-integrated DNS only"
+    
+  domain_mode:
+    type: "string"
+    default: "WinThreshold"
+    description: "Specifies the domain functional level of the child domain. Cannot be lower than the forest functional level"
+    valid_options:
+      - "Win2003"
+      - "Win2008"
+      - "Win2008R2"
+      - "Win2012"
+      - "Win2012R2"
+      - "WinThreshold"
+      - "Win2025"
+      
+  reboot:
+    type: "boolean"
+    default: true
+    description: "Whether to reboot the host after domain controller installation if required"
+    
+  install_dns:
+    type: "boolean"
+    default: true
+    description: "Whether to install the DNS service when creating the domain controller" 

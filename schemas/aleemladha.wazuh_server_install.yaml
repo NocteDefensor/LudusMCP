@@ -1,0 +1,26 @@
+name: aleemladha.wazuh_server_install
+type: role
+version: "1.0.0"
+description: "Installing wazuh SIEM Unified XDR and SIEM protection with SOC Fortress Rules"
+repository: "https://github.com/aleemladha/wazuh_server_install"
+author: "Aleem Ladha (@LadhaAleem)"
+
+dependencies: []
+
+note: "Only works with Ubuntu or Kali - Wazuh does not support Debian 11/12"
+
+variables:
+  wazuh_install_script_url:
+    type: "string"
+    default: "https://packages.wazuh.com/4.7/wazuh-install.sh"
+    description: "Wazuh installation script URL"
+    
+  socfortress_rules_script_url:
+    type: "string"
+    default: "https://raw.githubusercontent.com/aaladha/Wazuh-Rules/main/wazuh_socfortress_rules.sh"
+    description: "SOCFORTRESS Wazuh rules script URL"
+    
+  wazuh_admin_password:
+    type: "string"
+    default: "Wazuh-123"
+    description: "Optional force admin password (auto-generated if not set)" 
