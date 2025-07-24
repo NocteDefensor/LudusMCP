@@ -7,7 +7,7 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 ### System Requirements
 - Node.js 18.0.0 or higher
 - npm package manager
-- Ludus CLI binary [installed](https://docs.ludus.cloud/docs/quick-start/using-cli-locally) and in PATH
+- Ludus CLI binary [installed](https://docs.ludus.cloud/docs/quick-start/using-cli-locally) and in PATH on host with the mcp-client(ex. claude desktop)
 - Active Ludus server environment
 - Network connectivity to Ludus server via WireGuard VPN or SSH
 
@@ -19,6 +19,8 @@ Ensure you have:
 - Admin or user account on Ludus server. Non admin will be limited in same ways as using ludus cli with non admin account.
 
 ## Installation
+
+**NOTE** Installation of the MCP server IS NOT on the Ludus server. It will be installed on a device with an MCP client (ex Claude Desktop) that has access to the Ludus server.
 
 ### Global Installation (Recommended) (not yet pushed to NPM - will not work for now. clone repo and install from source as long as this message is up)
 Install the package globally to make the `ludus-mcp` command available system-wide:
