@@ -7,17 +7,36 @@ author: "Zach Stein (@synzack21)"
 
 dependencies: []
 
+# Usage and dependency information
+usage_notes: |
+  When using hosts which you will join to SCCM with client push, either:
+  1. Put the hosts BEFORE the sitesrv in the order within the config, OR
+  2. Use depends_on like the example below
+
+dependency_example: |
+  roles: 
+    - name: synzack.ludus_sccm.ludus_sccm_siteserver
+      depends_on:
+        - vm_name: "{{ range_id }}-Workstation"
+          role: synzack.ludus_sccm.disable_firewall
+
+installation_method: "galaxy"
+
 roles:
   disable_firewall:
+    description: "Disable Windows firewall for SCCM operations"
     variables: {}
     
   enable_webdav:
+    description: "Enable WebDAV for SCCM functionality"
     variables: {}
     
   install_adcs:
+    description: "Install Active Directory Certificate Services"
     variables: {}
     
   ludus_sccm_distro:
+    description: "Configure SCCM distribution server"
     variables:
       ludus_sccm_site_server_hostname:
         type: "string"
@@ -25,6 +44,7 @@ roles:
         description: "SCCM site server hostname"
         
   ludus_sccm_mgmt:
+    description: "Configure SCCM management server"
     variables:
       ludus_sccm_site_server_hostname:
         type: "string"
@@ -32,6 +52,8 @@ roles:
         description: "SCCM site server hostname"
         
   ludus_sccm_siteserver:
+    description: "Main SCCM site server configuration"
+    usage_note: "Should typically be deployed AFTER client hosts if using client push"
     variables:
       ludus_install_directory:
         type: "string"
@@ -234,6 +256,7 @@ roles:
         description: "ADK WinPE setup download URL"
         
   ludus_sccm_sql:
+    description: "Configure SQL Server for SCCM"
     variables:
       ludus_install_directory:
         type: "string"
