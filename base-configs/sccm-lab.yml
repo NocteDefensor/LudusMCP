@@ -12,6 +12,13 @@
 # - At this time, all 4 site server roles are needed to deploy SCCM, there is no 
 #   standalone option yet
 # - All SCCM VM hostnames MUST be 15 characters or less
+# When using hosts which you will join to sccm with client push either put the hosts before the sitesrv in the order within the config or use depends_on like
+#roles: 
+#  - name:synzack.ludus_sccm.ludus_sccm_siteserver
+#    depends_on:
+#      - vm_name: "{{ range_id }}-Workstation"
+#        role: synzack.ludus_sccm.disable_firewall
+  
 
 ludus:
   - vm_name: "{{ range_id }}-DC01"
