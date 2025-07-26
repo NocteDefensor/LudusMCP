@@ -40,11 +40,10 @@ ludus:
       dns_domain_name: kr.example.local
       domain_admin_user: domainadmin@example.local
       domain_admin_password: password
-      parent_domain_name: example.local
       safe_mode_password: password
       create_dns_delegation: true 
-      parent_dc_ip: "10.{{ range_second_octet }}.10.10"
-      current_host_ip: "10.{{ range_second_octet }}.20.10"
+      parent_dc_ip: "10.2.10.10"
+      current_host_ip: "10.2.20.10"
       reboot: true
 
   # Ludus_Child_Domain_Join to the child domain controller from above
@@ -60,7 +59,7 @@ ludus:
     roles:
       - ludus_child_domain_join
     role_vars:
-      dc_ip: "10.{{ range_second_octet }}.20.10"
+      dc_ip: "10.2.20.10"
       dns_domain_name: "kr.example.local"
       domain_admin_user: "administrator@kr.example.local"  # <user>@<domain> format. Use administrator, since ludus's domainadmin default user is not created with ludus_child_domain 
       domain_admin_password: "password"

@@ -2,12 +2,17 @@ name: ludus_child_domain_join
 type: role
 version: "1.0.0"
 description: "Join a machine to the child domain created from ludus_child_domain"
-repository: "https://github.com/NocteDefensor/ludus_ansible_roles"
-author: "ChoiSG (@_choisec) - Fork maintained by NocteDefensor"
+repository: "https://github.com/ChoiSG/ludus_ansible_roles"
+author: "ChoiSG (@_choisec)"
+
 dependencies: []
+
 installation_method: "directory"
+
 note: "Must install from directory - required because Ludus backend doesn't support 3rd party domain/controllers"
+
 IMPORTANT_DOMAIN_CONFIG_NOTE: "DO NOT include 'domain:' section in VM configuration when using ludus_child_domain_join role. The role handles domain joining internally. Example: Do NOT add 'domain: { fqdn: prod.test.local, role: member }' to VMs using this role."
+
 variables:
   dc_ip:
     type: "string"
@@ -27,16 +32,4 @@ variables:
   domain_admin_password:
     type: "string"
     default: "password"
-    description: "<this is hardcoded now> always use password"
-
-  install_rsat_tools:
-    type: "boolean"
-    default: true
-    description: "Whether to install RSAT AD tools. Set to false to skip RSAT installation entirely."
-    
-  rsat_install_method:
-    type: "string"
-    default: "auto"
-    description: "RSAT installation method: 'feature' (Windows Server), 'dism' (Windows Client), 'auto' (try both), or any other value to skip"
-    enum: ["feature", "dism", "auto", "skip"]
-    note: "Use 'dism' for Windows 10/11 workstations to avoid ServerManager module errors. Use 'feature' for Windows Server. Use 'auto' to try both methods."
+    description: "<this is hardcoded now> always use password" 
