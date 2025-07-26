@@ -31,7 +31,7 @@ variables:
   ludus_elastic_fleet_server:
     type: "string"
     default: ""
-    description: "Fleet server URL. Ex https://10.{{ range_second_octet }}.30.10:8220"
+    description: "Fleet server IP. Ex 10.{{ range_second_octet }}.30.10:8220"
     
   ludus_elastic_agent_version:
     type: "string"
