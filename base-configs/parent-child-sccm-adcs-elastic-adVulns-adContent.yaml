@@ -1,0 +1,453 @@
+# yaml-language-server: $schema=https://docs.ludus.cloud/schemas/range-config.json
+# TestRange Multi-Domain Configuration
+# Parent: Nocte.Defensor | Child: Dev.Nocte.Defensor | Elastic Monitoring
+#
+# ARCHITECTURE:
+# - VLAN 10: Parent domain (Nocte.Defensor) with DCs, SCCM infrastructure, Workstation
+# - VLAN 20: Child domain (Dev.Nocte.Defensor) with Child DC, Tools Workstation  
+# - VLAN 30: Elastic monitoring (isolated subnet with limited connectivity)
+#
+# FEATURES:
+# - 2 DCs in parent (secondary with ADCS)
+# - Full SCCM deployment with proper dependencies
+# - Elastic monitoring with network isolation
+# - Random users and AD vulnerabilities in both domains
+# - Open shares vulnerability on SCCM SQL server
+# - Development workstation in child domain
+
+# Network configuration for Elastic isolation and parent/child connectivity
+network:
+  inter_vlan_default: ACCEPT
+  external_default: ACCEPT
+  rules:
+    # Full connectivity between parent and child domains
+    - name: Allow all traffic from Parent to Child domain
+      vlan_src: 10
+      vlan_dst: 20
+      protocol: all
+      ports: all
+      action: ACCEPT
+    - name: Allow all traffic from Child to Parent domain
+      vlan_src: 20
+      vlan_dst: 10
+      protocol: all
+      ports: all
+      action: ACCEPT
+    # Allow Elastic to connect to parent domain for monitoring
+    - name: Allow Elastic to Parent DC for AD monitoring
+      vlan_src: 30
+      vlan_dst: 10
+      ip_last_octet_dst: 10
+      protocol: tcp
+      ports: "389:636"
+      action: ACCEPT
+    - name: Allow Elastic to Parent DC for LDAP/DNS
+      vlan_src: 30
+      vlan_dst: 10
+      ip_last_octet_dst: 10
+      protocol: tcp
+      ports: "53"
+      action: ACCEPT
+    - name: Allow Elastic to Parent DC for DNS UDP
+      vlan_src: 30
+      vlan_dst: 10
+      ip_last_octet_dst: 10
+      protocol: udp
+      ports: "53"
+      action: ACCEPT
+    # Allow Elastic to collect logs from SCCM workstation
+    - name: Allow Elastic agent communication from workstation
+      vlan_src: 10
+      ip_last_octet_src: 20
+      vlan_dst: 30
+      ip_last_octet_dst: 10
+      protocol: tcp
+      ports: "9200:9300"
+      action: ACCEPT
+    - name: Allow Elastic fleet communication from workstation
+      vlan_src: 10
+      ip_last_octet_src: 20
+      vlan_dst: 30
+      ip_last_octet_dst: 10
+      protocol: tcp
+      ports: "8220"
+      action: ACCEPT
+
+# Default settings for domains
+defaults:
+  ad_domain_admin: domainadmin
+  ad_domain_admin_password: P@ssw0rd123!
+  ad_domain_user: domainuser
+  ad_domain_user_password: P@ssw0rd123!
+  ad_domain_safe_mode_password: SafeM0de123!
+  ad_domain_functional_level: WinThreshold
+  ad_forest_functional_level: WinThreshold
+  snapshot_with_RAM: true
+  stale_hours: 8
+  timezone: America/New_York
+  enable_dynamic_wallpaper: true
+
+ludus:
+  # ===== PARENT DOMAIN (VLAN 10) - Nocte.Defensor =====
+  
+  # Primary Domain Controller
+  - vm_name: "{{ range_id }}-Nocte-DC01"
+    hostname: "NOCTE-DC01"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 10
+    ram_gb: 6
+    cpus: 2
+    windows:
+      sysprep: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: primary-dc
+    roles:
+      - ludus-ad-content
+      - ludus-ad-vulns
+    role_vars:
+      # Random users configuration
+      ludus_ad:
+        ous:
+          - name: "IT Department"
+            path: "DC=Nocte,DC=Defensor"
+            description: "Information Technology Department"
+          - name: "Finance"
+            path: "DC=Nocte,DC=Defensor"
+            description: "Finance Department"
+        groups:
+          - name: "IT Admins"
+            scope: "global"
+            path: "OU=IT Department,DC=Nocte,DC=Defensor"
+            description: "IT Administrators"
+          - name: "Finance Users"
+            scope: "global"
+            path: "OU=Finance,DC=Nocte,DC=Defensor"
+            description: "Finance Department Users"
+        users:
+          - name: "john.smith"
+            firstname: "John"
+            surname: "Smith"
+            display_name: "John Smith"
+            password: "Welcome123!"
+            path: "OU=IT Department,DC=Nocte,DC=Defensor"
+            description: "IT Administrator"
+            groups: ["IT Admins"]
+          - name: "sarah.johnson"
+            firstname: "Sarah"
+            surname: "Johnson"
+            display_name: "Sarah Johnson"
+            password: "Finance2024!"
+            path: "OU=Finance,DC=Nocte,DC=Defensor"
+            description: "Finance Manager"
+            groups: ["Finance Users"]
+          - name: "mike.wilson"
+            firstname: "Mike"
+            surname: "Wilson"
+            display_name: "Mike Wilson"
+            password: "TechSupport1"
+            path: "OU=IT Department,DC=Nocte,DC=Defensor"
+            description: "Technical Support"
+            groups: ["IT Admins"]
+      # AD vulnerabilities configuration - FIXED FORMAT
+      ludus_ad_vulns_kerberoasting: true
+      kerberoasting_users:
+        - identity: "john.smith"
+          service_principal_name: "HTTP/NocteWebServer"
+      ludus_ad_vulns_unconstrained_delegation_user: true
+      unconstrained_delegation_user:
+        - identity: "mike.wilson"
+      ludus_ad_vulns_set_acl: true
+      acl_definitions:
+        grant_generic_all_mike_to_it_admins:
+          for: "mike.wilson"
+          to: "CN=IT Admins,OU=IT Department,DC=Nocte,DC=Defensor"
+          right: "GenericAll"
+          inheritance: "None"
+
+  # Secondary Domain Controller with ADCS
+  - vm_name: "{{ range_id }}-Nocte-DC02-ADCS"
+    hostname: "NOCTE-DC02"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 11
+    ram_gb: 6
+    cpus: 2
+    windows:
+      sysprep: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: alt-dc
+    roles:
+      - badsectorlabs.ludus_adcs
+    role_vars:
+      ludus_adcs_domain: "Nocte.Defensor"
+      ludus_adcs_ca_common_name: "Nocte-Defensor-CA"
+      # Note: ESC1-16 vulnerabilities are enabled by default
+
+  # SCCM SQL Server with Open Shares Vulnerability
+  - vm_name: "{{ range_id }}-Nocte-SCCM-SQL"
+    hostname: "NOCTE-SQL01"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 12
+    ram_gb: 5
+    cpus: 4
+    windows:
+      sysprep: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: member
+    roles:
+      - synzack.ludus_sccm.ludus_sccm_sql
+      - ludus-ad-vulns
+    role_vars:
+      ludus_install_directory: "/opt/ludus"
+      ludus_sccm_site_server_hostname: "NOCTE-SCCM01"
+      ludus_sccm_sql_server_hostname: "NOCTE-SQL01"
+      ludus_sccm_sql_svc_account_username: "sccmsqlsvc"
+      ludus_sccm_sql_svc_account_password: "SCCMSQL2024!"
+      # Open shares vulnerability on SQL server
+      ludus_ad_vulns_openshares: true
+
+  # SCCM Distribution Server
+  - vm_name: "{{ range_id }}-Nocte-SCCM-Distro"
+    hostname: "NOCTE-DIST01"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 13
+    ram_gb: 5
+    cpus: 3
+    windows:
+      sysprep: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: member
+    roles:
+      - synzack.ludus_sccm.ludus_sccm_distro
+    role_vars:
+      ludus_install_directory: "/opt/ludus"
+      ludus_sccm_site_server_hostname: "NOCTE-SCCM01"
+
+  # SCCM Management Server
+  - vm_name: "{{ range_id }}-Nocte-SCCM-Mgmt"
+    hostname: "NOCTE-MGMT01"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 14
+    ram_gb: 5
+    cpus: 3
+    windows:
+      sysprep: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: member
+    roles:
+      - synzack.ludus_sccm.ludus_sccm_mgmt
+    role_vars:
+      ludus_install_directory: "/opt/ludus"
+      ludus_sccm_site_server_hostname: "NOCTE-SCCM01"
+
+  # SCCM Workstation (will be managed by SCCM and monitored by Elastic)
+  - vm_name: "{{ range_id }}-Nocte-Workstation"
+    hostname: "NOCTE-WS01"
+    template: win11-22h2-x64-enterprise-template
+    vlan: 10
+    ip_last_octet: 20
+    ram_gb: 4
+    cpus: 3
+    windows:
+      sysprep: true
+      chocolatey_ignore_checksums: true
+      install_additional_tools: true
+    domain:
+      fqdn: Nocte.Defensor
+      role: member
+    roles:
+      - synzack.ludus_sccm.disable_firewall
+      - badsectorlabs.ludus_elastic_agent
+    role_vars:
+      ludus_elastic_container_install_path: "/opt/elastic_container"
+      ludus_elastic_fleet_server: "https://10.{{ range_second_octet }}.30.10:8220"
+      ludus_elastic_agent_version: "8.12.2"
+
+  # SCCM Site Server (deployed after workstation firewall is disabled)
+  - vm_name: "{{ range_id }}-Nocte-SCCM-Site"
+    hostname: "NOCTE-SCCM01"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 16
+    ram_gb: 8
+    cpus: 4
+    windows:
+      sysprep: true
+      autologon_user: domainadmin
+      autologon_password: P@ssw0rd123!
+    domain:
+      fqdn: Nocte.Defensor
+      role: member
+    roles:
+      - name: synzack.ludus_sccm.ludus_sccm_siteserver
+        depends_on:
+          - vm_name: "{{ range_id }}-Nocte-Workstation"
+            role: synzack.ludus_sccm.disable_firewall
+      - synzack.ludus_sccm.enable_webdav
+    role_vars:
+      ludus_install_directory: "/opt/ludus"
+      ludus_sccm_sitecode: 123
+      ludus_sccm_sitename: "Nocte Primary Site"
+      ludus_sccm_site_server_hostname: "NOCTE-SCCM01"
+      ludus_sccm_distro_server_hostname: "NOCTE-DIST01"
+      ludus_sccm_mgmt_server_hostname: "NOCTE-MGMT01"
+      ludus_sccm_sql_server_hostname: "NOCTE-SQL01"
+      # Network Access Account
+      ludus_sccm_configure_naa: true
+      ludus_sccm_naa_username: "sccm_naa"
+      ludus_sccm_naa_password: "NetworkAccess123!"
+      # Client Push Configuration
+      ludus_sccm_configure_client_push: true
+      ludus_sccm_client_push_username: "sccm_push"
+      ludus_sccm_client_push_password: "ClientPush123!"
+      ludus_sccm_enable_automatic_client_push_installation: true
+      ludus_sccm_enable_system_type_workstation: true
+      ludus_sccm_enable_system_type_server: false
+      # Discovery Methods
+      ludus_sccm_enable_active_directory_forest_discovery: true
+      ludus_sccm_enable_active_directory_boundary_creation: true
+      ludus_sccm_enable_subnet_boundary_creation: true
+      ludus_sccm_enable_active_directory_group_discovery: true
+      ludus_sccm_enable_active_directory_system_discovery: true
+      ludus_sccm_enable_active_directory_user_discovery: true
+
+  # ===== CHILD DOMAIN (VLAN 20) - Dev.Nocte.Defensor =====
+  
+  # Child Domain Controller
+  - vm_name: "{{ range_id }}-Dev-DC01"
+    hostname: "DEV-DC01"
+    template: win2022-server-x64-template
+    vlan: 20
+    ip_last_octet: 10
+    ram_gb: 6
+    cpus: 2
+    windows:
+      sysprep: true
+    roles:
+      - ludus_child_domain
+      - ludus-ad-content
+      - ludus-ad-vulns
+    role_vars:
+      dns_domain_name: "Dev.Nocte.Defensor"
+      parent_domain_name: "Nocte.Defensor"
+      domain_admin_user: "domainadmin@Nocte.Defensor"
+      domain_admin_password: "P@ssw0rd123!"
+      safe_mode_password: "SafeM0de123!"
+      parent_dc_ip: "10.{{ range_second_octet }}.10.10"
+      current_host_ip: "10.{{ range_second_octet }}.20.10"
+      create_dns_delegation: true
+      reboot: true
+      # Random users for child domain
+      ludus_ad:
+        ous:
+          - name: "Development"
+            path: "DC=Dev,DC=Nocte,DC=Defensor"
+            description: "Development Team"
+          - name: "QA Testing"
+            path: "DC=Dev,DC=Nocte,DC=Defensor"
+            description: "Quality Assurance"
+        groups:
+          - name: "Developers"
+            scope: "global"
+            path: "OU=Development,DC=Dev,DC=Nocte,DC=Defensor"
+            description: "Software Developers"
+          - name: "QA Testers"
+            scope: "global"
+            path: "OU=QA Testing,DC=Dev,DC=Nocte,DC=Defensor"
+            description: "QA Testing Team"
+        users:
+          - name: "alice.dev"
+            firstname: "Alice"
+            surname: "Developer"
+            display_name: "Alice Developer"
+            password: "DevCode2024!"
+            path: "OU=Development,DC=Dev,DC=Nocte,DC=Defensor"
+            description: "Senior Developer"
+            groups: ["Developers"]
+          - name: "bob.tester"
+            firstname: "Bob"
+            surname: "Tester"
+            display_name: "Bob Tester"
+            password: "QualityFirst1"
+            path: "OU=QA Testing,DC=Dev,DC=Nocte,DC=Defensor"
+            description: "QA Lead"
+            groups: ["QA Testers"]
+      # AD vulnerabilities for child domain - FIXED FORMAT
+      ludus_ad_vulns_kerberoasting: true
+      kerberoasting_users:
+        - identity: "alice.dev"
+          service_principal_name: "HTTP/DevWebServer"
+      ludus_ad_vulns_unconstrained_delegation_user: true
+      unconstrained_delegation_user:
+        - identity: "bob.tester"
+      ludus_ad_vulns_set_acl: true
+      acl_definitions:
+        grant_generic_all_bob_to_developers:
+          for: "bob.tester"
+          to: "CN=Developers,OU=Development,DC=Dev,DC=Nocte,DC=Defensor"
+          right: "GenericAll"
+          inheritance: "None"
+      # Child domain login data override for ludus-ad-vulns role
+      ludus_domain_val: "dev.nocte.defensor"
+      ludus_AD_domain_admin: "dev.nocte.defensor\\administrator"
+      ludus_AD_domain_admin_password: "password"
+
+  # Development Workstation with Tools
+  - vm_name: "{{ range_id }}-Dev-Workstation"
+    hostname: "DEV-WS01"
+    template: win11-22h2-x64-enterprise-template
+    vlan: 20
+    ip_last_octet: 11
+    ram_gb: 5
+    cpus: 3
+    windows:
+      sysprep: true
+      install_additional_tools: true
+      office_version: 2021
+      office_arch: "64bit"
+      visual_studio_version: 2022
+      chocolatey_ignore_checksums: true
+      chocolatey_packages:
+        - "git"
+        - "notepadplusplus"
+        - "vscode"
+        - "putty"
+        - "wireshark"
+        - "sysinternals"
+    roles:
+      - ludus_child_domain_join
+    role_vars:
+      dc_ip: "10.{{ range_second_octet }}.20.10"
+      dns_domain_name: "Dev.Nocte.Defensor"
+      domain_admin_user: "administrator@Dev.Nocte.Defensor"
+      domain_admin_password: "password"
+      rsat_install_method: "dism"
+
+  # ===== ELASTIC MONITORING (VLAN 30) - Isolated =====
+  
+  # Elastic Server (isolated subnet for monitoring)
+  - vm_name: "{{ range_id }}-Elastic-Server"
+    hostname: "{{ range_id }}-ELASTIC01"
+    template: debian-12-x64-server-template
+    vlan: 30
+    ip_last_octet: 10
+    ram_gb: 8
+    cpus: 4
+    linux: true
+    testing:
+      snapshot: false
+      block_internet: false
+    roles:
+      - badsectorlabs.ludus_elastic_container
+    role_vars:
+      ludus_elastic_password: "ElasticSearch2024!"
+      ludus_elastic_stack_version: "8.12.2"
