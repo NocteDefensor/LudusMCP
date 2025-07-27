@@ -198,13 +198,14 @@ export const rangeAbortTool: Tool = {
 
 export const ludusPowerTool: Tool = {
   name: 'ludus_power',
-  description: 'Power management for range VMs (start/stop). Useful for resource conservation.',
+  description: 'Power management for range VMs (start/stop). Power off operations require confirmation as they may interrupt running processes.',
   inputSchema: {
     type: 'object',
     properties: {
       action: { type: 'string', enum: ['on', 'off'], description: 'Power action to perform' },
       user: { type: 'string', description: 'Target user (admin only)' },
-      force: { type: 'boolean', description: 'Force action without prompts' },
+      vmNames: { type: 'string', description: 'VM name(s) to power on/off. Defaults to "all"' },
+      confirmDestructiveAction: { type: 'boolean', description: 'Required confirmation for power off operations. Must be true to power off VMs.' },
       help: { type: 'boolean', description: 'Show help information' }
     },
     required: ['action']

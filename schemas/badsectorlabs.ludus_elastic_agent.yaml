@@ -31,7 +31,7 @@ variables:
   ludus_elastic_fleet_server:
     type: "string"
     default: ""
-    description: "Fleet server URL. Ex https://10.{{ range_second_octet }}.30.10:8220"
+    description: "The badsectorlabs.ludus_elastic_agent will automatically find the enrollment token and URL for the elastic server and enroll the agent. You can set the token and URL manually using role_vars if you wish. Ex https://10.{{ range_second_octet }}.30.10:8220"
     
   ludus_elastic_agent_version:
     type: "string"

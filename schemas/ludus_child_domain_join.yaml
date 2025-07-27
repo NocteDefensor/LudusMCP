@@ -37,6 +37,6 @@ variables:
   rsat_install_method:
     type: "string"
     default: "auto"
-    description: "RSAT installation method: 'feature' (Windows Server), 'dism' (Windows Client), 'auto' (try both), or any other value to skip"
-    enum: ["feature", "dism", "auto", "skip"]
+    description: "RSAT installation method: 'feature' (Windows Server), 'powershell' (Windows Client/workstation), 'auto' (try both), or any other value to skip"
+    enum: ["feature", "powershell", "auto", "skip"]
     note: "Use 'dism' for Windows 10/11 workstations to avoid ServerManager module errors. Use 'feature' for Windows Server. Use 'auto' to try both methods."

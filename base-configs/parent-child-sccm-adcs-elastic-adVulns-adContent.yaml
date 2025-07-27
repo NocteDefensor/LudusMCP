@@ -270,7 +270,6 @@ ludus:
     role_vars:
       ludus_elastic_container_install_path: "/opt/elastic_container"
       ludus_elastic_fleet_server: "https://10.{{ range_second_octet }}.30.10:8220"
-      ludus_elastic_agent_version: "8.12.2"
 
   # SCCM Site Server (deployed after workstation firewall is disabled)
   - vm_name: "{{ range_id }}-Nocte-SCCM-Site"
@@ -430,7 +429,8 @@ ludus:
       dns_domain_name: "Dev.Nocte.Defensor"
       domain_admin_user: "administrator@Dev.Nocte.Defensor"
       domain_admin_password: "password"
-      rsat_install_method: "dism"
+      rsat_install_method: "auto"
+      install_rsat_tools: true
 
   # ===== ELASTIC MONITORING (VLAN 30) - Isolated =====
   
@@ -450,4 +450,3 @@ ludus:
       - badsectorlabs.ludus_elastic_container
     role_vars:
       ludus_elastic_password: "ElasticSearch2024!"
-      ludus_elastic_stack_version: "8.12.2"
