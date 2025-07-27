@@ -24,6 +24,7 @@ ludus:
     cpus: 4
     windows:
       install_additional_tools: true
+      chocolatey_ignore_checksums: true
       office_version: 2019
       office_arch: 64bit
     domain:

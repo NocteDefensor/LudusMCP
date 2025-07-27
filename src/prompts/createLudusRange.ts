@@ -74,6 +74,23 @@ ${roles ? `- PRIORITIZE user-specified roles: "${roles}" where applicable` : ''}
 - **CRITICAL:** Use ONLY validated role variables from ludus_read_role_collection_schema
 - **CRITICAL:** Follow exact YAML structure from ludus_read_range_config_schema  
 - Ensure proper role variables using schema data - NO guessing or assumptions
+
+*** ROLE EXECUTION ORDER AND DEPENDENCIES ***
+IMPORTANT: Roles execute in SEQUENTIAL ORDER as listed in the configuration!
+- If a role depends on another role listed BELOW it, you MUST use the depends_on parameter
+- Example dependency syntax:
+  roles:
+    - name: badsectorlabs.ludus_elastic_agent
+      depends_on:
+        - vm_name: "{{ range_id }}-elastic"
+          role: badsectorlabs.ludus_elastic_container
+- Common dependency patterns:
+  * Domain controllers before domain-joined machines
+  * SQL servers before SCCM site servers
+  * Parent services before agents/clients
+- Check schema files for role-specific usage_notes and dependency_examples
+- Reference master-range-config-template.yaml for complete dependency examples
+
 - Apply correct credential handling:
   * EXTERNAL service credentials: Use {{LudusCredName-<user>-<credName>}} placeholders
   * RANGE-INTERNAL credentials: Include directly (AD passwords, SCCM passwords, domain accounts)

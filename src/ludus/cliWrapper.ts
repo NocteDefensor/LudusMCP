@@ -698,7 +698,7 @@ export class LudusCliWrapper {
    * Power on VMs in range
    */
   async powerOnRange(user?: string, vmNames?: string): Promise<CommandResult> {
-    const args = ['on'];
+    const args = ['on']; // Ludus power commands don't support --force flag
     if (vmNames) {
       args.push('--name', vmNames);
     }
@@ -712,7 +712,7 @@ export class LudusCliWrapper {
    * Power off VMs in range
    */
   async powerOffRange(user?: string, vmNames?: string): Promise<CommandResult> {
-    const args = ['off'];
+    const args = ['off']; // Ludus power commands don't support --force flag
     if (vmNames) {
       args.push('--name', vmNames);
     }
