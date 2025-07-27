@@ -106,8 +106,10 @@ npx ludus-mcp --renew-keyring
 
 ### Claude Desktop Configuration
 
-**For Global Installation:**
-Add to your `~/.claude_desktop_config.json`:
+Find your Claude Desktop configuration file:
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -116,7 +118,7 @@ Add to your `~/.claude_desktop_config.json`:
       "command": "ludus-mcp"
     }
   },
-  "isUsingBuiltInNodeForMcp": false
+  "isUsingBuiltInNodeForMcp": true
 }
 ```
 
