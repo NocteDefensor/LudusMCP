@@ -1,6 +1,6 @@
 # Ludus MCP Server
 
-Model Context Protocol server for managing Ludus cybersecurity training environments through natural language commands.
+Model Context Protocol server for managing Ludus lab environments through natural language commands.
 
 ## Prerequisites
 
