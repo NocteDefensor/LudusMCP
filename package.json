@@ -11,8 +11,6 @@
     "build": "tsc",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist",
     "prepare": "npm run build",
@@ -28,7 +26,7 @@
     "cli-wrapper"
   ],
   "author": "Ludus MCP Contributors",
-  "license": "MIT",
+  "license": "CC-BY-NC-SA-4.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
     "ajv": "^8.17.1",
@@ -40,15 +38,12 @@
     "ssh2": "^1.16.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.0.0",
     "@types/ssh2": "^1.15.5",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   },

@@ -25,16 +25,14 @@
     "isolatedModules": true,
     "allowJs": false,
     "checkJs": false,
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
+    "dist"
   ],
   "ts-node": {
     "esm": true
