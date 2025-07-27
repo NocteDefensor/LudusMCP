@@ -1,6 +1,6 @@
-# Ludus MCP Server
+# LudusMCP is a MCP Server
 
-Model Context Protocol server for managing Ludus cybersecurity training environments through natural language commands.
+Model Context Protocol server for managing Ludus lab environments through natural language commands.
 
 ## Prerequisites
 
@@ -24,11 +24,11 @@ Ensure you have:
 
 **NOTE** Installation of the MCP server IS NOT on the Ludus server. It will be installed on a device with an MCP client (ex Claude Desktop) that has access to the Ludus server.
 
-### Global Installation (Recommended) (not yet pushed to NPM - will not work for now. clone repo and install from source as long as this message is up)
+### Global Installation (Recommended)
 Install the package globally to make the `ludus-mcp` command available system-wide:
 
 ```bash
-npm install -g ludus-mcp
+npm install -g ludus-mcp@latest
 ludus-mcp --setup-keyring
 ```
 
@@ -106,8 +106,10 @@ npx ludus-mcp --renew-keyring
 
 ### Claude Desktop Configuration
 
-**For Global Installation:**
-Add to your `~/.claude_desktop_config.json`:
+Find your Claude Desktop configuration file:
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -116,7 +118,7 @@ Add to your `~/.claude_desktop_config.json`:
       "command": "ludus-mcp"
     }
   },
-  "isUsingBuiltInNodeForMcp": false
+  "isUsingBuiltInNodeForMcp": true
 }
 ```
 
