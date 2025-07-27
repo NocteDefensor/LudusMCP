@@ -13,7 +13,7 @@
     "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist",
-    "prepare": "npm run build",
+    "postinstall": "npm run build",
     "inspector": "npx @modelcontextprotocol/inspector dist/server.js"
   },
   "keywords": [
@@ -29,23 +29,23 @@
   "license": "CC-BY-NC-SA-4.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "@types/ssh2": "^1.15.5",
     "ajv": "^8.17.1",
     "ajv-draft-04": "^1.0.0",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.1.0",
     "keytar": "^7.9.0",
     "node-ssh": "^13.2.1",
-    "ssh2": "^1.16.0"
+    "ssh2": "^1.16.0",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.0.0",
-    "@types/ssh2": "^1.15.5",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "tsx": "^4.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
