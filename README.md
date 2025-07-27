@@ -1,4 +1,4 @@
-# Ludus MCP Server
+# LudusMCP is a MCP Server
 
 Model Context Protocol server for managing Ludus lab environments through natural language commands.
 
