@@ -4,6 +4,8 @@ Model Context Protocol server for managing Ludus cybersecurity training environm
 
 ## Prerequisites
 
+For detailed information, please refer to the [wiki](https://github.com/NocteDefensor/LudusMCP/wiki#ludus-mcp-server)
+
 ### System Requirements
 - Node.js 18.0.0 or higher
 - npm package manager
