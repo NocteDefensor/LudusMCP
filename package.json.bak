@@ -4,7 +4,9 @@
   "type": "module",
   "description": "MCP server for managing Ludus cybersecurity training environments through natural language commands",
   "main": "dist/server.js",
-  "bin": "./dist/server.js",
+  "bin": {
+    "ludus-mcp": "./dist/server.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/server.ts",
