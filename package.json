@@ -5,7 +5,7 @@
   "description": "MCP server for managing Ludus cybersecurity training environments through natural language commands",
   "main": "dist/server.js",
   "bin": {
-    "ludus-mcp": "dist/server.js"
+    "ludus-mcp": "./dist/server.js"
   },
   "scripts": {
     "build": "tsc",
