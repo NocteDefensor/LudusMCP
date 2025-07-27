@@ -49,7 +49,11 @@ export const executeLudusCmdPrompt: Prompt = {
 };
 
 // Export all prompts as an array for easy registration
-export const ALL_PROMPTS = [
+export const ALL_PROMPTS: Prompt[] = [
   createLudusRangePrompt,
   executeLudusCmdPrompt
-]; 
+];
+
+// Re-export handlers for use in server
+export { handleCreateLudusRangePrompt } from './createLudusRange.js';
+export { handleExecuteLudusCmdPrompt } from './executeLudusCmd.js'; 
