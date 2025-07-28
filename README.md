@@ -354,4 +354,4 @@ For additional help:
 - Anthropic MCP docs - https://docs.anthropic.com/en/docs/agents-and-tools/mcp-connector
 - MCP in VS Code - https://code.visualstudio.com/docs/copilot/chat/mcp-servers
 ## License
-Creative Commons Attribution ShareAlike 4.0
+GNU General Public License v3.0
