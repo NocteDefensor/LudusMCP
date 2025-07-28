@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { Logger } from '../utils/logger.js';
-import { LudusCliWrapper } from '../ludus/cliWrapper.js';
+import { LudusCliWrapper } from '../ludusMCP/cliWrapper.js';
 import { getDocsStructure } from '../utils/downloadDocs.js';
 
 // Input schema for the ludus docs tool

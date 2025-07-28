@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Logger } from '../utils/logger.js';
-import { LudusCliWrapper } from '../ludus/cliWrapper.js';
+import { LudusCliWrapper } from '../ludusMCP/cliWrapper.js';
 
 const LudusRangeConfigCheckSchema = z.object({
   user_requirements: z.string().describe('Original user requirements from step 1'),

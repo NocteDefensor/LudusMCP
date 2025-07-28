@@ -379,7 +379,7 @@ export class InteractiveSetup {
       console.error('📡 Creating SSH tunnels for ports 8080 and 8081...');
       
       // Use the existing SSH tunnel manager instead of duplicating tunnel logic
-      const { LudusSSHTunnelManager } = await import('../ludus/sshTunnelManager.js');
+      const { LudusSSHTunnelManager } = await import('../ludusMCP/sshTunnelManager.js');
       
       const tunnelConfig = {
         host: config.sshHost,

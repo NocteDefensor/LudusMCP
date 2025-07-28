@@ -8,9 +8,9 @@ import {
   GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { Logger } from './utils/logger.js';
-import { InteractiveSetup, LudusConfig } from './ludus/interactiveSetup.js';
+import { InteractiveSetup, LudusConfig } from './ludusMCP/interactiveSetup.js';
 import path from 'path';
-import { LudusCliWrapper } from './ludus/cliWrapper.js';
+import { LudusCliWrapper } from './ludusMCP/cliWrapper.js';
 import { ALL_PROMPTS } from './prompts/index.js';
 import { handleCreateLudusRangePrompt } from './prompts/createLudusRange.js';
 import { handleExecuteLudusCmdPrompt } from './prompts/executeLudusCmd.js';

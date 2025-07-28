@@ -88,14 +88,14 @@ export class LudusConfig {
 
   public getUrl(): string {
     if (!this.config.url) {
-      throw new Error('Ludus URL not configured. Set LUDUS_URL environment variable or configure in ~/.config/ludus/config.yml');
+      throw new Error('Ludus URL not configured. Set LUDUS_URL environment variable or configure in ~/.config/ludusMCP/config.yml');
     }
     return this.config.url;
   }
 
   public getApiKey(): string {
     if (!this.config.apiKey) {
-      throw new Error('Ludus API key not configured. Set LUDUS_API_KEY environment variable or configure in ~/.config/ludus/config.yml');
+      throw new Error('Ludus API key not configured. Set LUDUS_API_KEY environment variable or configure in ~/.config/ludusMCP/config.yml');
     }
     return this.config.apiKey;
   }
