@@ -35,7 +35,6 @@
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.1.0",
     "keytar": "^7.9.0",
-    "node-ssh": "^13.2.1",
     "ssh2": "^1.16.0",
     "typescript": "^5.0.0"
   },

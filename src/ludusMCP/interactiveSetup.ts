@@ -328,46 +328,104 @@ export class InteractiveSetup {
 
   private async testSshConnectivity(config: LudusConfig): Promise<boolean> {
     try {
-      // Use native Node.js SSH library instead of external binaries
-      const { NodeSSH } = await import('node-ssh');
-      const ssh = new NodeSSH();
+      // Use ssh2 library (consistent with tunnel manager)
+      const { Client } = await import('ssh2');
+      const ssh = new Client();
 
       const sshConfig: any = {
         host: config.sshHost,
         username: config.sshUser,
         readyTimeout: 10000, // 10 second timeout
-        sock: undefined, // Ensure clean connection
       };
 
       if (config.sshAuthMethod === 'key') {
         // Key-based authentication
-        sshConfig.privateKeyPath = config.sshKeyPath;
-        if (config.sshKeyPassphrase) {
-          sshConfig.passphrase = config.sshKeyPassphrase;
+        if (!config.sshKeyPath) {
+          console.error('SSH key path is required for key authentication');
+          return false;
+        }
+        
+        const fs = await import('fs/promises');
+        try {
+          const privateKey = await fs.readFile(config.sshKeyPath);
+          sshConfig.privateKey = privateKey;
+          if (config.sshKeyPassphrase) {
+            sshConfig.passphrase = config.sshKeyPassphrase;
+          }
+        } catch (keyError: any) {
+          console.error(`Failed to read SSH private key: ${keyError.message}`);
+          return false;
         }
       } else {
         // Password authentication
         sshConfig.password = config.sshPassword;
       }
 
-      try {
-        await ssh.connect(sshConfig);
+      return new Promise((resolve) => {
+        let resolved = false;
         
-        // Test basic command execution
-        const result = await ssh.execCommand('echo "SSH test successful"');
-        ssh.dispose();
+        const cleanup = () => {
+          if (!resolved) {
+            resolved = true;
+            ssh.end();
+          }
+        };
 
-        if (result.code === 0) {
-          console.error('SSH connectivity test successful');
-          return true;
-        } else {
-          console.error(`SSH connectivity test failed with code: ${result.code}`);
-          return false;
+        const timeout = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            console.error('SSH connectivity test timed out');
+            ssh.end();
+            resolve(false);
+          }
+        }, 12000); // 12 second total timeout
+
+        ssh.on('ready', () => {
+          ssh.exec('echo "SSH test successful"', (err, stream) => {
+            if (err) {
+              clearTimeout(timeout);
+              cleanup();
+              console.error(`SSH command execution failed: ${err.message}`);
+              resolve(false);
+              return;
+            }
+
+            let output = '';
+            stream.on('data', (data: Buffer) => {
+              output += data.toString();
+            });
+
+            stream.on('close', (code: number) => {
+              clearTimeout(timeout);
+              cleanup();
+              
+              if (code === 0 && output.trim() === 'SSH test successful') {
+                console.error('SSH connectivity test successful');
+                resolve(true);
+              } else {
+                console.error(`SSH connectivity test failed with code: ${code}`);
+                resolve(false);
+              }
+            });
+          });
+        });
+
+        ssh.on('error', (error: any) => {
+          clearTimeout(timeout);
+          cleanup();
+          console.error(`SSH connectivity test failed: ${error.message}`);
+          resolve(false);
+        });
+
+        try {
+          ssh.connect(sshConfig);
+        } catch (connectError: any) {
+          clearTimeout(timeout);
+          cleanup();
+          console.error(`SSH connectivity test error: ${connectError.message}`);
+          resolve(false);
         }
-      } catch (connectionError: any) {
-        console.error(`SSH connectivity test failed: ${connectionError.message}`);
-        return false;
-      }
+      });
     } catch (error: any) {
       console.error(`SSH connectivity test error: ${error.message}`);
       return false;
