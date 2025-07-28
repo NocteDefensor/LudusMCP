@@ -344,6 +344,7 @@ For additional help:
 - Ludus Documentation - https://docs.ludus.cloud/docs/intro
 ## Coming Changes
 - May switch to [Desktop Extension](https://www.anthropic.com/engineering/desktop-extensions) setup vs the current homegrown keyring config/renew functions.
+- May make a remote mcp server version to be able to interact with ludus from any device on network regardless of having ludus cli present etc.
 - Will add more sample reference templates. 
 - Will attempt to keep up with new roles by adding them to the schema for LLM reference.
 ## Credits
