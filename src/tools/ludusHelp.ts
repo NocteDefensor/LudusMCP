@@ -1,6 +1,6 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Logger } from '../utils/logger.js';
-import { LudusCliWrapper } from '../ludus/cliWrapper.js';
+import { LudusCliWrapper } from '../ludusMCP/cliWrapper.js';
 
 export interface LudusHelpArgs {
   command?: string;
