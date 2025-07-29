@@ -4,9 +4,7 @@ version: "1.0.0"
 description: "Installs Elastic Agent for log collection"
 repository: "https://github.com/badsectorlabs/ludus_elastic_agent"
 author: "Bad Sector Labs"
-
 dependencies: []
-
 variables:
   ludus_install_directory:
     type: "string"
@@ -35,14 +33,15 @@ variables:
     
   ludus_elastic_agent_version:
     type: "string"
-    default: "8.12.2"
+    default: "9.0.1"
     description: "Elastic Agent version"
     
-  ludus_elastic_install_sysmon: ""
+  ludus_elastic_install_sysmon:
+    type: "boolean"
+    default: true
+    description: "Whether or not to install Sysmon"
+    
+  ludus_elastic_sysmon_path:
     type: "string"
-    Default: True
-    Description: "Whether or not to install Sysmon"
-  ludus_elastic_sysmon_path: "C:\\Program Files (x86)\\Sysmon"
-    type: "String"
-    Default: "C:\\Program Files (x86)\\Sysmon"
-    Description: "Sysmon Install Path"
+    default: "C:\\Program Files (x86)\\Sysmon"
+    description: "Sysmon Install Path"
