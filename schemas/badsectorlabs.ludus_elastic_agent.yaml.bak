@@ -1,0 +1,47 @@
+name: badsectorlabs.ludus_elastic_agent
+type: role
+version: "1.0.0"
+description: "Installs Elastic Agent for log collection"
+repository: "https://github.com/badsectorlabs/ludus_elastic_agent"
+author: "Bad Sector Labs"
+dependencies: []
+variables:
+  ludus_install_directory:
+    type: "string"
+    default: "/opt/ludus"
+    description: "Ludus installation directory"
+    
+  ludus_elastic_container_install_path:
+    type: "string"
+    default: "/opt/elastic_container"
+    description: "Path on server VM for automatic token extraction"
+    
+  ludus_elastic_fleet_port:
+    type: "string"
+    default: "8220"
+    description: "Port for fleet service on server VM"
+    
+  ludus_elastic_enrollment_token:
+    type: "string"
+    default: ""
+    description: 
+    
+  ludus_elastic_fleet_server:
+    type: "string"
+    default: ""
+    description: "The badsectorlabs.ludus_elastic_agent will automatically find the enrollment token and URL for the elastic server and enroll the agent. You can set the token and URL manually using role_vars if you wish. Ex https://10.{{ range_second_octet }}.30.10:8220"
+    
+  ludus_elastic_agent_version:
+    type: "string"
+    default: "9.0.1"
+    description: "Elastic Agent version"
+    
+  ludus_elastic_install_sysmon:
+    type: "boolean"
+    default: true
+    description: "Whether or not to install Sysmon"
+    
+  ludus_elastic_sysmon_path:
+    type: "string"
+    default: "C:\\Program Files (x86)\\Sysmon"
+    description: "Sysmon Install Path"
