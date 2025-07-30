@@ -291,7 +291,7 @@ Configuration files and data are stored in `~/.ludus-mcp/`:
     └── troubleshooting/
 ```
 
-Official files are automatically downloaded and updated on server startup. Custom files you create are preserved.
+Official project files are automatically downloaded and updated on server startup. Custom files you create are preserved.
 
 ## Security
 - This is for lab use only. Security is marginal. Some attempts have been made to limit OS command injection or path traversal. Additionally, credentials are handled via OS credential manager.
@@ -301,17 +301,17 @@ Official files are automatically downloaded and updated on server startup. Custo
 - All credentials stored in OS credential manager
 - Secure dialogs for credential collection
 
-### Network Security
-- WireGuard VPN encryption for server communication
-- SSH tunnel fallback with key-based authentication
-- SSL certificate verification (configurable)
+### Networking
+- WireGuard VPN for server communication
+- SSH tunnel fallback or SSH primary with key-based or password based authentication
 
 ### Operational Safety
-- Destructive operations require explicit confirmation
-- Automatic validation of configurations before deployment
-- Comprehensive logging and error handling
+- Destructive operations should require explicit confirmation but highly recommend you don't "always allow" access to dangerous tools such as destroy_range and you closely observe usage. Its an LLM and sometimes it does weird stuff.
+- Should automatically validate configurations before deployment. It will definitely go through syntax/range schema validation as part of write process.
 
 ## Troubleshooting
+
+- Logs are stored in `~/.ludus-mcp/logs`
 
 ### Connection Issues
 - Verify WireGuard tunnel is active: `wg show`
