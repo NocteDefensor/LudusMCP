@@ -18,7 +18,7 @@ Ensure you have:
 - Ludus server SSH access credentials
 - Ludus API key (obtain via `ludus user apikey` command)
 - WireGuard configuration file OR SSH tunnel capabilities (obtain wireguard conf from Ludus CLI)
-- Admin or user account on Ludus server. Non admin will be limited in same ways as using ludus cli with non admin account.
+- Admin USERID for Ludus server.
 
 ## Installation
 
@@ -67,7 +67,7 @@ npx ludus-mcp --setup-keyring
 
 The setup wizard will prompt for:
 - **Connection Method**: WireGuard VPN or SSH tunnel
-- **Ludus Admin Username**: Your Ludus admin account
+- **Ludus Admin Username**: Your Ludus admin account USER ID
 - **API Key**: Ludus API key from `ludus user apikey` command.
 - **SSH Credentials**: Host, username, and authentication method
 - **WireGuard Config**: Path to .conf file (if using WireGuard)
@@ -85,10 +85,11 @@ npx ludus-mcp --renew-keyring
 
 ### Connection Methods
 
-**WireGuard VPN (Recommended)**
+**WireGuard VPN**
 - Direct connection to Ludus server for non admin functions via VPN tunnel
 - Requires WireGuard client and configuration file
 - Must be manually started before using MCP client
+- Will still use SSH tunnel for ADMIN ops due to ADMIN API only available localhost on Ludus Server.
 
 **SSH Tunnel**
 - Port forwarding through SSH connection
@@ -152,6 +153,7 @@ No manual server startup required - your MCP client handles everything.
 
 ### Manual Server Testing (Optional)
 For troubleshooting or testing the server independently:
+**NOTE** You do not need to manually start server prior to running your mcp client such as claude desktop. MCP client will automatically start the MCP server. This manual start below is for testing only. 
 
 ```bash
 ludus-mcp  # If globally installed
