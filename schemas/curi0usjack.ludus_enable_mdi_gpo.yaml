@@ -1,0 +1,31 @@
+# Schema for ludus_enable_mdi_gpo Role
+# Enables Microsoft Defender for Identity auditing settings via Group Policy
+
+name: curi0usjack.ludus_enable_mdi_gpo
+type: role
+version: "1.0.0"
+description: "Creates GPOs with recommended auditing settings for Microsoft Defender for Identity (MDI) rollout"
+repository: "https://github.com/curi0usJack/Ludus-MDE-MDI-Roles/tree/main/ludus_enable_mdi_gpo"
+author: "curi0usJack (@curi0usJack)"
+
+installation_method: "galaxy"
+note: "This role requires a Windows Domain Controller with Active Directory module available. Installs DefenderForIdentity PowerShell module."
+warning: "This role modifies domain-wide Group Policy settings."
+
+# This role has no configurable variables - it automatically enables predefined MDI configurations
+variables: {}
+
+# MDI Configurations enabled by this role:
+# - AdvancedAuditPolicyDCs: Advanced audit policy settings for Domain Controllers
+# - DomainObjectAuditing: Auditing for domain object changes
+# - NTLMAuditing: NTLM authentication auditing
+#
+# Additional configurations available via Set-MDIConfiguration:
+# See: https://learn.microsoft.com/en-us/powershell/module/defenderforidentity/set-mdiconfiguration
+#
+# Role performs these actions:
+# 1. Installs NuGet package provider
+# 2. Installs DefenderForIdentity PowerShell module
+# 3. Imports Active Directory module
+# 4. Creates GPOs with MDI prefix using Set-MDIConfiguration
+# 5. Forces Group Policy update with gpupdate /force
