@@ -1,0 +1,33 @@
+# Schema for ludus_badblood Role
+# Populates Active Directory domain with vulnerable data from BadBlood project
+
+name: curi0usjack.ludus_badblood
+type: role
+version: "1.0.0"
+description: "Outfits Ludus AD domain with vulnerable objects and configurations from BadBlood project for security testing"
+repository: "https://github.com/curi0usJack/ludus_badblood"
+author: "curi0usJack (@curi0usJack)"
+
+installation_method: "galaxy"
+note: "This role requires a Windows Domain Controller with internet access. BadBlood execution takes significant time to complete."
+warning: "This role intentionally creates vulnerable AD configurations for testing purposes. Only use in isolated lab environments."
+
+# This role has no configurable variables - it automatically downloads and runs BadBlood
+variables: {}
+
+# BadBlood project information:
+# Original project: https://github.com/davidprowe/BadBlood
+# Purpose: Fills Active Directory with realistic but vulnerable user accounts, groups, and configurations
+# 
+# Role performs these actions:
+# 1. Checks for Git installation on target system
+# 2. Downloads Git installer if not present and installs silently
+# 3. Clones BadBlood repository from GitHub to C:\Windows\Temp\BadBlood
+# 4. Executes Invoke-BadBlood.ps1 script to populate AD with vulnerable data
+#
+# BadBlood creates:
+# - Hundreds of realistic user accounts with weak passwords
+# - Complex group membership structures with privilege escalation paths
+# - Misconfigured permissions and ACLs
+# - Vulnerable service accounts and SPNs
+# - Other AD security misconfigurations for testing detection tools
