@@ -8,7 +8,7 @@ description: "Creates GPOs with recommended auditing settings for Microsoft Defe
 repository: "https://github.com/curi0usJack/Ludus-MDE-MDI-Roles/tree/main/ludus_enable_mdi_gpo"
 author: "curi0usJack (@curi0usJack)"
 
-installation_method: "galaxy"
+installation_method: "directory"
 note: "This role requires a Windows Domain Controller with Active Directory module available. Installs DefenderForIdentity PowerShell module."
 warning: "This role modifies domain-wide Group Policy settings."
 
