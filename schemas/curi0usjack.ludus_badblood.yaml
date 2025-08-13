@@ -8,7 +8,7 @@ description: "Outfits Ludus AD domain with vulnerable objects and configurations
 repository: "https://github.com/curi0usJack/ludus_badblood"
 author: "curi0usJack (@curi0usJack)"
 
-installation_method: "galaxy"
+installation_method: "directory"
 note: "This role requires a Windows Domain Controller with internet access. BadBlood execution takes significant time to complete."
 warning: "This role intentionally creates vulnerable AD configurations for testing purposes. Only use in isolated lab environments."
 
