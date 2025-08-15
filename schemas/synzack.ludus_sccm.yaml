@@ -20,7 +20,6 @@ dependency_example: |
         - vm_name: "{{ range_id }}-Workstation"
           role: synzack.ludus_sccm.disable_firewall
 
-installation_method: "galaxy"
 
 roles:
   disable_firewall:
