@@ -4,6 +4,7 @@ version: "1.0.0"
 description: "Installs Elastic Agent for log collection"
 repository: "https://github.com/badsectorlabs/ludus_elastic_agent"
 author: "Bad Sector Labs"
+installation_method: "ludus ansible role add badsectorlabs.ludus_elastic_agent"
 dependencies: []
 variables:
   ludus_install_directory:

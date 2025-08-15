@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Filigran OpenCTI threat intelligence platform"
 repository: "https://github.com/frack113/ludus_filigran_opencti"
 author: "frack113"
-
+installation_method: "ludus ansible role add ludus_filigran_opencti"
 dependencies: []
 
 variables:

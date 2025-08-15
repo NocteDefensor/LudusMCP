@@ -7,7 +7,7 @@ author: "ChoiSG (@_choisec)"
 
 dependencies: []
 
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 
 note: "Must install from directory - not Ansible Galaxy. Do NOT use with primary-dc or secondary-dc roles when creating child domains."
 

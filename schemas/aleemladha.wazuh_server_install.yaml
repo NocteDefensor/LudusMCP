@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installing wazuh SIEM Unified XDR and SIEM protection with SOC Fortress Rules"
 repository: "https://github.com/aleemladha/wazuh_server_install"
 author: "Aleem Ladha (@LadhaAleem)"
-
+installation_method: "ludus ansible role add aleemladha.wazuh_server_install"
 dependencies: []
 
 note: "Only works with Ubuntu or Kali - Wazuh does not support Debian 11/12"

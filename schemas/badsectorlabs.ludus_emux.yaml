@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs EMUX and runs an emulated device on Debian based hosts"
 repository: "https://github.com/badsectorlabs/ludus_emux"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_emux"
 dependencies:
   - "geerlingguy.docker"
 

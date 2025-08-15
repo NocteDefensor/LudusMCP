@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Elastic Stack using containers"
 repository: "https://github.com/badsectorlabs/ludus_elastic_container"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_elastic_container"
 dependencies: []
 
 variables:

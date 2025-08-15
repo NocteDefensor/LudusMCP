@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Microsoft Exchange Server 2019"
 repository: "https://github.com/aleemladha/ludus_exchange"
 author: "Aleem Ladha (@LadhaAleem)"
-
+installation_method: "ludus ansible role add aleemladha.ludus_exchange"
 dependencies: []
 
 variables:

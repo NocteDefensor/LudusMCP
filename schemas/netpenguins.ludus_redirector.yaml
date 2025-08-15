@@ -7,7 +7,7 @@ version: "1.0.0"
 description: "An Ansible role for Ludus to deploy and configure an Apache-based redirector, supporting custom rewrite rules. Designed for use in Ludus ranges and can be easily integrated with other roles and custom configurations."
 repository: "https://github.com/NetPenguins/ludus_redirector"
 author: "NetPenguins (@NetPenguins)"
-
+installation_method: "ludus ansible role add netpenguins.ludus_redirector"
 dependencies: []
 
 installation_method: "galaxy"  # ludus ansible role add netpenguins.ludus_redirector

@@ -7,10 +7,9 @@ version: "1.0.0"
 description: "An Ansible role to build and deploy the Sliver C2 framework from source, with optional systemd service integration and configuration file support. Designed for use in Ludus ranges, but works anywhere you want a fresh, up-to-date Sliver install!"
 repository: "https://github.com/NetPenguins/ludus_sliver"
 author: "NetPenguins (@NetPenguins)"
-
 dependencies: []
 
-installation_method: "galaxy"  # ludus ansible role add netpenguins.ludus_sliver
+installation_method: "ludus ansible role add netpenguins.ludus_sliver"
 note: "Installs all build dependencies (Go, git, build tools), clones Sliver repo, builds both sliver-server and sliver-client from source. Supports custom config files via role's files/ directory."
 warning: "This role deploys the Sliver C2 framework which is designed for red team exercises and penetration testing. Ensure proper authorization before deployment. Requires internet access to fetch Sliver and dependencies."
 

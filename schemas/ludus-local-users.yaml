@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Creates and manages local users and groups"
 repository: "https://github.com/Cyblex-Consulting/ludus-local-users"
 author: "Cyblex-Consulting"
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 dependencies: []
 
 variables:

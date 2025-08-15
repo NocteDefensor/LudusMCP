@@ -4,7 +4,7 @@ version: 1.0.0
 description: Configures various Active Directory vulnerabilities
 repository: https://github.com/Primusinterp/ludus-ad-vulns
 author: Primusinterp
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 dependencies: []
 variables:
   user.identity:

@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Velociraptor server"
 repository: "https://github.com/fmurer/ludus_velociraptor_server"
 author: "fmurer"
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 dependencies: []
 
 variables:

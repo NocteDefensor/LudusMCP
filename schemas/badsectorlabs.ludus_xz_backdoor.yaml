@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs the xz backdoor (CVE-2024-3094) on a Debian host and optionally installs the xzbot tool"
 repository: "https://github.com/badsectorlabs/ludus_xz_backdoor"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_xz_backdoor"
 dependencies: []
 
 warning: "This role deploys malware on purpose! Be careful."

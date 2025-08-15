@@ -7,8 +7,7 @@ version: "1.0.0"
 description: "Outfits Ludus AD domain with vulnerable objects and configurations from BadBlood project for security testing"
 repository: "https://github.com/curi0usJack/ludus_badblood"
 author: "curi0usJack (@curi0usJack)"
-
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 note: "This role requires a Windows Domain Controller with internet access. BadBlood execution takes significant time to complete."
 warning: "This role intentionally creates vulnerable AD configurations for testing purposes. Only use in isolated lab environments."
 
