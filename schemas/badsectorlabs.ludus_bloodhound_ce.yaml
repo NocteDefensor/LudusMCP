@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Bloodhound CE on a Debian based system"
 repository: "https://github.com/badsectorlabs/ludus_bloodhound_ce"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_bloodhound_ce"
 dependencies:
   - "geerlingguy.docker"
 

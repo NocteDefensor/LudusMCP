@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Mythic C2 team server"
 repository: "https://github.com/0xRedpoll/ludus_mythic_teamserver"
 author: "0xRedpoll"
-
+installation_method: "ludus ansible role add 0xRedpoll.ludus_mythic_teamserver"
 dependencies: []
 
 variables:

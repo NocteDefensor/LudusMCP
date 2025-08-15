@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs MITRE Caldera server"
 repository: "https://github.com/frack113/ludus_caldera_server"
 author: "frack113"
-
+installation_method: "ludus ansible role add ludus_caldera_server"
 dependencies: []
 
 variables:

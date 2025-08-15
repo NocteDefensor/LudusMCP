@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Deploys Wazuh Agents to Windows, Debian, and Ubuntu systems"
 repository: "https://github.com/aleemladha/ludus_wazuh_agent"
 author: "Aleem Ladha (@LadhaAleem)"
-
+installation_method: "ludus ansible role add aleemladha.ludus_exchange2016"
 dependencies: []
 
 variables:

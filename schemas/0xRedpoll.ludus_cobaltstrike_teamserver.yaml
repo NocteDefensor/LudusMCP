@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Cobalt Strike team server"
 repository: "https://github.com/0xRedpoll/ludus_cobaltstrike_teamserver"
 author: "0xRedpoll"
-
+installation_method: "ludus ansible role add 0xRedpoll.ludus_cobaltstrike_teamserver"
 dependencies: []
 
 variables:

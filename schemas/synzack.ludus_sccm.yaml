@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Collection for deploying Microsoft System Center Configuration Manager"
 repository: "https://github.com/synzack/ansible-collection-ludus-sccm"
 author: "Zach Stein (@synzack21)"
-
+installation_method: "ludus ansible collection add synzack.ludus_sccm"
 dependencies: []
 
 # Usage and dependency information

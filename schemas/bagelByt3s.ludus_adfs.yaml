@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Collection for installing and configuring ADFS"
 repository: "https://github.com/bagelByt3s/ludus_adfs"
 author: "bagelByt3s"
-
+installation_method: "ludus ansible collection add bagelByt3s.ludus_adfs"
 dependencies: []
 
 roles:

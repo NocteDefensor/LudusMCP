@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs MSSQL on Windows systems"
 repository: "https://github.com/badsectorlabs/ludus_mssql"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_mssql"
 dependencies: []
 
 variables:

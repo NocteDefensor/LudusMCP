@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs and configures GitLab Community Edition"
 repository: "https://github.com/Cyblex-Consulting/ludus-gitlab-ce"
 author: "Cyblex-Consulting"
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 dependencies: []
 
 variables:

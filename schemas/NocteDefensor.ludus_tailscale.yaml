@@ -4,10 +4,10 @@ version: "1.0.0"
 description: "Installs and configures Tailscale VPN"
 repository: "https://github.com/NocteDefensor/ludus_tailscale"
 author: "NocteDefensor"
-
+installation_method: "ludus ansible role add NocteDefensor.ludus_tailscale"
 dependencies: []
 
-installation_note: "Can also be installed as 'ludus_tailscale' - user should verify which role name they have installed"
+installation_note: "Can also be installed as 'ludus_tailscale' using local directory - user should verify which role name they have installed"
 
 variables:
   tailscale_state:

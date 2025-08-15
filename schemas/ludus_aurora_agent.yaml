@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs Aurora EDR agent"
 repository: "https://github.com/frack113/ludus_aurora_agent"
 author: "frack113"
-
+installation_method: "ludus ansible role add ludus_aurora_agent"
 dependencies: []
 
 variables:

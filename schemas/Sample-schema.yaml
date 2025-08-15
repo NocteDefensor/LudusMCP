@@ -13,7 +13,7 @@ dependencies:
   - "other.required.role"
   - "another.dependency"
 
-installation_method: "galaxy"  # or "directory" if must be installed from directory
+installation_method: "ludus ansible role/collection add <role/collection>"  # or "-d /path/to/directory if must be installed from directory
 note: "Any important notes about usage or limitations"
 warning: "Any critical warnings (e.g., 'This role deploys malware')"
 

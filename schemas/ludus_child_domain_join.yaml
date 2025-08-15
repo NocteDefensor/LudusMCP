@@ -5,7 +5,7 @@ description: "Join a machine to the child domain created from ludus_child_domain
 repository: "https://github.com/NocteDefensor/ludus_ansible_roles"
 author: "ChoiSG (@_choisec) - Fork maintained by NocteDefensor"
 dependencies: []
-installation_method: "directory"
+installation_method: "ludus ansible role add -d /path/to/directory"
 note: "Must install from directory - required because Ludus backend doesn't support 3rd party domain/controllers"
 IMPORTANT_DOMAIN_CONFIG_NOTE: "DO NOT include 'domain:' section in VM configuration when using ludus_child_domain_join role. The role handles domain joining internally. Example: Do NOT add 'domain: { fqdn: prod.test.local, role: member }' to VMs using this role."
 variables:

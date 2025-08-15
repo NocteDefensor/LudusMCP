@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs ADCS on Windows Server and optionally configures Certified Preowned templates"
 repository: "https://github.com/badsectorlabs/ludus_adcs"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_adcs"
 dependencies: []
 
 note: "Not idempotent - setting ESC values to false after true won't remove templates"

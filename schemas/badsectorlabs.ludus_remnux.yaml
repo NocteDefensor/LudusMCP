@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Installs REMnux on Linux systems"
 repository: "https://github.com/badsectorlabs/ludus_remnux"
 author: "Bad Sector Labs"
-
+installation_method: "ludus ansible role add badsectorlabs.ludus_remnux"
 dependencies: []
 
 variables: {} 
