@@ -4,6 +4,7 @@ version: 1.0.0
 description: Configures various Active Directory vulnerabilities
 repository: https://github.com/Primusinterp/ludus-ad-vulns
 author: Primusinterp
+installation_method: "directory"
 dependencies: []
 variables:
   user.identity:

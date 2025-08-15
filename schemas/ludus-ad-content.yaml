@@ -4,7 +4,7 @@ version: "1.0.0"
 description: "Creates Active Directory organizational units, groups, and users"
 repository: "https://github.com/Cyblex-Consulting/ludus-ad-content"
 author: "Cyblex-Consulting"
-
+installation_method: "directory"
 dependencies: []
 
 variables:
