@@ -1,6 +1,6 @@
 {
   "name": "ludus-mcp",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "type": "module",
   "description": "MCP server for managing Ludus cybersecurity training environments through natural language commands",
   "main": "dist/server.js",
