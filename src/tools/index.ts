@@ -341,7 +341,7 @@ export const insertCredsRangeConfigTool: Tool = {
       outputPath: { type: 'string', description: 'Output path (optional, defaults to input path)' },
       help: { type: 'boolean', description: 'Show help information' }
     },
-    required: ['configPath', 'credentialMappings']
+    required: []
   }
 };
 
