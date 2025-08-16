@@ -8,11 +8,12 @@ import { getCredential } from '../utils/keyring.js';
 import { validateLudusRangeSchema } from './rangeConfig.js';
 
 export interface InsertCredsRangeConfigArgs {
-  configPath: string;
-  credentialMappings: { [placeholder: string]: string };
+  configPath?: string;
+  credentialMappings?: { [placeholder: string]: string };
   outputPath?: string;
   validateOnly?: boolean;
   user?: string;
+  help?: boolean;
 }
 
 // Base directory for all Ludus MCP operations
@@ -196,7 +197,65 @@ export async function handleInsertCredsRangeConfig(
   args: InsertCredsRangeConfigArgs,
   logger: Logger
 ): Promise<any> {
-  const { configPath, credentialMappings, outputPath, validateOnly = true, user } = args;
+  const { configPath, credentialMappings, outputPath, validateOnly = true, user, help } = args;
+
+  // Handle help-only mode
+  if (help) {
+    return {
+      success: true,
+      help: true,
+      tool: 'insert_creds_range_config',
+      description: 'Replace credential placeholders in range config with actual values from keyring',
+      usage: {
+        purpose: 'Securely inject credentials into Ludus range configuration files',
+        workflow: [
+          '1. Use list_range_configs to verify configPath exists',
+          '2. Identify placeholders in config (e.g., {{LudusCredName-MP-TailscaleKey}})', 
+          '3. Map each placeholder to its credential name in credentialMappings',
+          '4. Credentials must exist in keyring (use get_credential_from_user first if needed)',
+          '5. Tool validates and optionally saves the processed config'
+        ],
+        requiredParameters: {
+          configPath: 'Path to range configuration file (relative to ~/.ludus-mcp/range-config-templates/)',
+          credentialMappings: 'Object mapping placeholder strings to credential names from keyring'
+        },
+        optionalParameters: {
+          outputPath: 'Where to save processed config (if omitted, validates only)',
+          validateOnly: 'If true (default), only validates without saving',
+          user: 'User context for path resolution'
+        },
+        exampleUsage: {
+          configPath: 'MP/simple-ad-tailscale-lab.yml',
+          credentialMappings: {
+            '{{LudusCredName-MP-TailscaleKey}}': 'LudusCredName-MP-TailscaleKey',
+            '{{LudusCredName-MP-AdminPass}}': 'LudusCredName-MP-AdminPass'
+          }
+        },
+        placeholderFormat: 'Placeholders must be in format: {{LudusCredName-<User>-<CredName>}}',
+        credentialFormat: 'Credential names must follow: LudusCredName-<TargetUser>-<CredName>',
+        pathResolution: {
+          relativePaths: 'Resolved relative to ~/.ludus-mcp/range-config-templates/',
+          absolutePaths: 'Used as-is',
+          userSpecific: 'If user provided, creates user-specific subdirectory'
+        },
+        security: [
+          'Actual credential values are never exposed in responses',
+          'Credentials are retrieved securely from OS keyring',
+          'Processed configs are validated against Ludus schema'
+        ]
+      }
+    };
+  }
+
+  // Validate required parameters when not in help mode
+  if (!configPath || !credentialMappings) {
+    return {
+      success: false,
+      error: 'Missing required parameters',
+      message: 'configPath and credentialMappings are required. Use help: true for usage information.',
+      requiredParameters: ['configPath', 'credentialMappings']
+    };
+  }
 
   logger.info('Handling insert_creds_range_config request', {
     configPath,
