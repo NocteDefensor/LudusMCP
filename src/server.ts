@@ -1385,6 +1385,57 @@ class LudusMCPServer {
       const result = await handleInsertCredsRangeConfig(args, this.logger);
       
       if (result.success) {
+        // Handle help mode
+        if (result.help) {
+          let helpText = `${result.description}\n\n`;
+          helpText += `**Purpose:** ${result.usage.purpose}\n\n`;
+          
+          helpText += `**Workflow:**\n`;
+          result.usage.workflow.forEach((step: string) => {
+            helpText += `${step}\n`;
+          });
+          
+          helpText += `\n**Required Parameters:**\n`;
+          Object.entries(result.usage.requiredParameters).forEach(([param, desc]) => {
+            helpText += `- ${param}: ${desc}\n`;
+          });
+          
+          helpText += `\n**Optional Parameters:**\n`;
+          Object.entries(result.usage.optionalParameters).forEach(([param, desc]) => {
+            helpText += `- ${param}: ${desc}\n`;
+          });
+          
+          helpText += `\n**Example Usage:**\n`;
+          helpText += `configPath: "${result.usage.exampleUsage.configPath}"\n`;
+          helpText += `credentialMappings:\n`;
+          Object.entries(result.usage.exampleUsage.credentialMappings).forEach(([placeholder, credName]) => {
+            helpText += `  "${placeholder}": "${credName}"\n`;
+          });
+          
+          helpText += `\n**Formats:**\n`;
+          helpText += `- Placeholder Format: ${result.usage.placeholderFormat}\n`;
+          helpText += `- Credential Format: ${result.usage.credentialFormat}\n`;
+          
+          helpText += `\n**Path Resolution:**\n`;
+          helpText += `- Relative paths: ${result.usage.pathResolution.relativePaths}\n`;
+          helpText += `- Absolute paths: ${result.usage.pathResolution.absolutePaths}\n`;
+          
+          helpText += `\n**Security:**\n`;
+          result.usage.security.forEach((note: string) => {
+            helpText += `- ${note}\n`;
+          });
+          
+          return {
+            content: [
+              {
+                type: 'text',
+                text: helpText
+              }
+            ]
+          };
+        }
+        
+        // Normal success mode
         let responseText = `Credential injection completed successfully\n\n`;
         responseText += `Config Path: ${result.configPath}\n`;
         responseText += `Credentials Injected: ${result.credentialsInjected}\n`;
