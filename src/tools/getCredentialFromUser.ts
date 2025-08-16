@@ -4,7 +4,7 @@ import { SecretDialog } from '../utils/secretDialog.js';
 import { storeCredential } from '../utils/keyring.js';
 
 export interface GetCredentialFromUserArgs {
-  credName: string;
+  credName?: string;
   description?: string;
   isPassword?: boolean;
   help?: boolean;
@@ -42,7 +42,7 @@ PURPOSE: Securely collect and store credentials (API keys, passwords, tokens) fr
           default: false
         }
       },
-      required: ['credName']
+      required: []
     }
   };
 }
@@ -93,6 +93,20 @@ PLATFORM SUPPORT:
 - macOS: AppleScript secure input dialog  
 - Linux: zenity or kdialog (requires GUI)
       `
+    };
+  }
+
+  // Validate required parameters when not in help mode
+  if (!credName) {
+    return {
+      success: false,
+      message: 'Missing required parameter: credName',
+      reason: 'credName is required when not requesting help. Use help: true for usage information.',
+      examples: [
+        'LudusCredName-MP-TailscaleKey',
+        'LudusCredName-TestRange-APIToken', 
+        'LudusCredName-Admin-DatabasePassword'
+      ]
     };
   }
 

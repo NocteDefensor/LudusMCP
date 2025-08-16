@@ -1324,6 +1324,19 @@ class LudusMCPServer {
       const result = await handleGetCredentialFromUser(args, this.logger);
       
       if (result.success) {
+        // Handle help mode
+        if (result.help) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: result.content
+              }
+            ]
+          };
+        }
+        
+        // Normal success mode
         let responseText = `Credential "${result.credName}" stored securely\n\n`;
         responseText += `Location: ${result.location}\n\n`;
         
