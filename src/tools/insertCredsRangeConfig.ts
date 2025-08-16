@@ -11,7 +11,6 @@ export interface InsertCredsRangeConfigArgs {
   configPath?: string;
   credentialMappings?: { [placeholder: string]: string };
   outputPath?: string;
-  validateOnly?: boolean;
   user?: string;
   help?: boolean;
 }
@@ -197,7 +196,7 @@ export async function handleInsertCredsRangeConfig(
   args: InsertCredsRangeConfigArgs,
   logger: Logger
 ): Promise<any> {
-  const { configPath, credentialMappings, outputPath, validateOnly = true, user, help } = args;
+  const { configPath, credentialMappings, outputPath, user, help } = args;
 
   // Handle help-only mode
   if (help) {
@@ -220,8 +219,7 @@ export async function handleInsertCredsRangeConfig(
           credentialMappings: 'Object mapping placeholder strings to credential names from keyring'
         },
         optionalParameters: {
-          outputPath: 'Where to save processed config (if omitted, validates only)',
-          validateOnly: 'If true (default), only validates without saving',
+          outputPath: 'Where to save processed config (if omitted, overwrites original file)',
           user: 'User context for path resolution'
         },
         exampleUsage: {
@@ -260,7 +258,6 @@ export async function handleInsertCredsRangeConfig(
   logger.info('Handling insert_creds_range_config request', {
     configPath,
     credentialCount: Object.keys(credentialMappings).length,
-    validateOnly,
     user
   });
 
@@ -343,25 +340,22 @@ export async function handleInsertCredsRangeConfig(
     // Validate against Ludus schema
     const schemaValidation = await validateLudusRangeSchema(parsedConfig, logger);
     
-    // Handle output
-    let finalOutputPath: string | undefined;
+    // Handle output - always save the credential-injected config
+    const targetPath = outputPath ? resolveConfigPath(outputPath, user) : resolvedConfigPath;
+    const outputDir = path.dirname(targetPath);
     
-    if (!validateOnly && outputPath) {
-      const resolvedOutputPath = resolveConfigPath(outputPath, user);
-      const outputDir = path.dirname(resolvedOutputPath);
-      
-      if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-      }
-      
-      // Write the credential-injected config
-      fs.writeFileSync(resolvedOutputPath, injectionResult.content!, 'utf8');
-      finalOutputPath = resolvedOutputPath;
-      
-      logger.info('Credential-injected config saved', { 
-        outputPath: resolvedOutputPath 
-      });
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
     }
+    
+    // Write the credential-injected config
+    fs.writeFileSync(targetPath, injectionResult.content!, 'utf8');
+    const finalOutputPath = targetPath;
+    
+    logger.info('Credential-injected config saved', { 
+      outputPath: targetPath,
+      overwroteOriginal: !outputPath
+    });
 
     // Prepare response (with credential redaction)
     const response = {
@@ -370,21 +364,15 @@ export async function handleInsertCredsRangeConfig(
       originalPath: configPath,
       credentialsInjected: Object.keys(credentialMappings).length,
       validation: schemaValidation,
-      validateOnly,
       outputPath: finalOutputPath,
-      message: validateOnly 
-        ? 'Credential injection and validation completed successfully (not saved)'
-        : `Credential injection completed and config saved to ${finalOutputPath}`,
+      message: `Credential injection completed and config saved to ${finalOutputPath}`,
+      overwroteOriginal: !outputPath,
       
       // Security: Never expose the actual credential-injected content
       securityNote: 'Actual credential values have been redacted from this response for security',
       
-      nextSteps: validateOnly ? [
-        'Configuration is valid with injected credentials',
-        'Use validateOnly: false and provide outputPath to save the processed config',
-        'Use set_range_config to make the processed config active',
-        'Use deploy_range to deploy with real credentials'
-      ] : [
+      nextSteps: [
+        'Credentials have been injected and file saved',
         'Use set_range_config to make this the active configuration',
         'Use deploy_range to deploy with real credentials'
       ]
