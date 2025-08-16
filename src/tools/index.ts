@@ -328,7 +328,7 @@ export const getCredentialFromUserTool: Tool = {
 
 export const insertCredsRangeConfigTool: Tool = {
   name: 'insert_creds_range_config',
-  description: 'Replace credential placeholders in range config with actual values from keyring. Handles {{LudusCredName-<User>-<CredName>}} placeholders securely.\n\n**USAGE WORKFLOW:**\n1. Use list_range_configs to verify configPath exists\n2. Identify placeholders in config (e.g., {{LudusCredName-MP-TailscaleKey}})\n3. Map each placeholder to its credential name in credentialMappings\n4. Credentials must exist in keyring (use get_credential_from_user first if needed)\n\n**EXAMPLE:**\n```\ncredentialMappings: {\n  "{{LudusCredName-MP-TailscaleKey}}": "LudusCredName-MP-TailscaleKey",\n  "{{LudusCredName-MP-AdminPass}}": "LudusCredName-MP-AdminPass"\n}\n```',
+  description: 'Replace credential placeholders in range config with actual values from keyring and save the file. Handles {{LudusCredName-<User>-<CredName>}} placeholders securely.\n\n**BEHAVIOR:** Always injects credentials and saves the result. No validation-only mode.\n\n**USAGE WORKFLOW:**\n1. Use list_range_configs to verify configPath exists\n2. Identify placeholders in config (e.g., {{LudusCredName-MP-TailscaleKey}})\n3. Map each placeholder to its credential name in credentialMappings\n4. Credentials must exist in keyring (use get_credential_from_user first if needed)\n5. File is automatically saved with injected credentials\n\n**EXAMPLE:**\n```\ncredentialMappings: {\n  "{{LudusCredName-MP-TailscaleKey}}": "LudusCredName-MP-TailscaleKey",\n  "{{LudusCredName-MP-AdminPass}}": "LudusCredName-MP-AdminPass"\n}\n```\n\n**FILE HANDLING:**\n- No outputPath: Overwrites original file with injected credentials\n- With outputPath: Saves injected version to new file, leaves original unchanged',
   inputSchema: {
     type: 'object',
     properties: {
@@ -338,7 +338,7 @@ export const insertCredsRangeConfigTool: Tool = {
         description: 'REQUIRED: Mapping of placeholder strings to credential names. Key = placeholder in config, Value = credential name in keyring',
         additionalProperties: { type: 'string' }
       },
-      outputPath: { type: 'string', description: 'Output path (optional, defaults to input path)' },
+      outputPath: { type: 'string', description: 'Output path (optional, if omitted overwrites original file)' },
       help: { type: 'boolean', description: 'Show help information' }
     },
     required: []
