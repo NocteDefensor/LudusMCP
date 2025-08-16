@@ -328,20 +328,20 @@ export const getCredentialFromUserTool: Tool = {
 
 export const insertCredsRangeConfigTool: Tool = {
   name: 'insert_creds_range_config',
-  description: 'Replace credential placeholders in range config with actual values from keyring. Handles {{LudusCredName-<User>-<CredName>}} placeholders securely.',
+  description: 'Replace credential placeholders in range config with actual values from keyring. Handles {{LudusCredName-<User>-<CredName>}} placeholders securely.\n\n**USAGE WORKFLOW:**\n1. Use list_range_configs to verify configPath exists\n2. Identify placeholders in config (e.g., {{LudusCredName-MP-TailscaleKey}})\n3. Map each placeholder to its credential name in credentialMappings\n4. Credentials must exist in keyring (use get_credential_from_user first if needed)\n\n**EXAMPLE:**\n```\ncredentialMappings: {\n  "{{LudusCredName-MP-TailscaleKey}}": "LudusCredName-MP-TailscaleKey",\n  "{{LudusCredName-MP-AdminPass}}": "LudusCredName-MP-AdminPass"\n}\n```',
   inputSchema: {
     type: 'object',
     properties: {
-      configPath: { type: 'string', description: 'Path to range configuration file' },
+      configPath: { type: 'string', description: 'Path to range configuration file (use list_range_configs to verify path)' },
       credentialMappings: { 
         type: 'object', 
-        description: 'Mapping of placeholder names to credential keys',
+        description: 'REQUIRED: Mapping of placeholder strings to credential names. Key = placeholder in config, Value = credential name in keyring',
         additionalProperties: { type: 'string' }
       },
       outputPath: { type: 'string', description: 'Output path (optional, defaults to input path)' },
       help: { type: 'boolean', description: 'Show help information' }
     },
-    required: ['configPath']
+    required: ['configPath', 'credentialMappings']
   }
 };
 

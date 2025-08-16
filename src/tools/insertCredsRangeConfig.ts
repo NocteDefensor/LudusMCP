@@ -39,8 +39,8 @@ function resolveConfigPath(filePath: string, user?: string): string {
     }
   }
   
-  // If it's a relative path with directories, resolve relative to .ludus-mcp/
-  return path.resolve(LUDUS_MCP_BASE_DIR, filePath);
+  // If it's a relative path with directories, resolve relative to range-config-templates/
+  return path.resolve(RANGE_CONFIG_TEMPLATES_DIR, filePath);
 }
 
 /**
