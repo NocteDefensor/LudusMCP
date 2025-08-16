@@ -56,6 +56,23 @@ The package includes native dependencies that require compilation during install
 
 If installation fails, ensure you have proper build tools for your platform.
 
+## Updating
+
+### NPM Global Install
+
+```bash
+npm install -g ludus-mcp@latest
+```
+
+### Local Development Install
+
+```bash
+cd LudusMCP
+git pull origin main
+npm install
+npm run build
+```
+
 ## Configuration
 
 ### Initial Setup
