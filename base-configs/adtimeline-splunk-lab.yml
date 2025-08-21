@@ -1,0 +1,33 @@
+ludus:
+  - vm_name: "{{ range_id }}-adtimeline-host"
+    hostname: "{{ range_id }}-adtimeline"
+    template: debian-12-x64-server-template
+    vlan: 10
+    ip_last_octet: 11
+    ram_gb: 8
+    cpus: 4
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: false
+    roles:
+      - geerlingguy.docker
+      - mojeda101.ludus_adtimeline_syncthing
+    role_vars:
+      # Docker configuration for geerlingguy.docker role
+      docker_edition: ce
+      docker_users:
+        - debian
+      
+      # Syncthing configuration
+      ludus_adtimeline_sync_puid: 1000
+      ludus_adtimeline_sync_pgid: 1000
+      ludus_adtimeline_sync_tz: "UTC"
+      ludus_adtimeline_sync_gui_port: 8384
+      ludus_adtimeline_sync_port_tcp: 22000
+      ludus_adtimeline_sync_port_udp: 22000
+      ludus_adtimeline_sync_discovery_port: 21027
+      
+      # Splunk configuration
+      ludus_adtimeline_splunk_web_port: 8000
+      ludus_adtimeline_splunk_password: "forensics"
