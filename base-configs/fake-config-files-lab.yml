@@ -1,0 +1,86 @@
+ludus:
+  - vm_name: "{{ range_id }}-winfileserver-2022"
+    hostname: "{{ range_id }}-FS01-2022"
+    template: win2022-server-x64-template
+    vlan: 10
+    ip_last_octet: 40
+    ram_gb: 4
+    cpus: 4
+    windows:
+      sysprep: false
+    domain:
+      fqdn: ludus.domain
+      role: member
+    testing:
+      snapshot: true
+      block_internet: true
+    roles:
+      - mojeda101.ludus_fake_configs
+    role_vars:
+      # Where to place the fake config files (multi-path supported)
+      fake_cfg_paths:
+        - 'C:\shares\all'
+        - 'C:\shares\public'
+        - 'C:\temp\configs'
+
+      # Create the fake directories if missing
+      fake_cfg_create_path: true
+      
+      # Recreate each deploy (set to false later for idempotence)
+      fake_cfg_force: true
+      fake_cfg_force_mode: matching   # or 'all' to wipe everything under those paths
+
+      # How many files to end up with (per path)
+      fake_cfg_count: 120
+
+      fake_cfg_prefix: "config"
+      
+      # File size range
+      fake_cfg_min_kib: 1
+      fake_cfg_max_kib: 32
+      
+      # Backdate timestamps to look realistic
+      fake_cfg_date_back_days_max: 120
+
+      # File extensions to generate
+      fake_cfg_extensions:
+        - ini
+        - yaml
+        - yml
+        - json
+        - xml
+        - conf
+        - properties
+
+      # Optional subfolders
+      fake_cfg_subdirs: 
+        - app
+        - services
+        - agents
+        - drivers
+        - development
+        - configs
+
+      # Embed creds in some files (for deception)
+      fake_cfg_credentials:
+        username: "adminuser"
+        password: "P@ssw0rd123"
+      fake_cfg_creds_embed_mode: ratio   # none | all | count | ratio
+      fake_cfg_creds_embed_ratio: 0.10   # ~10% of newly created files
+      
+      # File extensions eligible for credential embedding
+      fake_cfg_creds_embed_exts: 
+        - ini
+        - yaml
+        - yml
+        - json
+        - xml
+        - conf
+        - properties
+        
+      # Filenames that will always get credentials embedded
+      fake_cfg_creds_embed_names: 
+        - "(?i)credential"
+        - "(?i)auth"
+        - "(?i)login"
+        - "(?i)secrets?"
