@@ -5,7 +5,7 @@ description: "Creates random, fake configuration files on Windows across one or 
 repository: "https://github.com/mojeda101/ludus_fake_configs"
 author: "mojeda101 (@mojeda101)"
 
-installation_method: "ludus ansible role mojeda101.ludus_fake_configs"
+installation_method: "ludus ansible role add mojeda101.ludus_fake_configs"
 note: "Originally created to populate empty shares created by ludus-ad-vulns"
 warning: "fake_cfg_force_mode: 'all' deletes EVERYTHING under each path. Use with caution"
 
