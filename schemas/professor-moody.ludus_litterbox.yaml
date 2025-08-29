@@ -1,0 +1,169 @@
+name: professor-moody.ludus_litterbox
+type: role
+version: "1.0.0"
+description: "Deploys LitterBox - a comprehensive malware analysis sandbox on Windows systems for static and dynamic analysis with web-based interface"
+repository: "https://github.com/professor-moody/ludus_litterbox_role"
+author: "professor-moody (@professor-moody)"
+
+installation_method: "ludus ansible role add professor-moody.ludus_litterbox"
+note: "Provides static/dynamic malware analysis, YARA scanning, PE analysis, and API integration via GrumpyCats client. Web interface on port 1337"
+warning: "LAB USE ONLY! Disables Windows Defender, handles malicious files, never expose to production networks"
+
+variables:
+  ludus_litterbox_install:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable or disable LitterBox installation"
+
+  ludus_litterbox_install_dir:
+    type: "string"
+    required: false
+    default: "C:\\Tools\\LitterBox"
+    description: "Installation directory for LitterBox"
+
+  ludus_litterbox_python_version:
+    type: "string"
+    required: false
+    default: "3.11.9"
+    description: "Python version to install if not already present"
+
+  ludus_litterbox_install_python:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable or disable Python installation"
+
+  ludus_litterbox_repo_url:
+    type: "string"
+    required: false
+    default: "https://github.com/BlackSnufkin/LitterBox.git"
+    description: "LitterBox repository URL"
+
+  ludus_litterbox_host:
+    type: "string"
+    required: false
+    default: "127.0.0.1"
+    description: "Bind address for web interface (use 0.0.0.0 for network access)"
+    example:
+      - "127.0.0.1"
+      - "0.0.0.0"
+
+  ludus_litterbox_port:
+    type: "integer"
+    required: false
+    default: 1337
+    description: "Web interface port"
+
+  ludus_litterbox_disable_defender:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Disable Windows Defender (LAB USE ONLY!)"
+
+  ludus_litterbox_defender_exclusions:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Add Windows Defender exclusions for malware analysis"
+
+  ludus_litterbox_require_admin:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Require administrator privileges check"
+
+  ludus_litterbox_firewall_rule:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Create firewall exception for web interface"
+
+  ludus_litterbox_desktop_shortcut:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Create desktop shortcut"
+
+  ludus_litterbox_debug:
+    type: "boolean"
+    required: false
+    default: false
+    description: "Enable debug mode"
+
+  ludus_litterbox_analysis_timeout:
+    type: "integer"
+    required: false
+    default: 300
+    description: "Analysis timeout in seconds"
+
+  ludus_litterbox_max_file_size:
+    type: "integer"
+    required: false
+    default: 104857600
+    description: "Maximum file size for analysis (100MB in bytes)"
+
+  ludus_litterbox_allowed_extensions:
+    type: "array"
+    required: false
+    default: ["exe", "dll", "sys", "scr", "com", "bat", "ps1", "vbs", "js", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "lnk"]
+    description: "Supported file types for analysis"
+
+  ludus_litterbox_enable_static:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable static analysis"
+
+  ludus_litterbox_enable_dynamic:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable dynamic analysis"
+
+  ludus_litterbox_enable_holygrail:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable BYOVD (Bring Your Own Vulnerable Driver) detection"
+
+  ludus_litterbox_enable_doppelganger:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable process similarity analysis"
+
+  ludus_litterbox_enable_yara:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Enable YARA scanning"
+
+  ludus_litterbox_log_level:
+    type: "string"
+    required: false
+    default: "INFO"
+    valid_options:
+      - "DEBUG"
+      - "INFO"
+      - "WARNING"
+      - "ERROR"
+    description: "Logging level"
+
+  ludus_litterbox_workers:
+    type: "integer"
+    required: false
+    default: 4
+    description: "Number of analysis workers"
+
+  ludus_litterbox_cleanup_days:
+    type: "integer"
+    required: false
+    default: 30
+    description: "Days to keep analysis results before cleanup"
+
+  ludus_litterbox_install_chocolatey:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Install Chocolatey package manager"
