@@ -1,0 +1,217 @@
+name: 5tuk0v.ludus_wsus
+type: role
+version: 1.0.0
+description: Installs Windows Server Update Services (WSUS) on Windows Server and optionally configures products, classifications, and synchronization schedules
+repository: https://github.com/5tuk0v/ludus_wsus
+author: 5tuk0v (@5tuk0v)
+dependencies: []
+installation_method: ludus ansible role add 5tuk0v.ludus_wsus
+note: Supports Windows Server 2012 R2, 2016, 2019, 2022, and 2025. Initial sync can take hours depending on selected products/classifications
+warning: With default settings (empty products/classifications lists), NO updates are synchronized. Configure products and classifications for your needs
+
+variables:
+  # Storage Configuration
+  ludus_wsus_content_folder:
+    type: string
+    required: false
+    default: 'C:\WSUS\Content'
+    description: Update content storage location on the WSUS server
+    example:
+      - 'C:\WSUS\Content'
+      - 'D:\WSUS\UpdateFiles'
+
+  ludus_wsus_log_folder:
+    type: string
+    required: false
+    default: 'C:\WSUS\Logs'
+    description: Log file storage location for WSUS operations
+    example:
+      - 'C:\WSUS\Logs'
+      - 'D:\Logs\WSUS'
+
+  # Update Source Configuration
+  ludus_wsus_sync_from_mu:
+    type: boolean
+    required: false
+    default: true
+    description: Sync from Microsoft Update (true) or upstream WSUS server (false)
+
+  ludus_wsus_upstream_server_name:
+    type: string
+    required: false
+    default: ''
+    description: Upstream WSUS server hostname/IP (used when sync_from_mu is false)
+    example:
+      - 'upstream-wsus.example.com'
+      - '192.168.1.100'
+
+  ludus_wsus_upstream_server_port:
+    type: number
+    required: false
+    default: 8530
+    description: Port for upstream WSUS server connection
+    example:
+      - 8530
+      - 8531
+
+  ludus_wsus_upstream_server_use_ssl:
+    type: boolean
+    required: false
+    default: false
+    description: Use SSL for upstream WSUS server connection
+
+  ludus_wsus_upstream_server_replica:
+    type: boolean
+    required: false
+    default: false
+    description: Configure as replica of upstream WSUS server
+
+  # Proxy Configuration
+  ludus_wsus_proxy_name:
+    type: string
+    required: false
+    default: ''
+    description: Proxy server hostname/IP (empty = no proxy)
+    example:
+      - 'proxy.example.com'
+      - '192.168.1.50'
+
+  ludus_wsus_proxy_port:
+    type: number
+    required: false
+    default: 80
+    description: Proxy server port number
+    example:
+      - 80
+      - 8080
+      - 3128
+
+  ludus_wsus_proxy_user_name:
+    type: string
+    required: false
+    default: ''
+    description: Username for proxy authentication
+
+  ludus_wsus_proxy_password:
+    type: string
+    required: false
+    default: ''
+    description: Password for proxy authentication
+
+  # Products and Classifications
+  ludus_wsus_products_list:
+    type: array
+    required: false
+    default: []
+    description: Products to synchronize updates for. Empty by default for fast deployment - configure manually in GUI or specify needed products
+    example:
+      - ['Windows Server 2016']
+      - ['Windows Server 2019', 'Microsoft Server operating system-21H2']
+      - ['Microsoft Server Operating System-24H2']
+
+  ludus_wsus_classifications_list:
+    type: array
+    required: false
+    default: []
+    description: Update classifications to synchronize. Empty by default for fast deployment - configure manually in GUI or specify needed classifications
+    example:
+      - ['Critical Updates']
+      - ['Critical Updates', 'Security Updates']
+      - ['Critical Updates', 'Security Updates', 'Definition Updates']
+
+  ludus_wsus_update_languages:
+    type: array
+    required: false
+    default: ['en']
+    description: Update languages to synchronize
+    example:
+      - ['en']
+      - ['en', 'es']
+      - ['en', 'fr', 'de']
+
+  # Client Configuration
+  ludus_wsus_targeting_mode:
+    type: string
+    required: false
+    default: 'Server'
+    description: Computer targeting mode for group assignment
+    valid_options:
+      - 'Server'
+      - 'Client'
+
+  ludus_wsus_computer_target_group_list:
+    type: array
+    required: false
+    default: ['Domain Controllers', 'Servers', 'Workstations']
+    description: Computer target groups to create in WSUS
+    example:
+      - ['Domain Controllers', 'Servers', 'Workstations']
+      - ['Production', 'Testing', 'Development']
+      - ['Critical Systems', 'Standard Systems']
+
+  # Synchronization Settings
+  ludus_wsus_initial_sync:
+    type: boolean
+    required: false
+    default: false
+    description: Perform initial synchronization during deployment (can take hours)
+
+  ludus_wsus_wait_for_sync:
+    type: boolean
+    required: false
+    default: false
+    description: Wait for synchronization to complete before continuing
+
+  ludus_wsus_sync_timeout:
+    type: number
+    required: false
+    default: 14400
+    description: Maximum time in seconds to wait for synchronization (4 hours default)
+    example:
+      - 14400
+      - 7200
+      - 28800
+
+  ludus_wsus_category_sync_timeout_minutes:
+    type: number
+    required: false
+    default: 60
+    description: Timeout in minutes for initial category synchronization
+    example:
+      - 60
+      - 30
+      - 120
+
+  ludus_wsus_enable_auto_sync:
+    type: boolean
+    required: false
+    default: false
+    description: Enable automatic synchronization on a schedule
+
+  ludus_wsus_sync_daily_time:
+    type: object
+    required: false
+    default: {hour: 3, minute: 0}
+    description: Local time for scheduled synchronization (automatically converted to UTC)
+    example:
+      - {hour: 3, minute: 0}
+      - {hour: 22, minute: 30}
+      - {hour: 1, minute: 15}
+
+  ludus_wsus_syncs_per_day:
+    type: number
+    required: false
+    default: 1
+    description: Number of synchronizations per day (1-24)
+    valid_options: [1, 2, 3, 4, 6, 8, 12, 24]
+    example:
+      - 1
+      - 2
+      - 4
+
+  # Approval Settings
+  ludus_wsus_enable_default_approval_rule:
+    type: boolean
+    required: false
+    default: false
+    description: Auto-approve updates using the default approval rule
