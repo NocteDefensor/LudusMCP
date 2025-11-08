@@ -1,0 +1,76 @@
+ludus:
+  # k3s Server (Control Plane)
+  - vm_name: "{{ range_id }}-k3s-server"
+    hostname: "{{ range_id }}-k3s-server"
+    template: debian-12-x64-server-template
+    vlan: 10
+    ip_last_octet: 10
+    ram_gb: 4
+    cpus: 2
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: false
+    roles:
+      - netpenguins.ludus_k3s
+    role_vars:
+      ludus_k3s_role: server
+      ludus_k3s_disable_components:
+        - traefik
+      ludus_k3s_dashboard: true
+      ludus_k3s_dashboard_type: "kubernetes"
+
+  # k3s Agent 1 (Worker Node)
+  - vm_name: "{{ range_id }}-k3s-agent-1"
+    hostname: "{{ range_id }}-k3s-agent-1"
+    template: debian-12-x64-server-template
+    vlan: 10
+    ip_last_octet: 11
+    ram_gb: 2
+    cpus: 2
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: false
+    roles:
+      - netpenguins.ludus_k3s
+    role_vars:
+      ludus_k3s_role: agent
+      ludus_k3s_server_url: "https://10.{{ range_second_octet }}.10.10:6443"
+
+  # k3s Agent 2 (Worker Node)
+  - vm_name: "{{ range_id }}-k3s-agent-2"
+    hostname: "{{ range_id }}-k3s-agent-2"
+    template: debian-12-x64-server-template
+    vlan: 10
+    ip_last_octet: 12
+    ram_gb: 2
+    cpus: 2
+    linux: true
+    testing:
+      snapshot: true
+      block_internet: false
+    roles:
+      - netpenguins.ludus_k3s
+    role_vars:
+      ludus_k3s_role: agent
+      ludus_k3s_server_url: "https://10.{{ range_second_octet }}.10.10:6443"
+
+  # Windows management host with Headlamp
+  - vm_name: "{{ range_id }}-win11-mgmt"
+    hostname: "{{ range_id }}-WIN11-MGMT"
+    template: win11-22h2-x64-enterprise-template
+    vlan: 10
+    ip_last_octet: 21
+    ram_gb: 8
+    cpus: 4
+    windows:
+      install_additional_tools: true
+      chocolatey_ignore_checksums: true
+      chocolatey_packages:
+        - vscodium
+        - headlamp
+        - kubernetes-helm
+    testing:
+      snapshot: true
+      block_internet: false

@@ -1,0 +1,73 @@
+name: mojeda101.ludus_veeam_vbr
+type: role
+version: "1.0.0"
+description: "Thin Ludus-ready wrapper that invokes upstream veeamhub.veeam.veeam_vas role to install Veeam Backup & Replication Community Edition v12+"
+repository: "https://github.com/mojeda101/ludus_veeam_vbr"
+author: "mojeda101 (@mojeda101)"
+
+dependencies:
+  - "veeamhub.veeam"
+  - "ansible.windows"
+  - "community.windows"
+
+installation_method: "ludus ansible role add mojeda101.ludus_veeam_vbr"
+note: "Requires Windows Server with WinRM configured. System must reach Internet to download upstream ISO. Installation status check task takes considerable time"
+warning: "Installation process is lengthy due to Veeam's comprehensive setup requirements"
+
+variables:
+  ludus_veeam_vbr_version:
+    type: "string"
+    required: false
+    default: "12"
+    description: "Veeam Backup & Replication version to install"
+    example:
+      - "12"
+      - "11"
+
+  ludus_veeam_vbr_iso_download:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Download Veeam ISO from Internet during installation"
+
+  ludus_veeam_vbr_sql_install_username:
+    type: "string"
+    required: false
+    default: "sql_install"
+    description: "Username for SQL Server installation"
+
+  ludus_veeam_vbr_sql_install_password:
+    type: "string"
+    required: false
+    default: "ChangeM3!"
+    description: "Password for SQL Server installation user"
+
+  ludus_veeam_vbr_sql_service_username:
+    type: "string"
+    required: false
+    default: "svc_sql"
+    description: "Username for SQL Server service account"
+
+  ludus_veeam_vbr_sql_service_password:
+    type: "string"
+    required: false
+    default: "ChangeM3!"
+    description: "Password for SQL Server service account"
+
+  ludus_veeam_vbr_sql_username:
+    type: "string"
+    required: false
+    default: "postgres"
+    description: "Database username for Veeam application"
+
+  ludus_veeam_vbr_sql_password:
+    type: "string"
+    required: false
+    default: "ChangeM3!"
+    description: "Database password for Veeam application"
+
+  ludus_veeam_vbr_sql_authentication:
+    type: "string"
+    required: false
+    default: "1"
+    description: "SQL Server authentication mode (1 = SQL Server authentication)"

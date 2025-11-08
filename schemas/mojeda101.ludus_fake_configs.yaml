@@ -1,0 +1,144 @@
+name: mojeda101.ludus_fake_configs
+type: role
+version: "1.0.0"
+description: "Creates random, fake configuration files on Windows across one or more paths. Optionally embeds credentials into files for lab noise or testing tools like manspider"
+repository: "https://github.com/mojeda101/ludus_fake_configs"
+author: "mojeda101 (@mojeda101)"
+
+installation_method: "ludus ansible role add mojeda101.ludus_fake_configs"
+note: "Originally created to populate empty shares created by ludus-ad-vulns"
+warning: "fake_cfg_force_mode: 'all' deletes EVERYTHING under each path. Use with caution"
+
+variables:
+  fake_cfg_paths:
+    type: "array"
+    required: false
+    default: 
+      - "C:\\shares\\all"
+      - "C:\\shares\\public"
+    description: "One or more paths to populate with fake config files"
+    example:
+      - "C:\\shares\\all"
+      - "C:\\shares\\public"
+      - "C:\\temp\\configs"
+
+  fake_cfg_create_path:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Ensure target paths exist, create if missing"
+
+  fake_cfg_use_pwsh:
+    type: "boolean"
+    required: false
+    default: false
+    description: "Prefer PowerShell 7 if installed, falls back to Windows PowerShell"
+
+  fake_cfg_count:
+    type: "integer"
+    required: false
+    default: 50
+    description: "Total files to end up with per path (idempotent unless forced)"
+
+  fake_cfg_extensions:
+    type: "array"
+    required: false
+    default: ["ini", "yaml", "yml", "json", "xml", "conf", "properties"]
+    description: "Pool of file extensions to generate"
+
+  fake_cfg_min_kib:
+    type: "integer"
+    required: false
+    default: 1
+    description: "Minimum approximate file size in KiB"
+
+  fake_cfg_max_kib:
+    type: "integer"
+    required: false
+    default: 32
+    description: "Maximum approximate file size in KiB"
+
+  fake_cfg_subdirs:
+    type: "array"
+    required: false
+    default: ["app", "services", "agents", "drivers", "development", "configs"]
+    description: "Optional subfolders to create under paths. Empty array for none"
+
+  fake_cfg_prefix:
+    type: "string"
+    required: false
+    default: "config"
+    description: "Prefix for generated config filenames"
+
+  fake_cfg_name_patterns:
+    type: "array"
+    required: false
+    default:
+      - "{{ prefix }}-{{ rand }}.{{ ext }}"
+      - "{{ prefix }}_{{ rand }}.{{ ext }}"
+      - "{{ rand }}-{{ prefix }}.{{ ext }}"
+    description: "File name patterns using tokens: {{ prefix }}, {{ rand }}, {{ ext }}"
+
+  fake_cfg_date_back_days_max:
+    type: "integer"
+    required: false
+    default: 120
+    description: "Maximum days to backdate file timestamps. 0 disables backdating"
+
+  fake_cfg_force:
+    type: "boolean"
+    required: false
+    default: true
+    description: "Purge existing files first, then recreate"
+
+  fake_cfg_force_mode:
+    type: "string"
+    required: false
+    default: "matching"
+    valid_options:
+      - "matching"
+      - "all"
+    description: "Force mode: 'matching' deletes only fake configs, 'all' deletes EVERYTHING under paths"
+
+  fake_cfg_credentials:
+    type: "object"
+    required: false
+    default:
+      username: "svc_labuser"
+      password: "P@ssw0rd!123"
+    description: "Username and password to embed in configuration files"
+
+  fake_cfg_creds_embed_mode:
+    type: "string"
+    required: false
+    default: "ratio"
+    valid_options:
+      - "none"
+      - "all"
+      - "count"
+      - "ratio"
+    description: "How to embed credentials: none=never, all=every file, count=exact number, ratio=percentage"
+
+  fake_cfg_creds_embed_count:
+    type: "integer"
+    required: false
+    default: 50
+    description: "Exact number of files per path to embed credentials when mode is 'count'"
+
+  fake_cfg_creds_embed_ratio:
+    type: "integer"
+    required: false
+    default: 0.1
+    description: "Ratio of files to embed credentials when mode is 'ratio' (0.1 = 10%)"
+
+  fake_cfg_creds_embed_exts:
+    type: "array"
+    required: false
+    default: ["ini", "yaml", "yml", "json", "xml", "conf", "properties"]
+    description: "File extensions eligible for credential embedding"
+
+  fake_cfg_creds_embed_names:
+    type: "array"
+    required: false
+    default: ["(?i)credential", "(?i)auth", "(?i)login", "(?i)secrets?"]
+    description: "Regex patterns for filenames that will ALWAYS get credentials embedded"
