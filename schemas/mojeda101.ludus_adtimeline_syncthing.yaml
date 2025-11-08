@@ -1,0 +1,73 @@
+name: mojeda101.ludus_adtimeline_syncthing
+type: role
+version: "1.0.0"
+description: "Installs ADTimeline Splunk app in a Splunk Docker container with Syncthing sidecar for automatic ingestion folder synchronization. Used for personal testing and learning ADTimeline in labs"
+repository: "https://github.com/mojeda101/ludus_adtimeline_syncthing"
+author: "mojeda101 (@mojeda101)"
+
+dependencies:
+  - "geerlingguy.docker"
+  - "community.docker"
+
+installation_method: "ludus ansible role add mojeda101.ludus_adtimeline_syncthing"
+note: "Default Splunk web GUI credentials are admin:forensics. ADTimeline files can be placed in /opt/adtimeline/adtimeline_input to skip Syncthing"
+warning: "Syncthing web GUI has no authentication by default - configure manually. Permissions set for debian user with ID 1000:1000"
+
+variables:
+  ludus_adtimeline_sync_puid:
+    type: "integer"
+    required: false
+    default: 1000
+    description: "Process user ID for Syncthing container"
+
+  ludus_adtimeline_sync_pgid:
+    type: "integer"
+    required: false
+    default: 1000
+    description: "Process group ID for Syncthing container"
+
+  ludus_adtimeline_sync_tz:
+    type: "string"
+    required: false
+    default: "UTC"
+    description: "Timezone for Syncthing container"
+    example:
+      - "UTC"
+      - "America/New_York"
+      - "Europe/London"
+
+  ludus_adtimeline_sync_gui_port:
+    type: "integer"
+    required: false
+    default: 8384
+    description: "Port for Syncthing web GUI"
+
+  ludus_adtimeline_sync_port_tcp:
+    type: "integer"
+    required: false
+    default: 22000
+    description: "TCP port for Syncthing synchronization"
+
+  ludus_adtimeline_sync_port_udp:
+    type: "integer"
+    required: false
+    default: 22000
+    description: "UDP port for Syncthing synchronization"
+
+  ludus_adtimeline_sync_discovery_port:
+    type: "integer"
+    required: false
+    default: 21027
+    description: "Port for Syncthing local discovery"
+
+  ludus_adtimeline_splunk_web_port:
+    type: "integer"
+    required: false
+    default: 8000
+    description: "Port for Splunk web interface"
+
+  ludus_adtimeline_splunk_password:
+    type: "string"
+    required: false
+    default: "forensics"
+    description: "Password for Splunk admin user (username: admin)"

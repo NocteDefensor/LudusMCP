@@ -1,0 +1,101 @@
+name: netpenguins.ludus_k3s
+type: role
+version: "1.0.0"
+description: "Installs and configures a lightweight kubernetes (k3s) cluster on Linux hosts. Supports server (control plane) and agent (worker) installations"
+repository: "https://github.com/netpenguins/ludus_k3s"
+author: "netpenguins (@netpenguins)"
+
+installation_method: "ludus ansible role add netpenguins.ludus_k3s"
+note: "Targets Linux hosts (Ubuntu/Debian). Can deploy dashboard with kubernetes or headlamp options. Headlamp desktop app recommended for Windows management hosts"
+
+variables:
+  ludus_k3s_role:
+    type: "string"
+    required: false
+    default: "server"
+    valid_options:
+      - "server"
+      - "agent"
+    description: "Install mode: server (control plane) or agent (worker)"
+
+  ludus_k3s_version:
+    type: "string"
+    required: false
+    default: ""
+    description: "k3s version to install (empty = latest stable)"
+    example:
+      - ""
+      - "v1.28.4+k3s1"
+
+  ludus_k3s_server_args:
+    type: "string"
+    required: false
+    default: ""
+    description: "Extra arguments passed to k3s server"
+
+  ludus_k3s_agent_args:
+    type: "string"
+    required: false
+    default: ""
+    description: "Extra arguments passed to k3s agent"
+
+  ludus_k3s_server_url:
+    type: "string"
+    required: false
+    default: ""
+    description: "k3s server URL (required when role is agent)"
+    example:
+      - "https://10.{{ range_second_octet }}.10.10:6443"
+
+  ludus_k3s_token:
+    type: "string"
+    required: false
+    default: ""
+    description: "Cluster join token (servers auto-generate if blank, required for agents)"
+
+  ludus_k3s_disable_components:
+    type: "array"
+    required: false
+    default: []
+    description: "List of components to disable"
+    valid_options:
+      - "traefik"
+      - "servicelb"
+      - "local-storage"
+      - "metrics-server"
+    example:
+      - ["traefik", "servicelb"]
+
+  ludus_k3s_kubeconfig_mode:
+    type: "string"
+    required: false
+    default: "644"
+    description: "File mode for written kubeconfig"
+
+  ludus_k3s_install_dir:
+    type: "string"
+    required: false
+    default: "/usr/local/bin"
+    description: "Directory to install k3s binary"
+
+  ludus_k3s_data_dir:
+    type: "string"
+    required: false
+    default: "/var/lib/rancher/k3s"
+    description: "k3s data directory"
+
+  ludus_k3s_dashboard:
+    type: "boolean"
+    required: false
+    default: false
+    description: "Whether to install a dashboard"
+
+  ludus_k3s_dashboard_type:
+    type: "string"
+    required: false
+    default: ""
+    valid_options:
+      - "kubernetes"
+      - "headlamp"
+      - ""
+    description: "Dashboard type: kubernetes (default k8s dashboard), headlamp, or empty (none)"
