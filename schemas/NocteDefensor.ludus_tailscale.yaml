@@ -1,29 +1,34 @@
-name: NocteDefensor.ludus_tailscale
-type: role
-version: "1.0.0"
-description: "Installs and configures Tailscale VPN"
-repository: "https://github.com/NocteDefensor/ludus_tailscale"
-author: "NocteDefensor"
-installation_method: "ludus ansible role add NocteDefensor.ludus_tailscale"
-dependencies: []
-
-installation_note: "Can also be installed as 'ludus_tailscale' using local directory - user should verify which role name they have installed"
-
-variables:
-  tailscale_state:
-    type: "string"
-    default: "present"
-    description: "State of Tailscale installation"
-    valid_options:
-      - "present" 
-      - "absent"
-      
-  tailscale_authkey:
-    type: "string"
-    default: "tskey-auth-<REDACTED_KEY>"
-    description: "Tailscale authentication key"
-    
-  tailscale_api_key:
-    type: "string"
-    default: "tskey-api-<REDACTED_KEY>"
-    description: "Tailscale API key" 
+NocteDefensor.ludus_tailscale:
+  name: "NocteDefensor.ludus_tailscale"
+  type: "role"
+  version: "1.0.0"
+  description: "Installs and configures Tailscale VPN"
+  repository: "https://github.com/NocteDefensor/ludus_tailscale"
+  author: "NocteDefensor"
+  installation_method: "ludus ansible role add NocteDefensor.ludus_tailscale"
+  dependencies: []
+  installation_note: "Can also be installed as 'ludus_tailscale' using local directory - user should verify which role name they have installed"
+  variables:
+    tailscale_state:
+      type: "string"
+      default: "present"
+      description: "State of Tailscale installation"
+      valid_options:
+        - "present"
+        - "absent"
+    tailscale_authkey:
+      type: "string"
+      default: "tskey-auth-<REDACTED_KEY>"
+      description: "Tailscale authentication key"
+    tailscale_api_key:
+      type: "string"
+      default: "tskey-api-<REDACTED_KEY>"
+      description: "Tailscale API key"
+    tailscale_ssh:
+      type: "boolean"
+      default: false
+      description: "Enable/disable Tailscale SSH access"
+    tailscale_dns:
+      type: "boolean"
+      default: false
+      description: "Enable/disable Tailscale DNS configuration"
