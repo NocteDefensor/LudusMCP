@@ -22,7 +22,7 @@ Ensure you have:
 
 ## Installation
 
-**NOTE** Installation of the MCP server IS NOT on the Ludus server. It will be installed on a device with an MCP client (ex Claude Desktop) that has access to the Ludus server.
+**NOTE** The MCP server can be installed either on a remote device with an MCP client (ex Claude Desktop) that has access to the Ludus server via WireGuard/SSH, OR directly on the Ludus server itself using "direct" connection mode.
 
 ### Global Installation (Recommended)
 Install the package globally to make the `ludus-mcp` command available system-wide:
@@ -114,6 +114,19 @@ npx ludus-mcp --renew-keyring
 - Automatically managed by MCP server
 - SSH tunnel will always be used for ADMIN API
 
+**Direct Mode (Running on Ludus Server)**
+- Connect directly to localhost without any tunnels
+- Use this when running the MCP server directly on the Ludus host machine
+- No WireGuard or SSH configuration required
+- Full access to both regular API (port 8080) and admin API (port 8081)
+- Ideal for Claude Code running directly on the Ludus server
+
+To use direct mode, select `(d) Direct` during the setup wizard:
+```bash
+ludus-mcp --setup-keyring
+# Select connection method: d
+```
+
 ## MCP Client Integration
 
 ### Setup Process Overview
@@ -140,6 +153,62 @@ Find your Claude Desktop configuration file:
 }
 ```
 
+### Claude Code (CLI) Configuration
+
+Claude Code supports MCP servers through its CLI or configuration files.
+
+**Option 1: Install via CLI (Recommended)**
+```bash
+# Add LudusMCP as an MCP server
+claude mcp add ludus -- npx -y ludus-mcp
+
+# Or with user scope (available across all projects)
+claude mcp add ludus --scope user -- npx -y ludus-mcp
+
+# On Windows (not WSL)
+claude mcp add ludus -- cmd /c npx -y ludus-mcp
+```
+
+**Option 2: Manual Configuration**
+
+Create or edit `~/.claude/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "ludus": {
+      "command": "ludus-mcp"
+    }
+  }
+}
+```
+
+Or for project-specific configuration, create `.claude/mcp.json` in your project directory.
+
+**Managing the MCP Server:**
+```bash
+claude mcp list          # List configured servers
+claude mcp get ludus     # Get server details
+claude mcp remove ludus  # Remove the server
+```
+
+**For source installations with Claude Code:**
+```bash
+claude mcp add ludus -- node /path/to/LudusMCP/dist/server.js
+```
+
+Or manually in `~/.claude/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "ludus": {
+      "command": "node",
+      "args": ["/path/to/LudusMCP/dist/server.js"]
+    }
+  }
+}
+```
+
 ### Development/Source Installation
 If running from source:
 
@@ -153,6 +222,54 @@ If running from source:
   },
   "isUsingBuiltInNodeForMcp": false
 }
+```
+
+### Running Directly on Ludus Server
+
+For scenarios where you want to run the MCP server directly on the Ludus host machine (e.g., using Claude Code via SSH), use **Direct Mode**:
+
+**Installation on Ludus Server:**
+```bash
+# Option 1: Install via Claude Code CLI (Recommended)
+claude mcp add ludus --scope user -- npx -y ludus-mcp
+
+# Option 2: Install globally via npm
+npm install -g ludus-mcp@latest
+```
+
+**Configure Direct Mode:**
+```bash
+# Run setup and select direct mode
+ludus-mcp --setup-keyring
+# When prompted for connection method, select: (d) Direct
+# Only admin username and API key are required for direct mode
+```
+
+**Alternative: Manual Claude Code Configuration**
+
+Create `~/.claude/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "ludus": {
+      "command": "ludus-mcp"
+    }
+  }
+}
+```
+
+**Benefits of Direct Mode:**
+- No network tunnels required (WireGuard or SSH)
+- Direct localhost access to both regular (8080) and admin (8081) APIs
+- Simplified setup - only requires admin username and API key
+- Lower latency for API operations
+- Ideal for headless server environments or remote SSH sessions with Claude Code
+
+**Environment Variables (Alternative to Keyring):**
+```bash
+export LUDUS_ADMIN_USER=your-admin-user
+export LUDUS_API_KEY=your-api-key
+export LUDUS_CONNECTION_METHOD=direct
 ```
 
 ## Usage
