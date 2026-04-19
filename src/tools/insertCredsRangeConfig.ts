@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
-import { getCredential } from '../utils/keyring.js';
+import { getCredential, isKeyringSupportAvailable } from '../utils/keyring.js';
 import { validateLudusRangeSchema } from './rangeConfig.js';
 
 export interface InsertCredsRangeConfigArgs {
@@ -242,6 +242,22 @@ export async function handleInsertCredsRangeConfig(
           'Processed configs are validated against Ludus schema'
         ]
       }
+    };
+  }
+
+  // Check keyring availability before attempting credential retrieval
+  if (!isKeyringSupportAvailable()) {
+    return {
+      success: false,
+      message: 'Keyring not available on this system',
+      reason: 'This server is running in headless mode without a keyring daemon (no DISPLAY or WAYLAND_DISPLAY set)',
+      action: 'Manually replace credential placeholders directly in your range config file',
+      placeholders: credentialMappings ? Object.keys(credentialMappings) : [],
+      troubleshooting: [
+        'On headless Linux servers, OS keyring (libsecret) requires a running secret service daemon',
+        'To enable keyring: install and start gnome-keyring-daemon with a D-Bus session',
+        'Alternative: open your range config file and manually replace each placeholder with the actual credential value'
+      ]
     };
   }
 

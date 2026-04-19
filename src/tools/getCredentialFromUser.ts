@@ -1,7 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { Logger } from '../utils/logger.js';
 import { SecretDialog } from '../utils/secretDialog.js';
-import { storeCredential } from '../utils/keyring.js';
+import { storeCredential, isKeyringSupportAvailable } from '../utils/keyring.js';
 
 export interface GetCredentialFromUserArgs {
   credName?: string;
@@ -121,6 +121,22 @@ PLATFORM SUPPORT:
         'LudusCredName-MP-TailscaleKey',
         'LudusCredName-TestRange-APIToken', 
         'LudusCredName-Admin-DatabasePassword'
+      ]
+    };
+  }
+
+  // Check keyring availability
+  if (!isKeyringSupportAvailable()) {
+    return {
+      success: false,
+      message: 'Keyring not available on this system',
+      credName,
+      reason: 'This server is running in headless mode without a keyring daemon (no DISPLAY or WAYLAND_DISPLAY set)',
+      action: 'Manually enter the credential value directly into your range config file in place of the placeholder',
+      troubleshooting: [
+        'On headless Linux servers, OS keyring (libsecret) requires a running secret service daemon',
+        'To enable keyring: install and start gnome-keyring-daemon with a D-Bus session',
+        'Alternative: manually replace credential placeholders in your range config file'
       ]
     };
   }
