@@ -2127,36 +2127,102 @@ async function handleCliArguments(): Promise<void> {
       const result = await setup.runSetup(isRenewal); // Force interactive if renewing
       
       if (result.success) {
-        console.error(`\nCredentials successfully ${isRenewal ? 'updated in' : 'stored in'} keyring!`);
-        console.error('Your credentials are now encrypted and stored securely.');
-        console.error('You can now start the MCP server without prompting:\n');
-        console.error('   npx ludus-mcp');
-        
+        // Only show keyring success message if keyring is actually available
+        if (isKeyringSupportAvailable()) {
+          console.error(`\nCredentials successfully ${isRenewal ? 'updated in' : 'stored in'} keyring!`);
+          console.error('Your credentials are now encrypted and stored securely.');
+        } else {
+          console.error('\nSetup complete! (Keyring not available on this system - use environment variables to configure)');
+        }
+
+        const config = result.config;
+        const connectionMethod = config?.connectionMethod;
+        const isDirect = connectionMethod === 'direct';
+
+        // Detect source vs global install from how this process was invoked
+        const isSourceInstall = process.argv[1]?.includes('dist/server.js') || process.argv[1]?.includes('dist\\server.js');
+        const sourceJsPath = path.resolve(process.argv[1] || 'dist/server.js').replace(/\\/g, '/');
+
+        // Build env block for direct mode (populated with real values)
+        const directEnvBlock = isDirect && config ? JSON.stringify({
+          LUDUS_ADMIN_USER: config.adminUser,
+          LUDUS_API_KEY: config.apiKey,
+          LUDUS_CONNECTION_METHOD: 'direct',
+          LUDUS_URL: config.ludusUrl || 'https://127.0.0.1:8080'
+        }, null, 10).split('\n').map((l, i) => i === 0 ? l : '      ' + l).join('\n') : '{}';
+
         // Add WireGuard guidance if using WireGuard connection method
-        if (result.config && result.config.connectionMethod === 'wireguard') {
+        if (connectionMethod === 'wireguard') {
           console.error('\n  IMPORTANT: WireGuard Usage');
           console.error('   • Manually start your WireGuard tunnel before launching Claude Desktop');
           console.error('   • For automatic startup, configure WireGuard as a Windows service');
           console.error('   • If WireGuard is down, the MCP client will try SSH tunnel fallback');
         }
-        
-        // Determine the path to the built server.js file
-        const serverJsPath = path.resolve(process.cwd(), 'dist', 'server.js').replace(/\\/g, '/');
-        
-        console.error('\nClaude Desktop configuration:');
-        console.error('   Add this to your ~/.claude_desktop_config.json:');
-        console.error('   {');
-        console.error('     "mcpServers": {');
-        console.error('       "ludus": {');
-        console.error('         "command": "node",');
-        console.error(`         "args": ["${serverJsPath}"]`);
-        console.error('       }');
-        console.error('     },');
-        console.error('     "isUsingBuiltInNodeForMcp": false');
-        console.error('   }');
-        console.error('');
-        console.error(' Note: The API key is still managed by the Ludus CLI.');
-        console.error('         Make sure to run: ludus apikey');
+
+        if (isDirect) {
+          // Direct mode — primary config is Claude Code
+          console.error('\nClaude Code configuration:');
+          console.error('   Add to ~/.claude.json under "mcpServers":');
+          console.error('');
+          console.error('   Option 1 (global install):');
+          console.error('   {');
+          console.error('     "ludus": {');
+          console.error('       "type": "stdio",');
+          console.error('       "command": "ludus-mcp",');
+          console.error('       "args": [],');
+          console.error(`       "env": ${directEnvBlock}`);
+          console.error('     }');
+          console.error('   }');
+          console.error('');
+          if (isSourceInstall) {
+            console.error('   Option 2 (source install):');
+            console.error('   {');
+            console.error('     "ludus": {');
+            console.error('       "type": "stdio",');
+            console.error(`       "command": "${sourceJsPath}",`);
+            console.error('       "args": [],');
+            console.error(`       "env": ${directEnvBlock}`);
+            console.error('     }');
+            console.error('   }');
+            console.error('');
+          }
+        } else {
+          // WireGuard / SSH-tunnel — primary config is Claude Desktop
+          console.error('\nClaude Desktop configuration:');
+          console.error('   Add to your claude_desktop_config.json:');
+          console.error('');
+          console.error('   Option 1 (global install):');
+          console.error('   {');
+          console.error('     "mcpServers": {');
+          console.error('       "ludus": { "command": "ludus-mcp" }');
+          console.error('     },');
+          console.error('     "isUsingBuiltInNodeForMcp": true');
+          console.error('   }');
+          console.error('');
+          if (isSourceInstall) {
+            console.error('   Option 2 (source install):');
+            console.error('   {');
+            console.error('     "mcpServers": {');
+            console.error('       "ludus": {');
+            console.error('         "command": "node",');
+            console.error(`         "args": ["${sourceJsPath}"]`);
+            console.error('       }');
+            console.error('     },');
+            console.error('     "isUsingBuiltInNodeForMcp": false');
+            console.error('   }');
+            console.error('');
+          }
+          console.error('\nClaude Code configuration:');
+          console.error('   Add to ~/.claude.json under "mcpServers":');
+          console.error('   {');
+          console.error('     "ludus": {');
+          console.error('       "type": "stdio",');
+          console.error('       "command": "ludus-mcp",');
+          console.error('       "args": []');
+          console.error('     }');
+          console.error('   }');
+          console.error('');
+        }
       } else {
         console.error(`\n Setup failed: ${result.message}`);
         process.exit(1);
