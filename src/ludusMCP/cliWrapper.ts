@@ -26,10 +26,10 @@ export class LudusCliWrapper {
     this.logger = logger;
     this.config = config;
     this.baseCwd = path.join(os.homedir(), '.ludus-mcp');
-    
+
     // Ensure base directory exists
     this.ensureBaseDirectory();
-    
+
     // Log environment details for debugging
     this.logger.info('LudusCliWrapper initialized', {
       platform: process.platform,
@@ -42,7 +42,13 @@ export class LudusCliWrapper {
       userProfile: process.env.USERPROFILE || process.env.HOME,
       sshAgent: process.env.SSH_AUTH_SOCK || 'not set'
     });
-    
+
+    // Skip tunnel initialization for direct mode (running on Ludus server)
+    if (this.config.connectionMethod === 'direct') {
+      this.logger.info('Direct mode enabled - skipping SSH tunnel initialization');
+      return;
+    }
+
     // Always initialize tunnel manager for admin operations (port 8081)
     // Admin commands always use SSH tunnel regardless of connection method
     this.initializeTunnelManager().catch((error: any) => {
@@ -103,10 +109,10 @@ export class LudusCliWrapper {
     }
 
     const tunnelConfig: SSHTunnelConfig = {
-      host: this.config.sshHost,
+      host: this.config.sshHost!,
       port: 22, // Default SSH port
-      username: this.config.sshUser,
-      authMethod: this.config.sshAuthMethod,
+      username: this.config.sshUser!,
+      authMethod: this.config.sshAuthMethod!,
       regularPort: 8080,
       primaryPort: 8081,
       privateKeyPath: this.config.sshAuthMethod === 'key' ? this.config.sshKeyPath! : undefined,
@@ -198,6 +204,26 @@ export class LudusCliWrapper {
   }
 
   /**
+   * Set up environment variables for direct localhost connections (running on Ludus server)
+   */
+  private setupDirectEnvironment(): void {
+    process.env.LUDUS_API_KEY = this.config.apiKey;
+    process.env.LUDUS_URL = this.config.ludusUrl || 'https://127.0.0.1:8080';
+    process.env.LUDUS_VERIFY = 'false'; // Localhost doesn't need SSL verification
+    process.env.LUDUS_JSON = 'true';
+  }
+
+  /**
+   * Set up environment variables for direct localhost admin API (port 8081)
+   */
+  private setupDirectAdminEnvironment(): void {
+    process.env.LUDUS_API_KEY = this.config.apiKey;
+    process.env.LUDUS_URL = 'https://127.0.0.1:8081';
+    process.env.LUDUS_VERIFY = 'false'; // Localhost doesn't need SSL verification
+    process.env.LUDUS_JSON = 'true';
+  }
+
+  /**
    * Create SSH tunnel for admin operations using tunnel manager
    */
   private async createSSHTunnel(): Promise<boolean> {
@@ -266,55 +292,69 @@ export class LudusCliWrapper {
       // Use specified working directory or default to ~/.ludus-mcp/
       const targetCwd = workingDirectory || this.baseCwd;
       process.chdir(targetCwd);
-      
-      const actualRoute = isAdmin ? 'SSH tunnel' : 
-        (this.config.connectionMethod === 'ssh-tunnel' ? 'SSH tunnel' : 'WireGuard VPN');
-      
-      this.logger.info('Executing Ludus command', { 
-        command: fullCommand, 
+
+      let actualRoute: string;
+      if (this.config.connectionMethod === 'direct') {
+        actualRoute = isAdmin ? 'Direct localhost (admin)' : 'Direct localhost';
+      } else {
+        actualRoute = isAdmin ? 'SSH tunnel' :
+          (this.config.connectionMethod === 'ssh-tunnel' ? 'SSH tunnel' : 'WireGuard VPN');
+      }
+
+      this.logger.info('Executing Ludus command', {
+        command: fullCommand,
         isAdmin,
         route: actualRoute,
         workingDirectory: targetCwd
       });
 
-      // Ensure connections are healthy before executing commands
-      
-      if (isAdmin) {
-        // Admin commands always use SSH tunnel
-        await this.ensureTunnelsHealthy();
+      // Handle direct mode - no tunnels needed
+      if (this.config.connectionMethod === 'direct') {
+        // Direct mode - connect directly to localhost
+        if (isAdmin) {
+          this.setupDirectAdminEnvironment();
+        } else {
+          this.setupDirectEnvironment();
+        }
       } else {
-        // Regular commands use connection method specified in config
-        if (this.config.connectionMethod === 'ssh-tunnel') {
+        // Ensure connections are healthy before executing commands
+        if (isAdmin) {
+          // Admin commands always use SSH tunnel
           await this.ensureTunnelsHealthy();
         } else {
-          // Check WireGuard health - if unhealthy, try SSH fallback
-          const wgHealth = await this.checkWireGuardHealth();
-          if (!wgHealth.healthy) {
-            this.logger.warn('WireGuard not healthy, attempting SSH fallback', { 
-              reason: wgHealth.message 
-            });
-            
-            try {
-              await this.ensureTunnelsHealthy();
-              usingSSHFallback = true;
-              this.logger.info('SSH fallback successful - using SSH tunnel for this command');
-            } catch (sshError) {
-              throw new Error(`WireGuard unavailable: ${wgHealth.message}. SSH fallback also failed: ${sshError instanceof Error ? sshError.message : String(sshError)}`);
+          // Regular commands use connection method specified in config
+          if (this.config.connectionMethod === 'ssh-tunnel') {
+            await this.ensureTunnelsHealthy();
+          } else {
+            // Check WireGuard health - if unhealthy, try SSH fallback
+            const wgHealth = await this.checkWireGuardHealth();
+            if (!wgHealth.healthy) {
+              this.logger.warn('WireGuard not healthy, attempting SSH fallback', {
+                reason: wgHealth.message
+              });
+
+              try {
+                await this.ensureTunnelsHealthy();
+                usingSSHFallback = true;
+                this.logger.info('SSH fallback successful - using SSH tunnel for this command');
+              } catch (sshError) {
+                throw new Error(`WireGuard unavailable: ${wgHealth.message}. SSH fallback also failed: ${sshError instanceof Error ? sshError.message : String(sshError)}`);
+              }
             }
           }
         }
-      }
 
-      // Set up appropriate environment and connectivity
-      if (isAdmin) {
-        // Admin command - use SSH tunnel (port 8081)
-        this.setupSSHTunnelAdminEnvironment();
-      } else {
-        // Regular command - use appropriate connection method
-        if (this.config.connectionMethod === 'ssh-tunnel' || usingSSHFallback) {
-          this.setupSSHTunnelRegularEnvironment();
+        // Set up appropriate environment and connectivity
+        if (isAdmin) {
+          // Admin command - use SSH tunnel (port 8081)
+          this.setupSSHTunnelAdminEnvironment();
         } else {
-          this.setupWireGuardEnvironment();
+          // Regular command - use appropriate connection method
+          if (this.config.connectionMethod === 'ssh-tunnel' || usingSSHFallback) {
+            this.setupSSHTunnelRegularEnvironment();
+          } else {
+            this.setupWireGuardEnvironment();
+          }
         }
       }
 
@@ -818,23 +858,135 @@ export class LudusCliWrapper {
     const result = { rangeOps: false, adminOps: false };
 
     // Test regular API connectivity based on connection method
-    if (this.config.connectionMethod === 'wireguard') {
+    if (this.config.connectionMethod === 'direct') {
+      // Direct mode - test localhost connectivity
+      try {
+        this.logger.info('Testing direct localhost connectivity for regular operations');
+
+        this.setupDirectEnvironment();
+
+        let output: string = '';
+        try {
+          const ludusProcess = spawn('ludus', ['version'], {
+            stdio: ['pipe', 'pipe', 'pipe']
+          });
+
+          let stdout = '';
+          let stderr = '';
+
+          ludusProcess.stdout.on('data', (data: Buffer) => {
+            stdout += data.toString();
+          });
+
+          ludusProcess.stderr.on('data', (data: Buffer) => {
+            stderr += data.toString();
+          });
+
+          await new Promise<void>((resolve, reject) => {
+            ludusProcess.on('close', (code: number) => {
+              output = stderr || stdout || '';
+              resolve();
+            });
+
+            ludusProcess.on('error', (error: Error) => {
+              reject(error);
+            });
+
+            setTimeout(() => {
+              ludusProcess.kill();
+              reject(new Error('Command timeout'));
+            }, 5000);
+          });
+        } catch (error: any) {
+          try {
+            output = execSync('ludus version', { encoding: 'utf-8', timeout: 5000 }) as string;
+          } catch (execError: any) {
+            if (execError.stderr) {
+              output = execError.stderr.toString();
+            } else if (execError.stdout) {
+              output = execError.stdout.toString();
+            } else {
+              throw error;
+            }
+          }
+        }
+
+        result.rangeOps = output.includes('Ludus Server') || output.includes('Server version') || output.includes('server:');
+        this.logger.info('Direct localhost connectivity test result (regular operations)', { success: result.rangeOps, output: output.trim() });
+
+        // Also test admin operations for direct mode (port 8081)
+        try {
+          this.logger.info('Testing direct localhost connectivity for admin operations (port 8081)');
+          this.setupDirectAdminEnvironment();
+
+          let adminOutput: string = '';
+          const adminProcess = spawn('ludus', ['version'], {
+            stdio: ['pipe', 'pipe', 'pipe']
+          });
+
+          let adminStdout = '';
+          let adminStderr = '';
+
+          adminProcess.stdout.on('data', (data: Buffer) => {
+            adminStdout += data.toString();
+          });
+
+          adminProcess.stderr.on('data', (data: Buffer) => {
+            adminStderr += data.toString();
+          });
+
+          await new Promise<void>((resolve, reject) => {
+            adminProcess.on('close', (code: number) => {
+              adminOutput = adminStderr || adminStdout || '';
+              resolve();
+            });
+
+            adminProcess.on('error', (error: Error) => {
+              reject(error);
+            });
+
+            setTimeout(() => {
+              adminProcess.kill();
+              reject(new Error('Command timeout'));
+            }, 5000);
+          });
+
+          result.adminOps = adminOutput.includes('Ludus Server') || adminOutput.includes('Server version') || adminOutput.includes('server:');
+          this.logger.info('Direct localhost connectivity test result (admin operations)', { success: result.adminOps });
+        } catch (adminError: any) {
+          this.logger.error('Direct localhost admin connectivity test failed', { error: adminError.message || adminError });
+        }
+
+        // Clean up environment
+        delete process.env.LUDUS_API_KEY;
+        delete process.env.LUDUS_URL;
+        delete process.env.LUDUS_VERIFY;
+        delete process.env.LUDUS_JSON;
+
+        return result;
+      } catch (error: any) {
+        this.logger.error('Direct localhost connectivity test failed (regular operations)', {
+          error: error.message || error,
+          stack: error.stack
+        });
+      }
+    } else if (this.config.connectionMethod === 'wireguard') {
       // Test WireGuard connectivity for regular operations
       try {
         this.logger.info('Testing WireGuard connectivity for regular operations');
-        
+
         // Use the new WireGuard health check (no auto-connect)
         const wgHealth = await this.checkWireGuardHealth();
-        
+
         result.rangeOps = wgHealth.healthy;
-        this.logger.info('WireGuard connectivity test result (regular operations)', { 
-          success: result.rangeOps, 
-          message: wgHealth.message 
+        this.logger.info('WireGuard connectivity test result (regular operations)', {
+          success: result.rangeOps,
+          message: wgHealth.message
         });
       } catch (error: any) {
-        this.logger.error('WireGuard connectivity test failed (regular operations)', { 
+        this.logger.error('WireGuard connectivity test failed (regular operations)', {
           error: error.message || error,
-          stack: error.stack 
+          stack: error.stack
         });
       }
     } else {

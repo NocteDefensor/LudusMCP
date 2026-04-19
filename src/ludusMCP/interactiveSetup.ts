@@ -15,12 +15,12 @@ import {
 
 export interface LudusConfig {
   adminUser: string;
-  connectionMethod: 'wireguard' | 'ssh-tunnel';
-  wireguardConfig?: string | undefined;  // Optional for SSH tunnel mode
+  connectionMethod: 'wireguard' | 'ssh-tunnel' | 'direct';
+  wireguardConfig?: string | undefined;  // Optional for SSH tunnel mode and direct mode
   apiKey: string;
-  sshHost: string;
-  sshUser: string;
-  sshAuthMethod: 'password' | 'key';
+  sshHost?: string;  // Optional for direct mode (running on Ludus server)
+  sshUser?: string;  // Optional for direct mode (running on Ludus server)
+  sshAuthMethod?: 'password' | 'key';  // Optional for direct mode
   sshPassword?: string | undefined;  // Optional for key-based auth
   sshKeyPath?: string | undefined;   // Optional for password auth
   sshKeyPassphrase?: string | undefined;  // Optional passphrase for password-protected keys
@@ -440,10 +440,10 @@ export class InteractiveSetup {
       const { LudusSSHTunnelManager } = await import('../ludusMCP/sshTunnelManager.js');
       
       const tunnelConfig = {
-        host: config.sshHost,
+        host: config.sshHost!,
         port: 22,
-        username: config.sshUser,
-        authMethod: config.sshAuthMethod,
+        username: config.sshUser!,
+        authMethod: config.sshAuthMethod!,
         regularPort: 8080,
         primaryPort: 8081,
         privateKeyPath: config.sshAuthMethod === 'key' ? config.sshKeyPath : undefined,
@@ -530,18 +530,19 @@ export class InteractiveSetup {
   }
 
   private getConfigFromEnvironment(): LudusConfig | null {
-    const requiredVars = {
+    // Check connection method first
+    const connectionMethod = process.env.LUDUS_CONNECTION_METHOD as 'wireguard' | 'ssh-tunnel' | 'direct' || 'wireguard';
+
+    // Core required variables for all modes
+    const coreVars = {
       adminUser: 'LUDUS_ADMIN_USER',
-      wireguardConfig: 'LUDUS_WIREGUARD_CONFIG',
-      apiKey: 'LUDUS_API_KEY',
-      sshHost: 'LUDUS_SSH_HOST',
-      sshUser: 'LUDUS_SSH_USER',
-      sshPassword: 'LUDUS_SSH_PASSWORD'
+      apiKey: 'LUDUS_API_KEY'
     };
 
     const config: any = {};
-    
-    for (const [key, envVar] of Object.entries(requiredVars)) {
+
+    // Check core variables
+    for (const [key, envVar] of Object.entries(coreVars)) {
       const value = process.env[envVar];
       if (!value) {
         return null; // Missing required environment variable
@@ -549,8 +550,43 @@ export class InteractiveSetup {
       config[key] = value;
     }
 
+    config.connectionMethod = connectionMethod;
+
+    // For direct mode, only core variables are required
+    if (connectionMethod === 'direct') {
+      config.ludusUrl = process.env.LUDUS_URL || 'https://127.0.0.1:8080';
+      config.verifySSL = Boolean(process.env.LUDUS_VERIFY?.toLowerCase() === 'true');
+      return config as LudusConfig;
+    }
+
+    // For non-direct modes, SSH variables are required
+    const sshVars = {
+      sshHost: 'LUDUS_SSH_HOST',
+      sshUser: 'LUDUS_SSH_USER',
+      sshPassword: 'LUDUS_SSH_PASSWORD'
+    };
+
+    for (const [key, envVar] of Object.entries(sshVars)) {
+      const value = process.env[envVar];
+      if (!value) {
+        return null; // Missing required environment variable
+      }
+      config[key] = value;
+    }
+
+    // WireGuard config required for wireguard mode
+    if (connectionMethod === 'wireguard') {
+      const wireguardConfig = process.env.LUDUS_WIREGUARD_CONFIG;
+      if (!wireguardConfig) {
+        return null;
+      }
+      config.wireguardConfig = wireguardConfig;
+    }
+
+    config.sshAuthMethod = 'password'; // Default to password when using env vars
+
     // Optional environment variables
-    config.ludusUrl = process.env.LUDUS_URL || 'https://198.51.100.1:8080';
+    config.ludusUrl = process.env.LUDUS_URL || (connectionMethod === 'ssh-tunnel' ? 'https://localhost:8080' : 'https://198.51.100.1:8080');
     config.verifySSL = Boolean(process.env.LUDUS_VERIFY?.toLowerCase() === 'true');
 
     return config as LudusConfig;
@@ -573,31 +609,52 @@ export class InteractiveSetup {
         CREDENTIAL_KEYS.API_KEY,
         CREDENTIAL_KEYS.SSH_HOST,
         CREDENTIAL_KEYS.SSH_USER,
-              CREDENTIAL_KEYS.SSH_AUTH_METHOD,
-      CREDENTIAL_KEYS.SSH_PASSWORD,
-      CREDENTIAL_KEYS.SSH_KEY_PATH,
-      CREDENTIAL_KEYS.SSH_KEY_PASSPHRASE
+        CREDENTIAL_KEYS.SSH_AUTH_METHOD,
+        CREDENTIAL_KEYS.SSH_PASSWORD,
+        CREDENTIAL_KEYS.SSH_KEY_PATH,
+        CREDENTIAL_KEYS.SSH_KEY_PASSPHRASE
       ]);
 
-      const connectionMethod = credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel' || 'wireguard';
+      const connectionMethod = credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel' | 'direct' || 'wireguard';
       const sshAuthMethod = credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key' || 'password';
 
-      // Check if all required credentials are present
-      const baseRequiredCredentials = [
+      // Check if all required credentials are present based on connection method
+      const coreCredentials = [
         credentials[CREDENTIAL_KEYS.ADMIN_USER],
         credentials[CREDENTIAL_KEYS.CONNECTION_METHOD],
-        credentials[CREDENTIAL_KEYS.API_KEY],
+        credentials[CREDENTIAL_KEYS.API_KEY]
+      ];
+
+      const hasCoreCredentials = coreCredentials.every(cred => !!cred);
+
+      if (!hasCoreCredentials) {
+        return null;
+      }
+
+      // For direct mode, only core credentials are required (no SSH or WireGuard)
+      if (connectionMethod === 'direct') {
+        return {
+          adminUser: credentials[CREDENTIAL_KEYS.ADMIN_USER]!,
+          connectionMethod,
+          apiKey: credentials[CREDENTIAL_KEYS.API_KEY]!,
+          ludusUrl: process.env.LUDUS_URL || 'https://127.0.0.1:8080',
+          verifySSL: process.env.LUDUS_VERIFY?.toLowerCase() === 'true'
+        };
+      }
+
+      // For non-direct modes, SSH credentials are required
+      const sshCredentials = [
         credentials[CREDENTIAL_KEYS.SSH_HOST],
         credentials[CREDENTIAL_KEYS.SSH_USER],
         credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD]
       ];
 
-      const hasBaseCredentials = baseRequiredCredentials.every(cred => !!cred);
+      const hasSshCredentials = sshCredentials.every(cred => !!cred);
       const hasWireguardConfig = connectionMethod === 'ssh-tunnel' || !!credentials[CREDENTIAL_KEYS.WIREGUARD_CONFIG_PATH];
       const hasSshAuth = (sshAuthMethod === 'password' && !!credentials[CREDENTIAL_KEYS.SSH_PASSWORD]) ||
                          (sshAuthMethod !== 'password' && !!credentials[CREDENTIAL_KEYS.SSH_KEY_PATH]);
 
-      const hasAllCredentials = hasBaseCredentials && hasWireguardConfig && hasSshAuth;
+      const hasAllCredentials = hasSshCredentials && hasWireguardConfig && hasSshAuth;
 
       if (!hasAllCredentials) {
         return null;
@@ -606,16 +663,16 @@ export class InteractiveSetup {
       const baseUrl = connectionMethod === 'ssh-tunnel' ? 'https://localhost:8080' : 'https://198.51.100.1:8080';
 
       return {
-              adminUser: credentials[CREDENTIAL_KEYS.ADMIN_USER]!,
-      connectionMethod,
-      wireguardConfig: credentials[CREDENTIAL_KEYS.WIREGUARD_CONFIG_PATH] || undefined,
-      apiKey: credentials[CREDENTIAL_KEYS.API_KEY]!,
-      sshHost: credentials[CREDENTIAL_KEYS.SSH_HOST]!,
-      sshUser: credentials[CREDENTIAL_KEYS.SSH_USER]!,
-      sshAuthMethod,
-      sshPassword: credentials[CREDENTIAL_KEYS.SSH_PASSWORD] || undefined,
-      sshKeyPath: credentials[CREDENTIAL_KEYS.SSH_KEY_PATH] || undefined,
-      sshKeyPassphrase: credentials[CREDENTIAL_KEYS.SSH_KEY_PASSPHRASE] || undefined,
+        adminUser: credentials[CREDENTIAL_KEYS.ADMIN_USER]!,
+        connectionMethod,
+        wireguardConfig: credentials[CREDENTIAL_KEYS.WIREGUARD_CONFIG_PATH] || undefined,
+        apiKey: credentials[CREDENTIAL_KEYS.API_KEY]!,
+        sshHost: credentials[CREDENTIAL_KEYS.SSH_HOST]!,
+        sshUser: credentials[CREDENTIAL_KEYS.SSH_USER]!,
+        sshAuthMethod,
+        sshPassword: credentials[CREDENTIAL_KEYS.SSH_PASSWORD] || undefined,
+        sshKeyPath: credentials[CREDENTIAL_KEYS.SSH_KEY_PATH] || undefined,
+        sshKeyPassphrase: credentials[CREDENTIAL_KEYS.SSH_KEY_PASSPHRASE] || undefined,
         ludusUrl: process.env.LUDUS_URL || baseUrl,
         verifySSL: process.env.LUDUS_VERIFY?.toLowerCase() === 'true'
       };
@@ -635,14 +692,23 @@ export class InteractiveSetup {
         return;
       }
 
+      // Core credentials always stored
       const credentialsToStore: Record<string, string> = {
         [CREDENTIAL_KEYS.ADMIN_USER]: config.adminUser,
         [CREDENTIAL_KEYS.CONNECTION_METHOD]: config.connectionMethod,
-        [CREDENTIAL_KEYS.API_KEY]: config.apiKey,
-        [CREDENTIAL_KEYS.SSH_HOST]: config.sshHost,
-        [CREDENTIAL_KEYS.SSH_USER]: config.sshUser,
-        [CREDENTIAL_KEYS.SSH_AUTH_METHOD]: config.sshAuthMethod
+        [CREDENTIAL_KEYS.API_KEY]: config.apiKey
       };
+
+      // SSH credentials only stored if present (not required for direct mode)
+      if (config.sshHost) {
+        credentialsToStore[CREDENTIAL_KEYS.SSH_HOST] = config.sshHost;
+      }
+      if (config.sshUser) {
+        credentialsToStore[CREDENTIAL_KEYS.SSH_USER] = config.sshUser;
+      }
+      if (config.sshAuthMethod) {
+        credentialsToStore[CREDENTIAL_KEYS.SSH_AUTH_METHOD] = config.sshAuthMethod;
+      }
 
       // Only store optional configs if they exist
       if (config.wireguardConfig) {
@@ -675,50 +741,68 @@ export class InteractiveSetup {
     console.error('Choose how to connect to the Ludus API:');
     console.error('  (w) WireGuard VPN - Direct access via WireGuard tunnel');
     console.error('  (s) SSH Tunnel - Access via SSH port forwarding');
-    const methodChoice = await this.prompt('Connection method? (w/s) [default: w]: ');
-    const connectionMethod: 'wireguard' | 'ssh-tunnel' = methodChoice.toLowerCase() === 's' ? 'ssh-tunnel' : 'wireguard';
+    console.error('  (d) Direct - Running directly on the Ludus server (localhost)');
+    const methodChoice = await this.prompt('Connection method? (w/s/d) [default: w]: ');
+    let connectionMethod: 'wireguard' | 'ssh-tunnel' | 'direct';
+    if (methodChoice.toLowerCase() === 's') {
+      connectionMethod = 'ssh-tunnel';
+    } else if (methodChoice.toLowerCase() === 'd') {
+      connectionMethod = 'direct';
+    } else {
+      connectionMethod = 'wireguard';
+    }
 
     const adminUser = await this.prompt('Ludus Admin Username: ');
-    
+
     let wireguardConfig: string | undefined;
     let ludusUrl: string;
-    
+    let sshHost: string | undefined;
+    let sshUser: string | undefined;
+    let sshAuthMethod: 'password' | 'key' | undefined;
+    let sshPassword: string | undefined;
+    let sshKeyPath: string | undefined;
+    let sshKeyPassphrase: string | undefined;
+
     if (connectionMethod === 'wireguard') {
       wireguardConfig = await this.prompt('WireGuard Config Path: ');
       ludusUrl = 'https://198.51.100.1:8080';
+    } else if (connectionMethod === 'direct') {
+      console.error('Using direct mode - connecting directly to localhost (Ludus server)');
+      console.error('Note: This mode is for running the MCP server directly on the Ludus server.');
+      ludusUrl = 'https://127.0.0.1:8080';
     } else {
       console.error('Using SSH tunnel mode - will connect to https://localhost:8080');
       ludusUrl = 'https://localhost:8080';
     }
-    
+
     const apiKey = await this.securePrompt('API Key: ');
-    const sshHost = await this.prompt('Ludus Server SSH Host: ');
-    const sshUser = await this.prompt('Ludus Server SSH User: ');
-    
-    // Ask for SSH authentication method
-    console.error('\nSSH Authentication Method');
-    console.error('Choose SSH authentication method:');
-    console.error('  (p) Password - Use SSH password authentication');  
-    console.error('  (k) Key - Use SSH key-based authentication');
-    
-    const authChoice = await this.prompt('SSH auth method? (p/k) [default: p]: ');
-    let sshAuthMethod: 'password' | 'key';
-    let sshPassword: string | undefined;
-    let sshKeyPath: string | undefined;
-    let sshKeyPassphrase: string | undefined;
-    
-    if (authChoice.toLowerCase() === 'k') {
-      sshAuthMethod = 'key';
-      sshKeyPath = await this.prompt('SSH Key Path: ');
-      
-      // Ask for passphrase if key is protected
-      const hasPassphrase = await this.prompt('Does your SSH key have a passphrase? (y/n) [default: n]: ');
-      if (hasPassphrase.toLowerCase() === 'y') {
-        sshKeyPassphrase = await this.securePrompt('SSH Key Passphrase: ');
+
+    // Only prompt for SSH credentials if not in direct mode
+    if (connectionMethod !== 'direct') {
+      sshHost = await this.prompt('Ludus Server SSH Host: ');
+      sshUser = await this.prompt('Ludus Server SSH User: ');
+
+      // Ask for SSH authentication method
+      console.error('\nSSH Authentication Method');
+      console.error('Choose SSH authentication method:');
+      console.error('  (p) Password - Use SSH password authentication');
+      console.error('  (k) Key - Use SSH key-based authentication');
+
+      const authChoice = await this.prompt('SSH auth method? (p/k) [default: p]: ');
+
+      if (authChoice.toLowerCase() === 'k') {
+        sshAuthMethod = 'key';
+        sshKeyPath = await this.prompt('SSH Key Path: ');
+
+        // Ask for passphrase if key is protected
+        const hasPassphrase = await this.prompt('Does your SSH key have a passphrase? (y/n) [default: n]: ');
+        if (hasPassphrase.toLowerCase() === 'y') {
+          sshKeyPassphrase = await this.securePrompt('SSH Key Passphrase: ');
+        }
+      } else {
+        sshAuthMethod = 'password';
+        sshPassword = await this.securePrompt('SSH Password: ');
       }
-    } else {
-      sshAuthMethod = 'password';
-      sshPassword = await this.securePrompt('SSH Password: ');
     }
 
     const useCustomUrl = await this.prompt('Use custom Ludus URL? (y/n) [default: n]: ');
@@ -728,20 +812,25 @@ export class InteractiveSetup {
 
     const verifySSL = await this.prompt('Verify SSL certificates? (y/n) [default: n]: ');
 
-    return {
+    // Build config object, only including SSH properties when they exist
+    const config: LudusConfig = {
       adminUser,
       connectionMethod,
-      wireguardConfig,
       apiKey,
-      sshHost,
-      sshUser,
-      sshAuthMethod,
-      sshPassword,
-      sshKeyPath,
-      sshKeyPassphrase,
       ludusUrl,
       verifySSL: verifySSL.toLowerCase() === 'y'
     };
+
+    // Add optional properties only when they have values
+    if (wireguardConfig) config.wireguardConfig = wireguardConfig;
+    if (sshHost) config.sshHost = sshHost;
+    if (sshUser) config.sshUser = sshUser;
+    if (sshAuthMethod) config.sshAuthMethod = sshAuthMethod;
+    if (sshPassword) config.sshPassword = sshPassword;
+    if (sshKeyPath) config.sshKeyPath = sshKeyPath;
+    if (sshKeyPassphrase) config.sshKeyPassphrase = sshKeyPassphrase;
+
+    return config;
   }
 
   /**
@@ -797,7 +886,11 @@ export class InteractiveSetup {
       console.error('\nValidating configuration...');
 
       // Handle connection method
-      if (config.connectionMethod === 'wireguard') {
+      if (config.connectionMethod === 'direct') {
+        // Direct mode - running on Ludus server, no tunnels needed
+        console.error('Using direct mode - connecting to localhost...');
+        console.error('Note: This mode assumes the MCP server is running directly on the Ludus server.');
+      } else if (config.connectionMethod === 'wireguard') {
         // 1. Check WireGuard availability
         if (!this.checkWireGuardAvailable()) {
           return {
@@ -815,7 +908,7 @@ export class InteractiveSetup {
           };
         }
         console.error('WireGuard VPN connected');
-        
+
         // Important WireGuard usage guidance
         console.error('');
         console.error('IMPORTANT: WireGuard Usage Notes');
@@ -849,15 +942,17 @@ export class InteractiveSetup {
       }
       console.error('API key validated');
 
-      // 4. Test SSH connectivity
-      console.error('🔌 Testing SSH connectivity...');
-      if (!await this.testSshConnectivity(config)) {
-        return {
-          success: false,
-          message: 'SSH connectivity test failed. Please check your SSH configuration.'
-        };
+      // 4. Test SSH connectivity (skip for direct mode)
+      if (config.connectionMethod !== 'direct') {
+        console.error('🔌 Testing SSH connectivity...');
+        if (!await this.testSshConnectivity(config)) {
+          return {
+            success: false,
+            message: 'SSH connectivity test failed. Please check your SSH configuration.'
+          };
+        }
+        console.error('SSH connectivity verified');
       }
-      console.error('SSH connectivity verified');
 
       // 5. Store credentials in keyring if setup was successful and credentials were entered interactively
       if (process.stdin.isTTY && !envConfig) {
@@ -866,7 +961,7 @@ export class InteractiveSetup {
 
       // Initialization completed - avoid console output that might interfere with MCP protocol
 
-      // Final success message with WireGuard reminder
+      // Final success message with mode-specific guidance
       if (config.connectionMethod === 'wireguard') {
         console.error('Setup complete!');
         console.error('');
@@ -874,6 +969,12 @@ export class InteractiveSetup {
         console.error('   1. Manually start your WireGuard tunnel before launching Claude Desktop');
         console.error('   2. Or configure WireGuard as a Windows service for automatic startup');
         console.error('   3. If WireGuard is down, the MCP client will try SSH tunnel fallback');
+        console.error('');
+      } else if (config.connectionMethod === 'direct') {
+        console.error('Setup complete!');
+        console.error('');
+        console.error('Direct mode configured - MCP server will connect directly to localhost.');
+        console.error('Ensure this server is running on the Ludus host machine.');
         console.error('');
       } else {
         console.error('Setup complete!');
