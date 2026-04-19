@@ -1865,12 +1865,27 @@ class LudusMCPServer {
       CREDENTIAL_KEYS.SSH_KEY_PASSPHRASE
         ]);
 
-        const connectionMethod = (credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel') || 'wireguard';
+        const connectionMethod = (credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] as 'wireguard' | 'ssh-tunnel' | 'direct') || 'wireguard';
         const sshAuthMethod = (credentials[CREDENTIAL_KEYS.SSH_AUTH_METHOD] as 'password' | 'key') || 'password';
         const baseUrl = connectionMethod === 'ssh-tunnel' ? 'https://localhost:8080' : 'https://198.51.100.1:8080';
 
+        // Direct mode only requires admin user + api key
+        if (connectionMethod === 'direct') {
+          if (credentials[CREDENTIAL_KEYS.ADMIN_USER] && credentials[CREDENTIAL_KEYS.API_KEY]) {
+            this.logger.info('Using direct mode configuration from keyring');
+            return {
+              adminUser: credentials[CREDENTIAL_KEYS.ADMIN_USER]!,
+              connectionMethod: 'direct',
+              apiKey: credentials[CREDENTIAL_KEYS.API_KEY]!,
+              ludusUrl: process.env.LUDUS_URL || 'https://127.0.0.1:8080',
+              verifySSL: process.env.LUDUS_VERIFY === 'true'
+            };
+          }
+          return null;
+        }
+
         // Check if we have all required credentials from keyring
-        const hasBaseCredentials = 
+        const hasBaseCredentials =
           credentials[CREDENTIAL_KEYS.ADMIN_USER] &&
           credentials[CREDENTIAL_KEYS.CONNECTION_METHOD] &&
           credentials[CREDENTIAL_KEYS.API_KEY] &&
@@ -1903,6 +1918,20 @@ class LudusMCPServer {
         }
       } catch (error: any) {
         this.logger.debug('Failed to load credentials from keyring', { error: error.message });
+      }
+    }
+
+    // Direct mode via environment variables — only requires admin user + api key
+    if (process.env.LUDUS_CONNECTION_METHOD === 'direct') {
+      if (process.env.LUDUS_ADMIN_USER && process.env.LUDUS_API_KEY) {
+        this.logger.info('Using direct mode configuration from environment variables');
+        return {
+          adminUser: process.env.LUDUS_ADMIN_USER,
+          connectionMethod: 'direct',
+          apiKey: process.env.LUDUS_API_KEY,
+          ludusUrl: process.env.LUDUS_URL || 'https://127.0.0.1:8080',
+          verifySSL: process.env.LUDUS_VERIFY === 'true'
+        };
       }
     }
 

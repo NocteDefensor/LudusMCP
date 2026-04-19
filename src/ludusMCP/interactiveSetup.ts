@@ -842,8 +842,8 @@ export class InteractiveSetup {
       
       // Try to get config from different sources in order of preference
       const envConfig = this.getConfigFromEnvironment();
-      const keyringSummary = await getCredentialSummary();
       const keyringSupportAvailable = isKeyringSupportAvailable();
+      const keyringSummary = keyringSupportAvailable ? await getCredentialSummary() : {};
       
       if (forceInteractive) {
         // Force interactive mode - skip environment and keyring checks
